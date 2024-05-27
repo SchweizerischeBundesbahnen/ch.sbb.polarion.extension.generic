@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Swagger UI turned off</title>
+    <style>
+        .swagger-unavailable {
+            padding: 10px;
+            font-size: 13px;
+            font-family: monospace;
+        }
+
+        .swagger-unavailable pre code {
+            display: block;
+            font-size: 12px;
+            line-height: 18px;
+            white-space: pre-wrap;
+            padding: 6px 10px;
+            border-radius: 3px;
+            border: 1px solid #DFE1E6;
+            background-color: #F4F5F7;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="swagger-unavailable">
+
+    <span>Both <b>REST</b> and <b>Swagger UI</b> configuration properties must be activated in order to use this functionality:</span>
+    <pre><code>
+...
+com.siemens.polarion.rest.enabled=true
+com.siemens.polarion.rest.swaggerUi.enabled=true
+...
+    </code></pre>
+    <span>Please contact system administrator.</span>
+</div>
+</body>
+
+</html>

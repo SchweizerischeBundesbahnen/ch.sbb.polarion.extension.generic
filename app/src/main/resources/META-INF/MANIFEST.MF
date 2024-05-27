@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Automatic-Module-Name: ch.sbb.polarion.extension.generic
+Bundle-Name: Generic Extension for Polarion ALM
+Bundle-SymbolicName: ch.sbb.polarion.extension.generic;singleton:=true
+Bundle-Vendor: SBB AG
