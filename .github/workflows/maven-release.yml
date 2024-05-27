@@ -62,46 +62,23 @@ jobs:
             [
               {
                 "id": "s3Deploy",
-                "distributionManagement":
-                  {
-                    "repository":
-                    {
-                      "id": "s3",
-                      "url" "s3://sbb-polarion-maven-repo/polarion.mvn"
-                    }
-                  }
+                "properties":
+                {
+                  "altReleaseDeploymentRepository": "s3::default::s3://sbb-polarion-maven-repo/polarion.mvn"
+                }
               },
               {
                 "id": "githubDeploy",
-                "distributionManagement":
-                  {
-                    "repository":
-                    {
-                      "id": "github",
-                      "url" "https://maven.pkg.github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic"
-                    },
-                    "snapshotRepository":
-                    {
-                      "id": "github",
-                      "url" "https://maven.pkg.github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic"
-                    }                    
-                  }
+                "properties":
+                {
+                  "altReleaseDeploymentRepository": "github::default::https://maven.pkg.github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic"
+                }
               },
               {
                 "id": "repsyDeploy",
-                "distributionManagement":
-                  {
-                    "repository":
-                    {
-                      "id": "repsy",
-                      "url" "https://repo.repsy.io/mvn/sbb/polarion"
-                    },
-                    "snapshotRepository":
-                    {
-                      "id": "repsy",
-                      "url" "https://repo.repsy.io/mvn/sbb/polarion"
-                    }
-                  }
+                {
+                  "altReleaseDeploymentRepository": "repsy::default::https://repo.repsy.io/mvn/sbb/polarion"
+                }
               }
             ]
           active_profiles: >
@@ -114,7 +91,8 @@ jobs:
         run: mvn --batch-mode clean package
       - name: Extract artefact version
         id: artefact_version
-        run: echo ::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        run: echo ::set-output name=version::$(mvn help:evaluate -Dexpression=project.version
+          -q -DforceStdout)
       - name: Publish to S3 bucket
         if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') }}
         run: mvn --batch-mode deploy -Ps3Deploy
