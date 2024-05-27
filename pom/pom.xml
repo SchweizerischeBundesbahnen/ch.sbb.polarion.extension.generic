@@ -5,7 +5,7 @@
     <parent>
         <groupId>ch.sbb.polarion.extensions</groupId>
         <artifactId>ch.sbb.polarion.extension.generic</artifactId>
-        <version>4.8.2-SNAPSHOT</version>
+        <version>4.8.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -51,7 +51,7 @@
         <maven-jar-plugin.Bundle-Vendor>SBB AG</maven-jar-plugin.Bundle-Vendor>
         <!--suppress UnresolvedMavenProperty -->
         <maven-jar-plugin.Bundle-Version>${project.artifact.selectedVersion.majorVersion}.${project.artifact.selectedVersion.minorVersion}.${project.artifact.selectedVersion.incrementalVersion}</maven-jar-plugin.Bundle-Version>
-        <maven-jar-plugin.Extension-Context />
+        <maven-jar-plugin.Extension-Context/>
     </properties>
 
     <profiles>
