@@ -1,0 +1,46 @@
+.sbb-custom-select {
+    width: 300px;
+    display: inline-block;
+}
+.sbb-custom-select .select-box {
+    position: relative;
+}
+.sbb-custom-select .select-box select {
+    width: 100%;
+    font-family: "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif;
+}
+.sbb-custom-select .over-select {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+.sbb-custom-select .checkboxes {
+    background-color: #eee;
+    border: 1px solid #666;
+    position: absolute;
+    width: inherit;
+    z-index: 10;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.sbb-custom-select .checkboxes label {
+    display: block;
+    width: calc(100% - 10px); /* 10px = padding-left + padding-right */
+    padding: 2px 5px;
+}
+.sbb-custom-select .checkboxes label:hover {
+    background-color: #aecaf3;
+}
+.sbb-custom-select .checkboxes label.selected {
+    background-color: #2268cf;
+    color: #fff;
+}
+.sbb-custom-select .checkboxes input[type="checkbox"] {
+    vertical-align: middle;
+}
+.sbb-custom-select:not(.multiselect) .checkboxes input[type="checkbox"] {
+    display: none;
+}

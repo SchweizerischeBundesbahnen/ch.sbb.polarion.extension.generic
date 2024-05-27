@@ -1,0 +1,46 @@
+.input-group {
+    margin-bottom: 5px;
+}
+.input-group label {
+    display: inline-block;
+    width: 120px;
+}
+.input-group select {
+    width: 300px;
+}
+.input-group input {
+    width: 284px;
+}
+.checkboxes label.parent {
+    color: #333;
+}
+.checkboxes label.parent::after {
+    content: "global";
+    float: right;
+    font-size: 10px;
+    font-style: italic;
+    margin-top: 2px;
+}
+.checkboxes label:not(.parent) {
+    font-weight: bolder;
+}
+.action-buttons {
+    display: inline-block;
+    margin-left: 2em;
+}
+.toolbar-button:not([disabled]):hover {
+    box-shadow: 0 0 1px rgba(0,0,0,0.3);
+    border-color: #BEBEBE;
+}
+.toolbar-button:disabled {
+    opacity: 40%;
+}
+.toolbar-button:disabled:hover {
+    cursor: default;
+}
+.note {
+    color: #aaaaaa;
+}
+.configuration-error {
+    color: red;
+}

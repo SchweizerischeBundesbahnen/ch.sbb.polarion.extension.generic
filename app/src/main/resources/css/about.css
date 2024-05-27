@@ -1,0 +1,60 @@
+.about-page-text {
+    font-size: 13px;
+}
+
+.monospace {
+    font-family: monospace;
+}
+
+.about-page-text table {
+    border-collapse: collapse;
+}
+
+.about-page-text table th {
+    height: 12px;
+    padding: 5px;
+    text-align: left;
+    border: 1px solid #CCCCCC;
+    font-weight: bold;
+    vertical-align: top;
+    white-space: nowrap;
+    background-color: #F0F0F0;
+}
+
+.about-page-text table td {
+    height: 12px;
+    text-align: left;
+    vertical-align: top;
+    line-height: 18px;
+    border: 1px solid #CCCCCC;
+    padding: 5px;
+}
+
+.about-page-text table td:first-child {
+    padding-left: 10px
+}
+
+.about-page-text .app-icon {
+    position: absolute;
+    right: 25px;
+}
+
+.about-page-text code {
+    background-clip: padding-box;
+    border-radius: 3px;
+    border: 1px solid #DFE1E6;
+    background-color: #F4F5F7;
+    display: inline-block;
+    margin: 0 2px -1px;
+    padding: 0px 3px;
+    text-decoration: inherit;
+    vertical-align: baseline;
+}
+
+.about-page-text pre code {
+    display: block;
+    font-size: 12px;
+    line-height: 18px;
+    white-space: pre-wrap;
+    padding: 6px 10px;
+}

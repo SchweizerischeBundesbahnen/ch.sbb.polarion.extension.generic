@@ -1,0 +1,294 @@
+@font-face {
+    font-family: "Selawik";
+    src: url("/polarion/ria/fonts/selawik/selawk.ttf");
+}
+
+@font-face {
+    font-family: "Selawik";
+    src: url("/polarion/ria/fonts/selawik/selawkb.ttf");
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: "Open Sans";
+    src: url("/polarion/ria/fonts/opensans/OpenSans-Regular.ttf");
+}
+
+@font-face {
+    font-family: "Open Sans";
+    src: url("/polarion/ria/fonts/opensans/OpenSans-Bold.ttf");
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: "Open Sans";
+    src: url("/polarion/ria/fonts/opensans/OpenSans-Italic.ttf");
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Open Sans";
+    src: url("/polarion/ria/fonts/opensans/OpenSans-BoldItalic.ttf");
+    font-weight: bold;
+    font-style: italic;
+}
+
+a, td, div, li, ul, input, button, option {
+    font-family: "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif;
+}
+
+body, input, select {
+    font-size: 13px;
+}
+
+input {
+    padding: 3px 6px;
+}
+
+select {
+    padding: 3px;
+}
+
+.monospace {
+    font-family: monospace;
+}
+
+.standard-admin-page h1, .standard-admin-page h2, .standard-admin-page h3 {
+    color: #004d73;
+    font-weight: bold;
+}
+
+.standard-admin-page h1 {
+    font-size: 30px;
+    line-height: 38px;
+    margin-top: 10px;
+    border-bottom: 4px solid #EBF0F5;
+}
+
+.standard-admin-page h2 {
+    font-size: 23px;
+    line-height: 31px;
+    margin-top: 24px;
+    padding: 8px 14px;
+    background-color: #EBF0F5;
+}
+
+.standard-admin-page h3 {
+    font-size: 16px;
+    line-height: 24px;
+    margin-top: 20px;
+    padding-left: 4px;
+    padding-bottom: 0;
+}
+
+.html-input {
+    overflow: hidden;
+    display: block;
+}
+
+.html-input.vertical-resizable {
+    resize: vertical;
+}
+
+code-input.code-input_pre-element-styled {
+    height: 320px;
+}
+
+code-input {
+    margin: 0;
+}
+
+.label-block {
+    font-weight: bold;
+    font-size: 16px;
+    padding-left: 10px;
+    white-space: nowrap;
+    text-shadow: white 1px 1px 0.01em;
+    text-align: left;
+    padding-bottom: 3px;
+    background: #EBF0F5;
+    width: auto;
+    color: #004D73;
+    padding-top: 5px;
+    margin-bottom: 3px;
+}
+
+.input-block.wide {
+    width: 98%;
+}
+
+.input-block {
+    display: inline-block;
+    width: 32%;
+    padding-left: 1%;
+}
+
+.input-block.left {
+    float: left;
+}
+
+.input-block.right {
+    float: right;
+}
+
+.input-container .input-block:last-child {
+    padding-right: 1%;
+}
+
+.action-alerts .alert {
+    font-size: 12px;
+    font-weight: bold;
+    padding-left: 20px;
+}
+
+.action-alerts .alert-error {
+    color: red;
+}
+
+.action-alerts .alert-success {
+    color: green;
+}
+
+.notifications .alert {
+    margin-bottom: 10px;
+    font-size: 12px;
+    padding: 8px 16px 5px;
+    border-radius: 3px;
+    width: calc(100% - 32px);
+}
+
+.notifications .alert > span {
+    vertical-align: super;
+    padding-left: 5px;
+}
+
+.notifications .alert-error {
+    background-color: #f8d7da;
+    border: 1px solid #b3626a;
+}
+
+.notifications .alert-warning {
+    background-color: #fff7cd;
+    border: 1px solid #ffc328;
+}
+
+.notifications .alert-success {
+    background-color: #d1e7dd;
+    border: 1px solid #75b598;
+}
+
+.actions-pane {
+    background: #f5f5f5;
+    border-bottom: 1px solid #dedede;
+    padding: 8px 8px;
+    vertical-align: middle;
+    width: auto;
+    margin-top: 24px;
+}
+
+.toolbar-button {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 6px;
+    margin-right: 5px;
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+    text-shadow: white 1px 1px 0.01em;
+    border: 1px solid #DEDEDE;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    height: 28px;
+    color: #595959;
+    border-collapse: separate;
+    line-height: 16px;
+}
+
+.toolbar-button:hover {
+    cursor: pointer;
+}
+
+.button-image {
+    padding-right: 5px;
+    float: left;
+}
+
+:not(pre) > code[class*=language-],
+pre[class*=language-] {
+    background: #F2F2F2;
+}
+
+.inline-flex {
+    display: inline-flex;
+}
+
+#revisions-expand-container {
+    width:100%;
+    max-height: 150px;
+    overflow-y: scroll;
+    margin-bottom: 8px;
+    display: none;
+}
+
+#revisions-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: black;
+    text-align: center;
+}
+
+#revisions-table thead th {
+    position: sticky;
+    top: 0;
+}
+
+#revisions-table th {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    font-size: 8pt;
+    background: #75A8E2;
+    color: black;
+    border-top: 0;
+    border-bottom: 3px solid #CCD8E5;
+    border-right: 1px solid #CCD8E5;
+    padding: 2px 5px 2px 5px;
+}
+
+#revisions-table td {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    background: #E9F3FA;
+    padding: 0 5px;
+    border: 1px solid #C0DAEA;
+}
+
+#revisions-table tr:nth-child(even) td {
+    background: #E9F3FA;
+}
+
+#revisions-table tr:nth-child(odd) td {
+    background: white;
+}
+
+#revisions-table .empty-message {
+    padding: 5px;
+}
+
+.revert-to-revision-button {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.revert-to-revision-button:hover {
+    cursor: pointer;
+    background: #FFC328;
+}
+
+.revision-number {
+    color: blue;
+}
+
+.quick-help-text {
+    font-size: 13px;
+}
