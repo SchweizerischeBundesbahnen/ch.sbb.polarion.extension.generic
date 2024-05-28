@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.9.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v4.8.1...v4.9.0) (2024-05-28)
+
+
+### Features
+
+* GenericModule added. ([#9](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/9)) ([25ca190](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/25ca190e3361de90e1bc96b550929a3293132617))
+
+
+### Bug Fixes
+
+* add missing profiles in settings.xml ([#8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/8)) ([295e052](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/295e052cbe6329368464514cf24fe7aec736b06c))
+* use altDeploymentRepository instead of altReleaseDeploymentRepository ([#12](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/12)) ([314ce47](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/314ce4707628b0ece0e1f6f880a1c3e0dcf58348))
+
 ## 4.8.1 (2024-05-27)
 
 
