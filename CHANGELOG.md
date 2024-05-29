@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.9.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v4.9.0...v4.9.1) (2024-05-29)
+
+
+### Bug Fixes
+
+* deprecation in GitHub actions for maven-release  ([#14](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/14)) ([dc2ee7d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/dc2ee7d0bf06c71003e1e1300008387901de1398))
+* exceptions are refactored not to use JAX-RS exceptions in services ([#18](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/18)) ([6c7de85](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6c7de855b40cb72cdda677a98c5311a930079eda))
+
 ## [4.9.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v4.8.1...v4.9.0) (2024-05-28)
 
 
