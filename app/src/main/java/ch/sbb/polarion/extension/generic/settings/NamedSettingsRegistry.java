@@ -1,8 +1,8 @@
 package ch.sbb.polarion.extension.generic.settings;
 
+import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import lombok.Getter;
 
-import javax.ws.rs.NotFoundException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +33,7 @@ public enum NamedSettingsRegistry {
         return settingsSet.stream()
                 .filter(s -> s.getFeatureName().equals(featureName))
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException("No settings found by featureName: " + featureName));
+                .orElseThrow(() -> new ObjectNotFoundException("No settings found by featureName: " + featureName));
     }
 
     public NamedSettingsRegistry setScopeAgnostic(boolean scopeAgnostic) {

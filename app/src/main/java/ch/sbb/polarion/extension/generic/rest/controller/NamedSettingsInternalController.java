@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic.rest.controller;
 
+import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import ch.sbb.polarion.extension.generic.service.PolarionService;
 import ch.sbb.polarion.extension.generic.settings.GenericNamedSettings;
 import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
@@ -17,7 +18,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -113,7 +113,7 @@ public class NamedSettingsInternalController {
         if (model != null) {
             return model;
         } else {
-            throw new NotFoundException("Cannot find data using specified parameters");
+            throw new ObjectNotFoundException("Cannot find data using specified parameters");
         }
     }
 

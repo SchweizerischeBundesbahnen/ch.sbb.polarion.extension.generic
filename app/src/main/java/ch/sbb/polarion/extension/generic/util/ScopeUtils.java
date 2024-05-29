@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic.util;
 
+import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import com.polarion.alm.projects.IProjectService;
 import com.polarion.alm.projects.internal.model.Project;
 import com.polarion.alm.projects.model.IProject;
@@ -13,7 +14,6 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.ws.rs.NotFoundException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
@@ -34,7 +34,7 @@ public class ScopeUtils {
             try {
                 return getContextLocationByProject(project);
             } catch (Exception e) {
-                throw new NotFoundException("No scope found: " + scope, e);
+                throw new ObjectNotFoundException("No scope found: " + scope, e);
             }
         }
     }
@@ -46,7 +46,7 @@ public class ScopeUtils {
         if (((Project) project).exists()) {
             return project.getLocation();
         } else {
-            throw new NotFoundException("Project '" + projectId + "' does not exist");
+            throw new ObjectNotFoundException("Project '" + projectId + "' does not exist");
         }
     }
 

@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic.rest.controller;
 
+import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import ch.sbb.polarion.extension.generic.service.PolarionService;
 import ch.sbb.polarion.extension.generic.settings.GenericNamedSettings;
 import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.ws.rs.NotFoundException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,7 +50,7 @@ class NamedSettingsInternalControllerTest {
         assertTrue(controller.readSettingNames("feature1", "testScope").containsAll(
                 List.of(generateSettingName(8), generateSettingName(1), generateSettingName(3))));
 
-        assertThrows(NotFoundException.class, () -> controller.readSettingNames("feature2", "testScope"));
+        assertThrows(ObjectNotFoundException.class, () -> controller.readSettingNames("feature2", "testScope"));
     }
 
     @Test
@@ -93,7 +93,7 @@ class NamedSettingsInternalControllerTest {
         when(settings.listRevisions(any(), any())).thenReturn(testList);
         assertEquals(testList, controller.readRevisionsList("feature1", "someName", "testScope"));
 
-        NotFoundException exception = assertThrows(NotFoundException.class,
+        ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class,
                 () -> controller.readRevisionsList("feature2", "someName", "testScope"));
         assertEquals("No settings found by featureName: feature2", exception.getMessage());
     }
@@ -108,7 +108,7 @@ class NamedSettingsInternalControllerTest {
         verify(settings, times(1)).delete(eq("testScope"), settingIdCaptor.capture());
         assertEquals("name1", settingIdCaptor.getValue().getIdentifier());
 
-        NotFoundException exception = assertThrows(NotFoundException.class,
+        ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class,
                 () -> controller.deleteSetting("feature2", "someName", "testScope"));
         assertEquals("No settings found by featureName: feature2", exception.getMessage());
     }
@@ -121,7 +121,7 @@ class NamedSettingsInternalControllerTest {
         assertEquals("feature1Model", settingsModel.getName());
 
         when(settings.read(any(), any(), any())).thenReturn(null);
-        NotFoundException exception = assertThrows(NotFoundException.class,
+        ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class,
                 () -> controller.readSetting("feature1", "name1", "testScope", "1"));
         assertEquals("Cannot find data using specified parameters", exception.getMessage());
     }
@@ -186,7 +186,7 @@ class NamedSettingsInternalControllerTest {
 
         assertEquals(model, controller.getDefaultValues("feature1"));
 
-        NotFoundException exception = assertThrows(NotFoundException.class,
+        ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class,
                 () -> controller.getDefaultValues("feature2"));
         assertEquals("No settings found by featureName: feature2", exception.getMessage());
     }

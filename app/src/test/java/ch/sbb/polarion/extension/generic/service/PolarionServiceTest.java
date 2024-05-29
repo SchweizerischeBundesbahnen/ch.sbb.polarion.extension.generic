@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic.service;
 
+import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import ch.sbb.polarion.extension.generic.fields.FieldType;
 import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
 import ch.sbb.polarion.extension.generic.fields.model.Option;
@@ -35,9 +36,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +87,7 @@ public class PolarionServiceTest {
     void testGetNotExistentProject() {
         mockProject(Boolean.FALSE);
 
-        assertThrows(NotFoundException.class, () -> polarionService.getProject(PROJECT_ID, null));
+        assertThrows(ObjectNotFoundException.class, () -> polarionService.getProject(PROJECT_ID, null));
     }
 
     @Test
@@ -97,7 +95,7 @@ public class PolarionServiceTest {
         IProject project = mockProject(Boolean.TRUE);
         mockWorkItem(project, Boolean.FALSE);
 
-        assertThrows(NotFoundException.class, () -> polarionService.getWorkItem(PROJECT_ID, WI_ID));
+        assertThrows(ObjectNotFoundException.class, () -> polarionService.getWorkItem(PROJECT_ID, WI_ID));
     }
 
     @Test
@@ -105,7 +103,7 @@ public class PolarionServiceTest {
         IProject project = mockProject(Boolean.TRUE);
         mockModule(project, Boolean.FALSE);
 
-        assertThrows(NotFoundException.class, () -> polarionService.getModule(PROJECT_ID, SPACE_ID, DOCUMENT_NAME));
+        assertThrows(ObjectNotFoundException.class, () -> polarionService.getModule(PROJECT_ID, SPACE_ID, DOCUMENT_NAME));
     }
 
     @Test
@@ -115,7 +113,7 @@ public class PolarionServiceTest {
             IBaselineCollection collection = mockCollection(Boolean.FALSE);
             transactionalExecutorMockedStatic.when(() -> TransactionalExecutor.executeSafelyInReadOnlyTransaction(any())).thenReturn(collection);
 
-            assertThrows(NotFoundException.class, () -> polarionService.getCollection(PROJECT_ID, COLLECTION_ID));
+            assertThrows(ObjectNotFoundException.class, () -> polarionService.getCollection(PROJECT_ID, COLLECTION_ID));
         }
     }
 
@@ -132,7 +130,7 @@ public class PolarionServiceTest {
 
         assertNotNull(polarionService.getProject(PROJECT_ID, REVISION));
 
-        BadRequestException exception = assertThrows(BadRequestException.class,
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> polarionService.getProject("", REVISION));
         assertEquals("Parameter 'projectId' should be provided", exception.getMessage());
     }
@@ -168,11 +166,11 @@ public class PolarionServiceTest {
 
         assertNotNull(polarionService.getWorkItem(PROJECT_ID, WI_ID, REVISION));
 
-        BadRequestException exception = assertThrows(BadRequestException.class,
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> polarionService.getWorkItem("", WI_ID, REVISION));
         assertEquals("Parameter 'projectId' should be provided", exception.getMessage());
 
-        exception = assertThrows(BadRequestException.class,
+        exception = assertThrows(IllegalArgumentException.class,
                 () -> polarionService.getWorkItem(PROJECT_ID, "", REVISION));
         assertEquals("Parameter 'workItemId' should be provided", exception.getMessage());
     }
@@ -192,11 +190,11 @@ public class PolarionServiceTest {
 
         assertNotNull(polarionService.getModule(PROJECT_ID, SPACE_ID, DOCUMENT_NAME, REVISION));
 
-        BadRequestException exception = assertThrows(BadRequestException.class,
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> polarionService.getModule(PROJECT_ID, "", DOCUMENT_NAME, REVISION));
         assertEquals("Parameter 'spaceId' should be provided", exception.getMessage());
 
-        exception = assertThrows(BadRequestException.class,
+        exception = assertThrows(IllegalArgumentException.class,
                 () -> polarionService.getModule(PROJECT_ID, SPACE_ID, "", REVISION));
         assertEquals("Parameter 'documentName' should be provided", exception.getMessage());
     }
@@ -221,7 +219,7 @@ public class PolarionServiceTest {
 
             assertNotNull(polarionService.getCollection(PROJECT_ID, COLLECTION_ID, REVISION));
 
-            BadRequestException exception = assertThrows(BadRequestException.class,
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                     () -> polarionService.getCollection(PROJECT_ID, "", REVISION));
             assertEquals("Parameter 'collectionId' should be provided", exception.getMessage());
         }
