@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic.service;
 
+import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import ch.sbb.polarion.extension.generic.fields.ConverterContext;
 import ch.sbb.polarion.extension.generic.fields.IConverter;
 import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
@@ -44,8 +45,6 @@ import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -95,7 +94,7 @@ public class PolarionService {
     @NotNull
     public IProject getProject(@NotNull String projectId, @Nullable String revision) {
         if (StringUtils.isEmptyTrimmed(projectId)) {
-            throw new BadRequestException("Parameter 'projectId' should be provided");
+            throw new IllegalArgumentException("Parameter 'projectId' should be provided");
         }
 
         //Note: it seems that there is no way to get project for already deleted project (unlike workitems/modules & collections)
@@ -118,7 +117,7 @@ public class PolarionService {
     public IWorkItem getWorkItem(@NotNull String projectId, @NotNull String workItemId, @Nullable String revision) {
         ITrackerProject trackerProject = getTrackerProject(projectId);
         if (StringUtils.isEmptyTrimmed(workItemId)) {
-            throw new BadRequestException("Parameter 'workItemId' should be provided");
+            throw new IllegalArgumentException("Parameter 'workItemId' should be provided");
         }
 
         return getResolvableObjectOrThrow(trackerProject.getWorkItem(workItemId), revision, String.format("WorkItem '%s' not found in project '%s'", workItemId, projectId));
@@ -133,10 +132,10 @@ public class PolarionService {
     public IModule getModule(@NotNull String projectId, @NotNull String spaceId, @NotNull String documentName, @Nullable String revision) {
         IProject project = getProject(projectId);
         if (StringUtils.isEmptyTrimmed(spaceId)) {
-            throw new BadRequestException("Parameter 'spaceId' should be provided");
+            throw new IllegalArgumentException("Parameter 'spaceId' should be provided");
         }
         if (StringUtils.isEmptyTrimmed(documentName)) {
-            throw new BadRequestException("Parameter 'documentName' should be provided");
+            throw new IllegalArgumentException("Parameter 'documentName' should be provided");
         }
 
         ILocation location = Location.getLocation(spaceId + "/" + documentName);
@@ -157,7 +156,7 @@ public class PolarionService {
     public IBaselineCollection getCollection(@NotNull String projectId, @NotNull String collectionId, @Nullable String revision) {
         IProject project = getProject(projectId);
         if (StringUtils.isEmptyTrimmed(collectionId)) {
-            throw new BadRequestException("Parameter 'collectionId' should be provided");
+            throw new IllegalArgumentException("Parameter 'collectionId' should be provided");
         }
 
         IBaselineCollection collection = ObjectUtils.requireNotNull(
@@ -173,7 +172,7 @@ public class PolarionService {
     public <T extends IPObject> T getResolvableObjectOrThrow(@NotNull IPObject object, @Nullable String revision, @NotNull String notFoundMessage) {
         return Optional.<T>of(getObjectRevision(object, revision))
                 .filter(w -> !w.isUnresolvable())
-                .orElseThrow(() -> new NotFoundException(notFoundMessage));
+                .orElseThrow(() -> new ObjectNotFoundException(notFoundMessage));
     }
 
     @SuppressWarnings("unchecked")
