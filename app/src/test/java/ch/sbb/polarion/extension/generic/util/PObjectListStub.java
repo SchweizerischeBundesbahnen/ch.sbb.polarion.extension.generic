@@ -1,6 +1,7 @@
 package ch.sbb.polarion.extension.generic.util;
 
 import com.polarion.platform.persistence.IDataService;
+import com.polarion.platform.persistence.model.IPObject;
 import com.polarion.platform.persistence.model.IPObjectList;
 import com.polarion.subterra.base.SubterraURI;
 import org.jetbrains.annotations.NotNull;
@@ -14,13 +15,12 @@ import static org.mockito.Mockito.mock;
 /**
  * Used in unit tests for stubbing instances of {@link IPObjectList}
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
-public class PObjectListStub extends ArrayList implements IPObjectList {
+public class PObjectListStub<T extends IPObject> extends ArrayList<T> implements IPObjectList<T> {
 
     public PObjectListStub() {
     }
 
-    public PObjectListStub(@NotNull Collection c) {
+    public PObjectListStub(@NotNull Collection<? extends T> c) {
         super(c);
     }
 
@@ -31,17 +31,14 @@ public class PObjectListStub extends ArrayList implements IPObjectList {
 
     @Override
     public void resolveAll() {
-
     }
 
     @Override
     public void resolveFirst(int i) {
-
     }
 
     @Override
     public void resolve(int i, int i1) {
-
     }
 
     @Override
