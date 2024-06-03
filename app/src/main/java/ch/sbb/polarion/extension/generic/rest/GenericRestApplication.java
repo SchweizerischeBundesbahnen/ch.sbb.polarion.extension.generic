@@ -10,6 +10,7 @@ import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsApiControl
 import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsApiScopeAgnosticController;
 import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsInternalController;
 import ch.sbb.polarion.extension.generic.rest.exception.ForbiddenExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.ObjectNotFoundExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.filter.CorsFilter;
 import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -44,10 +45,11 @@ public class GenericRestApplication extends Application {
     protected Set<Class<?>> getExceptionMappers() {
         return new HashSet<>(Arrays.asList(
                 BadRequestExceptionMapper.class,
+                ForbiddenExceptionMapper.class,
                 IllegalArgumentExceptionMapper.class,
                 InternalServerErrorExceptionMapper.class,
-                ForbiddenExceptionMapper.class,
                 NotFoundExceptionMapper.class,
+                ObjectNotFoundExceptionMapper.class,
                 UncaughtExceptionMapper.class
         ));
     }
