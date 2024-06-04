@@ -1,10 +1,13 @@
 package ch.sbb.polarion.extension.generic.settings;
 
+import lombok.Getter;
+
 import java.util.Objects;
 
 /**
  * Settings can be queried/processed using either NAME or ID (fileName).
  */
+@Getter
 public final class SettingId {
 
     /**
@@ -27,14 +30,6 @@ public final class SettingId {
         return new SettingId(id, false);
     }
 
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    @SuppressWarnings("unused")
-    public boolean isUseName() {
-        return useName;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -43,7 +38,7 @@ public final class SettingId {
             return false;
         }
         SettingId settingId = (SettingId) o;
-        return useName == settingId.useName && Objects.equals(identifier, settingId.identifier);
+        return useName == settingId.isUseName() && Objects.equals(identifier, settingId.getIdentifier());
     }
 
     @Override

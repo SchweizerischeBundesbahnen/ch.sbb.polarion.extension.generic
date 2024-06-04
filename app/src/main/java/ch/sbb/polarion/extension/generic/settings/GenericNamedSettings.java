@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic.settings;
 
+import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import ch.sbb.polarion.extension.generic.util.ContextUtils;
 import ch.sbb.polarion.extension.generic.util.ScopeUtils;
 import com.polarion.alm.shared.util.Pair;
@@ -8,6 +9,7 @@ import com.polarion.core.util.logging.Logger;
 import com.polarion.subterra.base.location.ILocation;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -56,12 +58,13 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
     }
 
     @SuppressWarnings("unused")
-    public T load(String project, SettingId id) {
+    public T load(@Nullable String project, @NotNull SettingId id) {
         try {
             return read(ScopeUtils.getScopeFromProject(project), id, null);
+        } catch (ObjectNotFoundException e) {
+            throw e;
         } catch (Exception e) {
-            logger.error("Cannot load saved model for project '" + project + "': " + e.getMessage(), e);
-            return fromString("");
+            throw new IllegalStateException("Cannot load saved model for project '" + project + "': " + e.getMessage(), e);
         }
     }
 
@@ -78,7 +81,7 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
         if (names.isEmpty()) {
             // If there are no settings persisted - try to create default one
             try {
-                createDefaultSettings();
+                saveDefaultSettingsInGlobalRepo();
             } catch (Exception e) { // If it's not possible to create the settings in read only transaction, so just ignore it
                 logger.warn("Cannot create the settings in read only transaction, creation will be skipped: " + e.getMessage(), e);
             }
@@ -90,31 +93,46 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
     }
 
     @Override
-    public T read(@NotNull String scope, @NotNull SettingId id, String revisionName) {
-        String settingPath = String.format(LOCATION_MASK, settingsFolder, getFileName(scope, false, id), SETTINGS_FILE_EXTENSION);
-        final ILocation location = ScopeUtils.getContextLocation(scope).append(settingPath);
-        String value = settingsService.read(location, revisionName);
-        if (value == null) {
-            if (!StringUtils.isEmpty(revisionName)) {
-                return null;
-            }
-            ILocation defaultLocation = ScopeUtils.getDefaultLocation().append(settingPath);
-            if (!settingsService.exists(defaultLocation)) {
-                try {
-                    return createDefaultSettings();
-                } catch (Exception e) {
-                    logger.warn("Cannot create the settings in read only transaction, default values will be used: " + e.getMessage(), e);
-                    return defaultValues();
-                }
-            }
-            value = settingsService.read(defaultLocation, null);
+    public @NotNull T read(@NotNull String scope, @NotNull SettingId id, @Nullable String revisionName) {
+        @Nullable String fileName = getFileName(scope, false, id);
+        @Nullable String value = readFileContent(scope, fileName, revisionName);
+
+        if (value == null && StringUtils.isEmpty(revisionName)) {
+            value = readFileContent(DEFAULT_SCOPE, fileName, null);
         }
-        return fromString(value);
+
+        return value == null ? handleMissingValue(id) : fromString(value);
+    }
+
+    private @Nullable String readFileContent(@NotNull String scope, @Nullable String fileName, @Nullable String revisionName) {
+        if (fileName == null) {
+            return null;
+        }
+        String settingPath = String.format(LOCATION_MASK, settingsFolder, fileName, SETTINGS_FILE_EXTENSION);
+        ILocation location = ScopeUtils.getContextLocation(scope).append(settingPath);
+        return settingsService.read(location, revisionName);
+    }
+
+    private @NotNull T handleMissingValue(@NotNull SettingId id) {
+        if (DEFAULT_NAME.equals(id.getIdentifier())) {
+            try {
+                return saveDefaultSettingsInGlobalRepo();
+            } catch (Exception e) {
+                logger.warn("Cannot create the settings in read-only transaction, default values will be used: " + e.getMessage(), e);
+                return defaultValues();
+            }
+        }
+        throw new ObjectNotFoundException("Setting '%s' not found".formatted(id.getIdentifier()));
     }
 
     @Override
-    public T save(@NotNull String scope, @NotNull SettingId id, @NotNull T what) {
-        String settingPath = String.format(LOCATION_MASK, settingsFolder, getFileName(scope, true, id), SETTINGS_FILE_EXTENSION);
+    public @NotNull T save(@NotNull String scope, @NotNull SettingId id, @NotNull T what) {
+        @Nullable String fileName = getFileName(scope, true, id);
+        if (StringUtils.isEmpty(fileName)) {
+            throw new IllegalArgumentException("Provided filename is empty");
+        }
+
+        String settingPath = String.format(LOCATION_MASK, settingsFolder, fileName, SETTINGS_FILE_EXTENSION);
         final ILocation location = ScopeUtils.getContextLocation(scope).append(settingPath);
         what.setBundleTimestamp(currentBundleTimestamp());
         beforeSave(what);
@@ -136,13 +154,21 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
 
     @Override
     public void delete(@NotNull String scope, @NotNull SettingId id) {
-        String settingPath = String.format(LOCATION_MASK, settingsFolder, getFileName(scope, true, id), SETTINGS_FILE_EXTENSION);
+        @Nullable String fileName = getFileName(scope, true, id);
+        if (StringUtils.isEmpty(fileName)) {
+            throw new ObjectNotFoundException("Setting '%s' not found and that's why can not be deleted".formatted(id.getIdentifier()));
+        }
+        String settingPath = String.format(LOCATION_MASK, settingsFolder, fileName, SETTINGS_FILE_EXTENSION);
         final ILocation location = ScopeUtils.getContextLocation(scope).append(settingPath);
         settingsService.delete(location);
     }
 
     public @NotNull List<Revision> listRevisions(String scope, SettingId id) {
-        String settingPath = String.format(LOCATION_MASK, settingsFolder, getFileName(scope, false, id), SETTINGS_FILE_EXTENSION);
+        @Nullable String fileName = getFileName(scope, false, id);
+        if (StringUtils.isEmpty(fileName)) {
+            throw new ObjectNotFoundException("Setting '%s' not found".formatted(id.getIdentifier()));
+        }
+        String settingPath = String.format(LOCATION_MASK, settingsFolder, fileName, SETTINGS_FILE_EXTENSION);
         final ILocation location = ScopeUtils.getContextLocation(scope).append(settingPath);
         final String projectId = ScopeUtils.getProjectFromScope(scope);
         return settingsService.listRevisions(location, projectId);
@@ -164,14 +190,16 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
         return Objects.hash(getFeatureName());
     }
 
-    public String getIdByName(String scope, boolean limitToScope, String settingName) {
-        return readNames(scope).stream().filter(
-                n -> Objects.equals(n.getName(), settingName) && (!limitToScope || Objects.equals(n.getScope(), scope))
-        ).map(SettingName::getId).findFirst().orElse(null);
+    public @Nullable String getIdByName(String scope, boolean limitToScope, String settingName) {
+        return readNames(scope).stream()
+                .filter(n -> Objects.equals(n.getName(), settingName) && (!limitToScope || Objects.equals(n.getScope(), scope)))
+                .map(SettingName::getId)
+                .findFirst()
+                .orElse(null);
     }
 
-    private String getFileName(String scope, boolean limitToScope, SettingId settingId) {
-        return settingId.useName ? getIdByName(scope, limitToScope, settingId.identifier) : settingId.identifier;
+    private @Nullable String getFileName(String scope, boolean limitToScope, SettingId settingId) {
+        return settingId.isUseName() ? getIdByName(scope, limitToScope, settingId.getIdentifier()) : settingId.getIdentifier();
     }
 
     private Set<SettingName> getSettingNamesFromLocation(String scope) {
@@ -183,13 +211,7 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
         Pair<String, Set<SettingName>> cached = SETTING_NAMES_CACHE.get(targetLocation);
         if (cached == null || !Objects.equals(lastRevision, cached.left())) {
             Set<SettingName> settingNames = settingsService.getPersistedSettingFileNames(targetLocation).stream()
-                    .map(fileName -> SettingName.builder()
-                            .id(fileName)
-                            //Legacy items (which were created before 'id' introduction) don't have 'name' model field - in this case we reuse their file names.
-                            //Proper 'name' field value will appear only after explicit settings save by user.
-                            .name(Optional.ofNullable(read(scope, SettingId.fromId(fileName), null).getName()).orElse(fileName))
-                            .scope(scope)
-                            .build())
+                    .map(fileNameWithoutExtension -> buildSettingName(scope, fileNameWithoutExtension))
                     .collect(Collectors.toSet());
             cached = Pair.of(lastRevision, settingNames);
             SETTING_NAMES_CACHE.put(targetLocation, cached);
@@ -197,7 +219,20 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
         return cached.right();
     }
 
-    private T createDefaultSettings() {
+    private SettingName buildSettingName(String scope, String id) {
+        //Legacy items (which were created before 'id' introduction) don't have 'name' model field - in this case we reuse their file names.
+        //Proper 'name' field value will appear only after explicit settings save by user.
+        T settingsModel = read(scope, SettingId.fromId(id), null);
+        String name = Optional.ofNullable(settingsModel.getName()).orElse(id);
+
+        return SettingName.builder()
+                .id(id)
+                .name(name)
+                .scope(scope)
+                .build();
+    }
+
+    private @NotNull T saveDefaultSettingsInGlobalRepo() {
         T defaultModel = defaultValues();
         defaultModel.setName(DEFAULT_NAME);
         return save(DEFAULT_SCOPE, SettingId.fromId(DEFAULT_NAME), defaultModel);

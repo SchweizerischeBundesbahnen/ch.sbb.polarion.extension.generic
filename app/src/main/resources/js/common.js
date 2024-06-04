@@ -180,7 +180,7 @@ const SbbCommon = {
                 }
                 if (revisions.length === 0) {
                     let cell = tableBody.insertRow().insertCell();
-                    cell.setAttribute("colspan", "5")
+                    cell.setAttribute("colspan", "6")
                     cell.className = 'empty-message';
                     cell.appendChild(document.createTextNode("No saved revisions yet."));
                 }
