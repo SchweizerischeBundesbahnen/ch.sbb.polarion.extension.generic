@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.10.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v4.9.2...v4.10.0) (2024-06-05)
+
+
+### Features
+
+* do not return default settings if requested name does not exist  ([#25](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/25)) ([defe5f0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/defe5f098a95b5c319454d0a5717560f5cbfc0ea))
+* do not return default settings if requested name is not exist ([#23](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/23)) ([18905bb](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/18905bbd6b40e46c7e797797c39de2a34763124b))
+
+
+### Documentation
+
+* changelog history moved from README.md to CHANGELOG.md ([#27](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/27)) ([a635528](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/a635528852f77c4eb91887fb12816b60c8186004))
+
 ## [4.9.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v4.9.1...v4.9.2) (2024-06-03)
 
 
