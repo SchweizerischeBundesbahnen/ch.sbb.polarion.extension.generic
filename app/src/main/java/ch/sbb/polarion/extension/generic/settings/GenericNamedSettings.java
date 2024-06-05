@@ -81,7 +81,7 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
         if (names.isEmpty()) {
             // If there are no settings persisted - try to create default one
             try {
-                saveDefaultSettingsInGlobalRepo();
+                saveDefaultSettingsInGlobalScope();
             } catch (Exception e) { // If it's not possible to create the settings in read only transaction, so just ignore it
                 logger.warn("Cannot create the settings in read only transaction, creation will be skipped: " + e.getMessage(), e);
             }
@@ -116,7 +116,7 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
     private @NotNull T handleMissingValue(@NotNull SettingId id) {
         if (DEFAULT_NAME.equals(id.getIdentifier())) {
             try {
-                return saveDefaultSettingsInGlobalRepo();
+                return saveDefaultSettingsInGlobalScope();
             } catch (Exception e) {
                 logger.warn("Cannot create the settings in read-only transaction, default values will be used: " + e.getMessage(), e);
                 return defaultValues();
@@ -232,7 +232,7 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
                 .build();
     }
 
-    private @NotNull T saveDefaultSettingsInGlobalRepo() {
+    private @NotNull T saveDefaultSettingsInGlobalScope() {
         T defaultModel = defaultValues();
         defaultModel.setName(DEFAULT_NAME);
         return save(DEFAULT_SCOPE, SettingId.fromId(DEFAULT_NAME), defaultModel);
