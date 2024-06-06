@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic;
 
+import com.polarion.alm.shared.util.Pair;
 import com.polarion.core.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
@@ -16,10 +17,21 @@ import java.io.InputStream;
 import java.io.Serial;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public abstract class GenericUiServlet extends HttpServlet {
+
+    private static final List<Pair<String, String>> ALLOWED_FILE_TYPES = Arrays.asList(
+            Pair.of(".js", "text/javascript"),
+            Pair.of(".html", "text/html"),
+            Pair.of(".css", "text/css"),
+            Pair.of(".png", "image/png"),
+            Pair.of(".svg", "image/svg+xml"),
+            Pair.of(".gif", "image/gif")
+    );
 
     private static final Logger logger = Logger.getLogger(GenericUiServlet.class);
 
@@ -34,34 +46,37 @@ public abstract class GenericUiServlet extends HttpServlet {
 
     @VisibleForTesting
     static void setContentType(@NotNull String uri, @NotNull HttpServletResponse response) {
-        if (uri.endsWith(".js")) {
-            response.setContentType("text/javascript");
-        } else if (uri.endsWith(".html")) {
-            response.setContentType("text/html");
-        } else if (uri.endsWith(".png")) {
-            response.setContentType("image/png");
-        } else if (uri.endsWith(".css")) {
-            response.setContentType("text/css");
-        }
+        response.setContentType(ALLOWED_FILE_TYPES.stream().filter(f -> uri.endsWith(f.left())).map(Pair::right).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unsupported file type")));
     }
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        String uri = request.getRequestURI();
-        String relativeUri = uri.substring("/polarion/".length());
+        String resourceUri = getInternalResourcePath(request.getRequestURI());
         try {
-            if (relativeUri.startsWith(webAppName + "/ui/generic/")) {
-                serveGenericResource(response, relativeUri.substring((webAppName + "/ui/generic/").length()));
-            } else if (relativeUri.startsWith(webAppName + "/ui/")) {
-                serveResource(response, relativeUri.substring((webAppName + "/ui").length()));
+            if (resourceUri.startsWith("generic/")) {
+                serveGenericResource(response, resourceUri.substring("generic/".length()));
+            } else {
+                serveResource(response, "/" + resourceUri);
             }
         } catch (IOException e) {
-            logger.error("Cannot copy resource '" + relativeUri + "': " + e.getMessage(), e);
+            logger.error("Cannot copy resource '" + resourceUri + "': " + e.getMessage(), e);
             throw e;
         } catch (Exception e) {
-            logger.error("Unexpected error by getting resource '" + relativeUri + "': " + e.getMessage(), e);
+            logger.error("Unexpected error by getting resource '" + resourceUri + "': " + e.getMessage(), e);
             throw new ServletException(e.getMessage(), e);
         }
+    }
+
+    private String getInternalResourcePath(String fullUri) {
+        String acceptablePath = "/polarion/" + webAppName + "/ui/";
+        if (!fullUri.startsWith(acceptablePath)) {
+            throw new IllegalArgumentException("Unsupported resource path");
+        }
+        if (ALLOWED_FILE_TYPES.stream().noneMatch(t -> fullUri.endsWith(t.left()))) {
+            throw new IllegalArgumentException("Unsupported file type");
+        }
+        return fullUri.substring(acceptablePath.length());
     }
 
     @VisibleForTesting

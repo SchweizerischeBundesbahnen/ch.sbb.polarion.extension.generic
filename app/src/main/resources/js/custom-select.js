@@ -128,7 +128,7 @@ SbbCustomSelect.prototype.selectMultipleValues = function(values) {
 
 SbbCustomSelect.prototype.handleChange = function(event) {
     if (this.mutiselect) {
-        this.selectElement.innerHTML = "<option>" + this.getSelectedText().join(", ") + "</option>";
+        this.setSelectedOptionValue(this.getSelectedText().join(", "));
         if (this.changeListener) {
             this.changeListener(this.checkboxContainer.querySelectorAll('input[type="checkbox"]:checked'));
         }
@@ -146,7 +146,7 @@ SbbCustomSelect.prototype.handleChange = function(event) {
                     }
                 });
 
-                this.selectElement.innerHTML = "<option>" + selectedCheckbox.parentElement.textContent + "</option>";
+                this.setSelectedOptionValue(selectedCheckbox.parentElement.textContent);
                 this.checkboxContainer.querySelectorAll('label').forEach(function (label) {
                     label.classList.remove("selected");
                     if (label.textContent === selectedCheckbox.parentElement.textContent) {
@@ -161,4 +161,14 @@ SbbCustomSelect.prototype.handleChange = function(event) {
         }
         this.checkboxContainer.style.display = "none";
     }
+
+    // Using code like:
+    // this.selectElement.innerHTML = "<option>" + document.createTextNode(selectedCheckbox.parentElement.textContent).textContent + "</option>"
+    // results in XSS vulnerability. The code below solves this issue.
+    SbbCustomSelect.prototype.setSelectedOptionValue = function(optionText) {
+        const optionElement = document.createElement("option");
+        optionElement.textContent = optionText;
+        this.selectElement.innerHTML = '';
+        this.selectElement.appendChild(optionElement);
+    };
 }

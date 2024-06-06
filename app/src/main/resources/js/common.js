@@ -16,9 +16,9 @@ const SbbCommon = {
                 Prism.languages.properties = {
                     comment: /^[ \t]*[#!].*$/m,
                     //ORIGINAL value: {pattern: /(^[ \t]*(?:\\(?:\r\n|[\s\S])|[^\\\s:=])+(?: *[=:] *(?! )| ))(?:\\(?:\r\n|[\s\S])|[^\\\r\n])+/m, lookbehind: !0, alias: "attr-value"},
-                    value: {pattern: /(^[ \t]*(?:\\(?:\r\n|[\s\S])|[^\\=])+(?: *= *(?! )| ))(?:\\(?:\r\n|[\s\S])|[^\\\r\n])+/m, lookbehind: !0, alias: "attr-value"},
+                    value: {pattern: /(^[ \t]*(?:\\[\s\S]|[^\\=])+(?: *= *(?! )| ))(?:\\(?:\r\n|[\s\S])|[^\\\r\n])+/m, lookbehind: !0, alias: "attr-value"},
                     //ORIGINAL key: {pattern: /^[ \t]*(?:\\(?:\r\n|[\s\S])|[^\\\s:=])+(?= *[=:]| )/m, alias: "attr-name"},
-                    key: {pattern: /^[ \t]*(?:\\(?:\r\n|[\s\S])|[^\\=])+(?= *[=:]| )/m, alias: "attr-name"},
+                    key: {pattern: /^[ \t]*(?:\\[\s\S]|[^\\=])+(?= *[=:]| )/m, alias: "attr-name"},
                     punctuation: /[=:]/
                 };
             }
