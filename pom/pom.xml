@@ -138,17 +138,6 @@
                 <commons-io.artifactId>commons-io-2.15.1</commons-io.artifactId>
             </properties>
         </profile>
-
-        <profile>
-            <id>delivery-sbb</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-
-        <profile>
-            <id>delivery-external</id>
-        </profile>
     </profiles>
 
     <dependencies>
