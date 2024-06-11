@@ -30,7 +30,6 @@ jobs:
                   "updatePolicy": "never"
                 }
               }
-              }
             ]
           servers: >
             [
@@ -43,11 +42,6 @@ jobs:
                 "id": "github",
                 "username": "${env.GITHUB_ACTOR}",
                 "password": "${env.GITHUB_TOKEN}"
-              },
-              {
-                "id": "repsy",
-                "username": "${{ secrets.CH_SBB_POLARION_REPSY_USERNAME }}",
-                "password": "${{ secrets.CH_SBB_POLARION_REPSY_PASSWORD }}"
               }
             ]
           profiles: >
