@@ -2,7 +2,7 @@
 name: maven-release
 on:
   push:
-    branches: [main, feature/**, renovate/**]
+    branches: ['**/**']
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,15 +29,6 @@ jobs:
                   "enabled": "true",
                   "updatePolicy": "never"
                 }
-              },
-              {
-                "id": "repsy",
-                "name": "repsy.io",
-                "url": "https://repo.repsy.io/mvn/sbb/polarion",
-                "releases": {
-                  "enabled": "true",
-                  "updatePolicy": "never"
-                }
               }
             ]
           servers: >
@@ -51,11 +42,6 @@ jobs:
                 "id": "github",
                 "username": "${env.GITHUB_ACTOR}",
                 "password": "${env.GITHUB_TOKEN}"
-              },
-              {
-                "id": "repsy",
-                "username": "${{ secrets.CH_SBB_POLARION_REPSY_USERNAME }}",
-                "password": "${{ secrets.CH_SBB_POLARION_REPSY_PASSWORD }}"
               }
             ]
           profiles: >
@@ -73,13 +59,6 @@ jobs:
                 {
                   "altDeploymentRepository": "github::default::https://maven.pkg.github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic"
                 }
-              },
-              {
-                "id": "repsyDeploy",
-                "properties":
-                {
-                  "altDeploymentRepository": "repsy::default::https://repo.repsy.io/mvn/sbb/polarion"
-                }
               }
             ]
       - name: Print settings.xml
@@ -88,16 +67,12 @@ jobs:
         run: mvn --batch-mode clean package
       - name: Extract artefact version
         id: artefact_version
-        run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
-          >> $GITHUB_OUTPUT
+        run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
       - name: Publish to S3 bucket
-        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') }}
+        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
         run: mvn --batch-mode deploy -Ps3Deploy
-      - name: Publish to repsy.io
-        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') }}
-        run: mvn --batch-mode deploy -PrepsyDeploy
       - name: Publish to GitHub Packages
-        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') }}
+        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
         run: mvn --batch-mode deploy -PgithubDeploy
         env:
           GITHUB_TOKEN: ${{ github.token }}
