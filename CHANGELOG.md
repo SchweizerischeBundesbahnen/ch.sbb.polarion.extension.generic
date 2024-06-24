@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.11.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v4.10.0...v4.11.0) (2024-06-24)
+
+
+### Features
+
+* maven profile for auto generation of about page based on readme.md added ([#40](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/40)) ([11c8baf](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/11c8baf4d9e23cff3ae6c4f73be2dc2bb24dd132))
+
+
+### Bug Fixes
+
+* security alerts fix ([#30](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/30)) ([f75403a](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/f75403af7435251324532ddd94afa0c5fda9b70b))
+
 ## [4.10.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v4.9.2...v4.10.0) (2024-06-05)
 
 
