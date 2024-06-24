@@ -21,6 +21,7 @@
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
         <maven-dependency-plugin.version>3.6.1</maven-dependency-plugin.version>
+        <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
 
         <!-- Test dependencies -->
         <junit.version>5.10.2</junit.version>
@@ -52,6 +53,9 @@
         <!--suppress UnresolvedMavenProperty -->
         <maven-jar-plugin.Bundle-Version>${project.artifact.selectedVersion.majorVersion}.${project.artifact.selectedVersion.minorVersion}.${project.artifact.selectedVersion.incrementalVersion}</maven-jar-plugin.Bundle-Version>
         <maven-jar-plugin.Extension-Context/>
+
+        <convert.readme.to.about.input.file>${basedir}/README.md</convert.readme.to.about.input.file>
+        <convert.readme.to.about.output.file>${basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-admin/html/about.html</convert.readme.to.about.output.file>
     </properties>
 
     <profiles>
@@ -108,7 +112,9 @@
         <profile>
             <id>polarion2310</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>polarion2310active</name>
+                </property>
             </activation>
             <properties>
                 <maven.compiler.source>17</maven.compiler.source>
@@ -126,6 +132,9 @@
             <id>polarion2404</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!polarion2310active</name>
+                </property>
             </activation>
             <properties>
                 <maven.compiler.source>17</maven.compiler.source>
@@ -137,6 +146,44 @@
 
                 <commons-io.artifactId>commons-io-2.15.1</commons-io.artifactId>
             </properties>
+        </profile>
+
+        <profile>
+            <id>convert-readme.md-to-about.html</id>
+            <activation>
+                <file>
+                    <exists>.scripts/convert-readme.sh</exists>
+                </file>
+                <os>
+                    <family>unix</family>
+                </os>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${exec-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>convert-markdown-to-html</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${basedir}/.scripts/convert-readme.sh</executable>
+                                    <arguments>
+                                        <argument>${convert.readme.to.about.input.file}</argument>
+                                        <argument>${convert.readme.to.about.output.file}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
