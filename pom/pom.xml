@@ -42,6 +42,7 @@
         <jetbrains.api.version>24.0.1</jetbrains.api.version>
         <google.guice.version>7.0.0</google.guice.version>
         <gwt-servlet.version>2.9.0</gwt-servlet.version>
+        <jsp-api.version>2.2</jsp-api.version>
 
         <!-- Manifest entries -->
         <maven-jar-plugin.Manifest-Version>1.0</maven-jar-plugin.Manifest-Version>
@@ -131,7 +132,6 @@
         <profile>
             <id>polarion2404</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>!polarion2310active</name>
                 </property>
@@ -410,6 +410,12 @@
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>${google.guice.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>jsp-api</artifactId>
+            <version>${jsp-api.version}</version>
             <scope>provided</scope>
         </dependency>
 
