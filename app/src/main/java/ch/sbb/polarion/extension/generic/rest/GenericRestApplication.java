@@ -43,38 +43,63 @@ public class GenericRestApplication extends Application {
 
     @NotNull
     protected Set<Class<?>> getExceptionMappers() {
-        return new HashSet<>(Arrays.asList(
-                BadRequestExceptionMapper.class,
-                ForbiddenExceptionMapper.class,
-                IllegalArgumentExceptionMapper.class,
-                InternalServerErrorExceptionMapper.class,
-                NotFoundExceptionMapper.class,
-                ObjectNotFoundExceptionMapper.class,
-                UncaughtExceptionMapper.class
-        ));
+        return new HashSet<>();
     }
 
     @NotNull
     protected Set<Class<?>> getFilters() {
-        return new HashSet<>(Arrays.asList(
-                AuthenticationFilter.class,
-                CorsFilter.class,
-                LogoutFilter.class
-        ));
+        return new HashSet<>();
     }
 
     @NotNull
     protected Set<Class<?>> getControllerClasses() {
-        HashSet<Class<?>> controllerClasses = new HashSet<>(Arrays.asList(
-                ExtensionInfoApiController.class,
-                ExtensionInfoInternalController.class,
-                SwaggerController.class,
-                SwaggerDefinitionController.class
+        return new HashSet<>();
+    }
+
+    @Override
+    @NotNull
+    public Set<Object> getSingletons() {
+        Set<Object> singletons = new HashSet<>();
+        singletons.addAll(getExceptionMapperSingletons());
+        singletons.addAll(getFilterSingletons());
+        singletons.addAll(getControllerSingletons());
+        return singletons;
+    }
+
+    @NotNull
+    protected Set<Object> getExceptionMapperSingletons() {
+        return new HashSet<>(Arrays.asList(
+                new BadRequestExceptionMapper(),
+                new ForbiddenExceptionMapper(),
+                new IllegalArgumentExceptionMapper(),
+                new InternalServerErrorExceptionMapper(),
+                new NotFoundExceptionMapper(),
+                new ObjectNotFoundExceptionMapper(),
+                new UncaughtExceptionMapper()
+        ));
+    }
+
+    @NotNull
+    protected Set<Object> getFilterSingletons() {
+        return new HashSet<>(Arrays.asList(
+                new AuthenticationFilter(),
+                new CorsFilter(),
+                new LogoutFilter()
+        ));
+    }
+
+    @NotNull
+    protected Set<Object> getControllerSingletons() {
+        HashSet<Object> controllerSingletons = new HashSet<>(Arrays.asList(
+                new ExtensionInfoApiController(),
+                new ExtensionInfoInternalController(),
+                new SwaggerController(),
+                new SwaggerDefinitionController()
         ));
         if (!NamedSettingsRegistry.INSTANCE.getAll().isEmpty()) {
-            controllerClasses.add(NamedSettingsRegistry.INSTANCE.isScopeAgnostic() ? NamedSettingsApiScopeAgnosticController.class : NamedSettingsApiController.class);
-            controllerClasses.add(NamedSettingsInternalController.class);
+            controllerSingletons.add(NamedSettingsRegistry.INSTANCE.isScopeAgnostic() ? new NamedSettingsApiScopeAgnosticController() : new NamedSettingsApiController());
+            controllerSingletons.add(new NamedSettingsInternalController());
         }
-        return controllerClasses;
+        return controllerSingletons;
     }
 }
