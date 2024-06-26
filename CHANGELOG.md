@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v4.11.0...v5.0.0) (2024-06-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Configured jax-rs controllers, filters and exception-mappers a… ([#44](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/44))
+
+### Features
+
+* Configured jax-rs controllers, filters and exception-mappers a… ([#44](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/44)) ([382c97d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/382c97d121c06eed7961c51fbf06ffc3a885406a))
+
 ## [4.11.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v4.10.0...v4.11.0) (2024-06-24)
 
 
