@@ -23,7 +23,7 @@
         <maven-dependency-plugin.version>3.7.1</maven-dependency-plugin.version>
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
         <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
-        <central-publishing-maven-plugin.version>0.5.0</central-publishing-maven-plugin.version>
+        <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
 
         <!-- Test dependencies -->
         <junit.version>5.10.2</junit.version>
@@ -458,12 +458,14 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.sonatype.central</groupId>
-                    <artifactId>central-publishing-maven-plugin</artifactId>
-                    <version>${central-publishing-maven-plugin.version}</version>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>${version.nexus-staging-maven-plugin}</version>
                     <extensions>true</extensions>
                     <configuration>
-                        <publishingServerId>ossrh</publishingServerId>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://oss.sonatype.org</nexusUrl>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
                     </configuration>
                 </plugin>
 
