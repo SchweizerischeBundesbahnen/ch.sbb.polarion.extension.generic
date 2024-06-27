@@ -22,6 +22,7 @@
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
         <maven-dependency-plugin.version>3.7.1</maven-dependency-plugin.version>
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
+        <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
 
         <!-- Test dependencies -->
         <junit.version>5.10.2</junit.version>
@@ -431,6 +432,21 @@
     <build>
         <pluginManagement>
             <plugins>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven-gpg-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
