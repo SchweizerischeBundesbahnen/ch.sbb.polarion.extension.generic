@@ -17,6 +17,8 @@ jobs:
           distribution: adopt
           java-version: 17
           cache: maven
+          gpg-private-key: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}
       - uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d  # v22
         with:
           repositories: >
@@ -85,6 +87,3 @@ jobs:
       - name: Publish to Maven Central
         # if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') }}
         run: mvn -B sign-artifacts deploy -PmavenCentralDeploy
-        env:
-          gpg-private-key: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}
