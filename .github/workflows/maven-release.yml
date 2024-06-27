@@ -64,7 +64,7 @@ jobs:
                 "id": "mavenCentralDeploy",
                 "properties":
                 {
-                  "altDeploymentRepository": "ossrh::default::https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                  "altDeploymentRepository": "ossrh::default::https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 }
               }
             ]
@@ -84,5 +84,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Publish to Maven Central
-        # if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') }}
-        run: mvn -B deploy -PmavenCentralDeploy
+        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') }}
+        run: mvn --batch-mode deploy -PmavenCentralDeploy
