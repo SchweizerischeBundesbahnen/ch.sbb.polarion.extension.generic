@@ -64,8 +64,7 @@ jobs:
                 "id": "mavenCentralDeploy",
                 "properties":
                 {
-                  "altReleaseDeploymentRepository": "ossrh::default::https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/",
-                  "altSnapshotDeploymentRepository": "ossrh::default::https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                  "altDeploymentRepository": "ossrh::default::https://s01.oss.sonatype.org/content/repositories/snapshots/"
                 }
               }
             ]
