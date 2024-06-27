@@ -7,6 +7,15 @@
     <version>4.9.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <name>Generic extension of Polarion ALM</name>
+    <description>This is a Polarion extension which provides common part to other extensions reducing code duplication</description>
+    <url>https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic</url>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues</url>
+    </issueManagement>
+
     <modules>
         <module>pom</module>
         <module>app</module>
