@@ -86,4 +86,4 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Publish to Maven Central
         # if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') }}
-        run: mvn -B sign-artifacts deploy -PmavenCentralDeploy
+        run: mvn -B deploy -PmavenCentralDeploy
