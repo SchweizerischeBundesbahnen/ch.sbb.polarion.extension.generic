@@ -69,7 +69,7 @@ jobs:
                 },
                 {
                   "altSnapshotDeploymentRepository": "ossrh::default::https://s01.oss.sonatype.org/content/repositories/snapshots/"
-                },
+                }
               }
             ]
       - name: Print settings.xml
