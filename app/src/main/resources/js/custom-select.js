@@ -126,6 +126,16 @@ SbbCustomSelect.prototype.selectMultipleValues = function(values) {
     this.handleChange();
 };
 
+// Using code like:
+// this.selectElement.innerHTML = "<option>" + document.createTextNode(selectedCheckbox.parentElement.textContent).textContent + "</option>"
+// results in XSS vulnerability. The code below solves this issue.
+SbbCustomSelect.prototype.setSelectedOptionValue = function(optionText) {
+    const optionElement = document.createElement("option");
+    optionElement.textContent = optionText;
+    this.selectElement.innerHTML = '';
+    this.selectElement.appendChild(optionElement);
+};
+
 SbbCustomSelect.prototype.handleChange = function(event) {
     if (this.mutiselect) {
         this.setSelectedOptionValue(this.getSelectedText().join(", "));
@@ -161,14 +171,4 @@ SbbCustomSelect.prototype.handleChange = function(event) {
         }
         this.checkboxContainer.style.display = "none";
     }
-
-    // Using code like:
-    // this.selectElement.innerHTML = "<option>" + document.createTextNode(selectedCheckbox.parentElement.textContent).textContent + "</option>"
-    // results in XSS vulnerability. The code below solves this issue.
-    SbbCustomSelect.prototype.setSelectedOptionValue = function(optionText) {
-        const optionElement = document.createElement("option");
-        optionElement.textContent = optionText;
-        this.selectElement.innerHTML = '';
-        this.selectElement.appendChild(optionElement);
-    };
 }
