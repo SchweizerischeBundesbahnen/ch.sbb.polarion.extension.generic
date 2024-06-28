@@ -42,33 +42,6 @@ jobs:
                 "id": "s3",
                 "username": "${{ secrets.S3_SBB_POLARION_MAVEN_REPO_RW_ACCESS_KEY }}",
                 "password": "${{ secrets.S3_SBB_POLARION_MAVEN_REPO_RW_SECRET_ACCESS_KEY }}"
-              },
-              {
-                "id": "github",
-                "username": "${env.GITHUB_ACTOR}",
-                "password": "${env.GITHUB_TOKEN}"
-              },
-              {
-                "id": "ossrh",
-                "username": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME }}",
-                "password": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN }}"
-              }
-            ]
-          profiles: >
-            [
-              {
-                "id": "githubDeploy",
-                "properties":
-                {
-                  "altDeploymentRepository": "github::default::https://maven.pkg.github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic"
-                }
-              },
-              {
-                "id": "mavenCentralDeploy",
-                "properties":
-                {
-                  "altDeploymentRepository": "ossrh::default::https://oss.sonatype.org/content/repositories/snapshots/"
-                }
               }
             ]
       - name: Print settings.xml
@@ -78,17 +51,9 @@ jobs:
       - name: Extract artefact version
         id: artefact_version
         run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
-      - name: Publish to S3 bucket
-        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
-        run: mvn --batch-mode deploy -Ps3Deploy
-      - name: Publish to GitHub Packages
-        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
-        run: mvn --batch-mode deploy -PgithubDeploy
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
       - name: Publish to Maven Central
         # if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
-        run: mvn --batch-mode deploy -PmavenCentralDeploy
+        run: mvn --batch-mode deploy
         env:
           SIGN_KEY_PASS: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME }}

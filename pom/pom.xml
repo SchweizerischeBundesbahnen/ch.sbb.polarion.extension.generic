@@ -23,7 +23,6 @@
         <maven-dependency-plugin.version>3.7.1</maven-dependency-plugin.version>
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
         <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
-        <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
 
         <!-- Test dependencies -->
         <junit.version>5.10.2</junit.version>
@@ -62,6 +61,28 @@
     </properties>
 
     <profiles>
+        <profile>
+            <id>sign-artifacts</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven-gpg-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>install-to-local-polarion</id>
             <build>
@@ -433,42 +454,6 @@
     <build>
         <pluginManagement>
             <plugins>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>${maven-gpg-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>sign-artifacts</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>sign</goal>
-                            </goals>
-                            <configuration>
-                                <!-- This is required to make sure the plugin does not stop asking for -->
-                                <!-- user input on the passphrase -->
-                                <gpgArguments>
-                                    <arg>--pinentry-mode</arg>
-                                    <arg>loopback</arg>
-                                </gpgArguments>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>${version.nexus-staging-maven-plugin}</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <serverId>ossrh</serverId>
-                        <nexusUrl>https://oss.sonatype.org</nexusUrl>
-                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                    </configuration>
-                </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
@@ -582,4 +567,14 @@
         </pluginManagement>
     </build>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 </project>
