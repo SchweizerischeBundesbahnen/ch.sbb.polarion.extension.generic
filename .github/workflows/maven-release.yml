@@ -57,6 +57,7 @@ jobs:
                 "id": "gpg.passphrase",
                 "passphrase": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}"
               },
+              {
                 "id": "gpg.keyEnvName",
                 "passphrase": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}"
               }
