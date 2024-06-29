@@ -47,13 +47,13 @@ jobs:
       - name: Print settings.xml
         run: cat /home/runner/.m2/settings.xml
       - name: Build with Maven
-        run: mvn --batch-mode clean package
+        run: mvn --batch-mode -U clean package
       - name: Extract artefact version
         id: artefact_version
         run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
       - name: Publish to Maven Central
         # if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
-        run: mvn --batch-mode deploy
+        run: mvn --batch-mode -P sign-artifacts deploy
         env:
           SIGN_KEY_PASS: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME }}
