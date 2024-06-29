@@ -29,7 +29,7 @@
 
     <scm>
         <connection>scm:git:git://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic.git</connection>
-        <developerConnection>scm:git:ssh://github.com:SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic.git</developerConnection>
+        <developerConnection>scm:git:ssh://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic.git</developerConnection>
         <url>http://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/tree/main</url>
     </scm>
 
