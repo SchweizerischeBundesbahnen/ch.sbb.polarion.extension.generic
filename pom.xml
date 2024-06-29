@@ -7,9 +7,39 @@
     <version>5.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <name>Generic extension of Polarion ALM</name>
+    <description>This is a Polarion extension which provides common part to other extensions reducing code duplication</description>
+    <url>https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic</url>
+
+    <licenses>
+        <license>
+            <name>The SBB License, Version 1.0</name>
+            <url>https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/blob/main/LICENSES/SBB.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>SBB Polarion Team</name>
+            <email>polarion-opensource@sbb.ch</email>
+            <organization>SBB AG</organization>
+            <organizationUrl>http://www.sbb.ch</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic.git</connection>
+        <developerConnection>scm:git:ssh://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic.git</developerConnection>
+        <url>http://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/tree/main</url>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues</url>
+    </issueManagement>
+
     <modules>
         <module>pom</module>
         <module>app</module>
     </modules>
-
 </project>

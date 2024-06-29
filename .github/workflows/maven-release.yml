@@ -10,14 +10,19 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4
       - name: Set up JDK and Maven
-        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # v4
+        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9  # v4
         with:
           distribution: adopt
           java-version: 17
           cache: maven
-      - uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d # v22
+          # server-id: ossrh
+          # server-username: OSSRH_USERNAME
+          # server-password: OSSRH_PASSWORD
+          gpg-private-key: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}
+          # gpg-passphrase: SIGN_KEY_PASS
+      - uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d  # v22
         with:
           repositories: >
             [
@@ -42,22 +47,31 @@ jobs:
                 "id": "github",
                 "username": "${env.GITHUB_ACTOR}",
                 "password": "${env.GITHUB_TOKEN}"
+              },
+              {
+                "id": "ossrh",
+                "username": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME }}",
+                "password": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN }}"
+              },
+              {
+                "id": "gpg.passphrase",
+                "passphrase": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}"
               }
             ]
           profiles: >
             [
               {
-                "id": "s3Deploy",
-                "properties":
-                {
-                  "altDeploymentRepository": "s3::default::s3://sbb-polarion-maven-repo/polarion.mvn"
-                }
-              },
-              {
                 "id": "githubDeploy",
                 "properties":
                 {
                   "altDeploymentRepository": "github::default::https://maven.pkg.github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic"
+                }
+              },
+              {
+                "id": "mavenCentralDeploy",
+                "properties":
+                {
+                  "altDeploymentRepository": "ossrh::default::https://s01.oss.sonatype.org/content/repositories/releases/"
                 }
               }
             ]
@@ -68,11 +82,15 @@ jobs:
       - name: Extract artefact version
         id: artefact_version
         run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
-      - name: Publish to S3 bucket
-        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
-        run: mvn --batch-mode deploy -Ps3Deploy
       - name: Publish to GitHub Packages
         if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
         run: mvn --batch-mode deploy -PgithubDeploy
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      - name: Publish to Maven Central
+        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
+        run: mvn --batch-mode deploy -PmavenCentralDeploy
+        # env:
+        #   SIGN_KEY_PASS: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}
+        #   OSSRH_USERNAME: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME }}
+        #   OSSRH_PASSWORD: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN }}
