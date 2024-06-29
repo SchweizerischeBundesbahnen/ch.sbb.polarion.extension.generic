@@ -88,8 +88,8 @@ jobs:
       - name: Publish to GitHub Packages
         # if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
         run: mvn --batch-mode deploy -PgithubDeploy
-        # env:
-        #  GITHUB_TOKEN: ${{ github.token }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Publish to Maven Central
         # if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
         run: mvn --batch-mode deploy -PmavenCentralDeploy
