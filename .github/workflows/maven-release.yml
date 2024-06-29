@@ -71,7 +71,7 @@ jobs:
                 "id": "mavenCentralDeploy",
                 "properties":
                 {
-                  "altDeploymentRepository": "ossrh::default::https://s01.oss.sonatype.org/content/repositories/releases/"
+                  "altDeploymentRepository": "ossrh::default::https://oss.sonatype.org/content/repositories/releases/"
                 }
               }
             ]
@@ -82,11 +82,6 @@ jobs:
       - name: Extract artefact version
         id: artefact_version
         run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
-      - name: Publish to GitHub Packages
-        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
-        run: mvn --batch-mode deploy -PgithubDeploy
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
       - name: Publish to Maven Central
         if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
         run: mvn --batch-mode deploy -PmavenCentralDeploy
@@ -94,3 +89,8 @@ jobs:
         #   SIGN_KEY_PASS: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}
         #   OSSRH_USERNAME: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME }}
         #   OSSRH_PASSWORD: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN }}
+      - name: Publish to GitHub Packages
+        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
+        run: mvn --batch-mode deploy -PgithubDeploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
