@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v5.0.0...v5.0.1) (2024-06-29)
+
+
+### Bug Fixes
+
+* Fixed loading named settings ([#50](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/50)) ([23a96ed](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/23a96edebb890914507642e3e7f3403daf1963eb)), closes [#51](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/51)
+
 ## [5.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v4.11.0...v5.0.0) (2024-06-26)
 
 
