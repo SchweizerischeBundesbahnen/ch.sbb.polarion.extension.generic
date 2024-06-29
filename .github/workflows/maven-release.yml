@@ -56,10 +56,6 @@ jobs:
               {
                 "id": "gpg.passphrase",
                 "passphrase": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}"
-              },
-              {
-                "id": "gpg.keyEnvName",
-                "passphrase": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}"
               }
             ]
           profiles: >
@@ -94,7 +90,8 @@ jobs:
       - name: Publish to Maven Central
         # if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
         run: mvn --batch-mode deploy -PmavenCentralDeploy
-        # env:
+        env:
+          MAVEN_GPG_KEY: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}
         #   SIGN_KEY_PASS: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}
         #   OSSRH_USERNAME: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME }}
         #   OSSRH_PASSWORD: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN }}
