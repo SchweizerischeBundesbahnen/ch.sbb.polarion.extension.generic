@@ -17,11 +17,11 @@ jobs:
           distribution: adopt
           java-version: 17
           cache: maven
-          server-id: ossrh
-          server-username: OSSRH_USERNAME
-          server-password: OSSRH_PASSWORD
-          gpg-private-key: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}
-          gpg-passphrase: SIGN_KEY_PASS
+          # server-id: ossrh
+          # server-username: OSSRH_USERNAME
+          # server-password: OSSRH_PASSWORD
+          # gpg-private-key: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}
+          # gpg-passphrase: SIGN_KEY_PASS
       - uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d  # v22
         with:
           repositories: >
@@ -56,7 +56,10 @@ jobs:
               {
                 "id": "gpg.passphrase",
                 "passphrase": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}"
-              }
+              },
+                "id": "gpg.keyEnvName",
+                "passphrase": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}"
+              },
             ]
           profiles: >
             [
