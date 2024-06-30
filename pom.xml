@@ -7,7 +7,7 @@
     <version>5.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>A versatile extension for developing additional extensions within Polarion ALM</name>
+    <name>A versatile extension for developing additional extensions within Polarion ALM: parent POM</name>
     <description>This is a Polarion extension which provides common part to other extensions reducing code duplication</description>
     <url>https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic</url>
 
@@ -39,15 +39,186 @@
     </issueManagement>
 
     <modules>
-        <module>pom</module>
         <module>app</module>
     </modules>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+
+        <!-- Maven plugins -->
+        <maven-clean-plugin.version>3.4.0</maven-clean-plugin.version>
+        <maven-surefire-plugin.version>3.3.0</maven-surefire-plugin.version>
+        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+        <maven-dependency-plugin.version>3.7.1</maven-dependency-plugin.version>
+        <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.7.0</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
+
+        <!-- Test dependencies -->
+        <junit.version>5.10.3</junit.version>
+        <mockito.version>5.12.0</mockito.version>
+        <assertj-core.version>3.26.0</assertj-core.version>
+        <jaxb.impl.version>2.4.0-b180830.0438</jaxb.impl.version>
+        <istack.version>4.2.0</istack.version>
+        <log4j.version>2.23.1</log4j.version>
+
+        <!-- JaCoCo -->
+        <jacoco.version>0.8.12</jacoco.version>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.language>java</sonar.language>
+
+        <!-- Others -->
+        <lombok.version>1.18.30</lombok.version>
+        <jetbrains.api.version>24.0.1</jetbrains.api.version>
+        <google.guice.version>7.0.0</google.guice.version>
+        <gwt-servlet.version>2.9.0</gwt-servlet.version>
+        <jsp-api.version>2.2</jsp-api.version>
+
+        <!-- Manifest entries -->
+        <maven-jar-plugin.Manifest-Version>1.0</maven-jar-plugin.Manifest-Version>
+        <maven-jar-plugin.Bundle-ManifestVersion>2</maven-jar-plugin.Bundle-ManifestVersion>
+        <maven-jar-plugin.Bundle-Build-Timestamp>${maven.build.timestamp}</maven-jar-plugin.Bundle-Build-Timestamp>
+        <maven-jar-plugin.Automatic-Module-Name>${project.artifactId}</maven-jar-plugin.Automatic-Module-Name>
+        <maven-jar-plugin.Bundle-SymbolicName>${project.artifactId};singleton:=true</maven-jar-plugin.Bundle-SymbolicName>
+        <maven-jar-plugin.Bundle-Vendor>SBB AG</maven-jar-plugin.Bundle-Vendor>
+        <!--suppress UnresolvedMavenProperty -->
+        <maven-jar-plugin.Bundle-Version>${project.artifact.selectedVersion.majorVersion}.${project.artifact.selectedVersion.minorVersion}.${project.artifact.selectedVersion.incrementalVersion}</maven-jar-plugin.Bundle-Version>
+        <maven-jar-plugin.Extension-Context/>
+
+        <convert.readme.to.about.input.file>${basedir}/README.md</convert.readme.to.about.input.file>
+        <convert.readme.to.about.output.file>${basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-admin/html/about.html</convert.readme.to.about.output.file>
     </properties>
 
     <profiles>
+        <profile>
+            <id>install-to-local-polarion</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>${maven-clean-plugin.version}</version>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>${env.POLARION_HOME}/polarion/extensions/${project.artifactId}/eclipse/plugins</directory>
+                                    <includes>
+                                        <include>**/*</include>
+                                    </includes>
+                                    <followSymlinks>false</followSymlinks>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <version>${maven-dependency-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>copy-to-local-polarion</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>${project.artifactId}</artifactId>
+                                            <version>${project.version}</version>
+                                            <type>${project.packaging}</type>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${env.POLARION_HOME}/polarion/extensions/${project.artifactId}/eclipse/plugins</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>polarion2310</id>
+            <activation>
+                <property>
+                    <name>polarion2310active</name>
+                </property>
+            </activation>
+            <properties>
+                <maven.compiler.source>17</maven.compiler.source>
+                <maven.compiler.target>17</maven.compiler.target>
+                <polarion.version>2310</polarion.version>
+
+                <jersey.version>2.35</jersey.version>
+                <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
+
+                <commons-io.artifactId>org.apache.commons.io_2.11.0</commons-io.artifactId>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>polarion2404</id>
+            <activation>
+                <property>
+                    <name>!polarion2310active</name>
+                </property>
+            </activation>
+            <properties>
+                <maven.compiler.source>17</maven.compiler.source>
+                <maven.compiler.target>17</maven.compiler.target>
+                <polarion.version>2404</polarion.version>
+
+                <jersey.version>2.35</jersey.version>
+                <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
+
+                <commons-io.artifactId>commons-io-2.15.1</commons-io.artifactId>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>convert-readme.md-to-about.html</id>
+            <activation>
+                <file>
+                    <exists>.scripts/convert-readme.sh</exists>
+                </file>
+                <os>
+                    <family>unix</family>
+                </os>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${exec-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>convert-markdown-to-html</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${basedir}/.scripts/convert-readme.sh</executable>
+                                    <arguments>
+                                        <argument>${convert.readme.to.about.input.file}</argument>
+                                        <argument>${convert.readme.to.about.output.file}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>release</id>
             <build>
@@ -55,21 +226,411 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${maven-gpg-plugin.version}</version>
-                        <inherited>false</inherited>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
 
+    <dependencies>
+        <!-- Polarion artifacts -->
+        <dependency>
+            <groupId>com.polarion.alm.projects</groupId>
+            <artifactId>projects</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.alm.tracker</groupId>
+            <artifactId>tracker</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.alm.ui</groupId>
+            <artifactId>ui</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.platform</groupId>
+            <artifactId>platform</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.platform.persistence</groupId>
+            <artifactId>platform-persistence</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.platform.jobs</groupId>
+            <artifactId>jobs</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.platform.repository</groupId>
+            <artifactId>platform-repository</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.core.util</groupId>
+            <artifactId>util</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.platform.guice</groupId>
+            <artifactId>platform-guice</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.subterra.base</groupId>
+            <artifactId>subterra-base-core</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.subterra.base</groupId>
+            <artifactId>subterra-base-data</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.core.boot</groupId>
+            <artifactId>boot</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Polarion OSGi bundles -->
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>org.glassfish.jersey_${jersey-osgi-bundle.version}</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>com.fasterxml.jackson_2.13.4</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>com.fasterxml.jackson.databind_2.14.2</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>io.swagger_2.1.5</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>slf4j-api-1.7.36</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>${commons-io.artifactId}</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>javax.servlet_4.0.0</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>jaxb-api-2.4.0-b180830.0359-patched</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>org.springframework.spring-web_5.3.20</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>org.springframework.spring-core_5.3.20</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj-core.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.impl.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.istack</groupId>
+            <artifactId>istack-commons-runtime</artifactId>
+            <version>${istack.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-common</artifactId>
+            <version>${jersey.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Others -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${jetbrains.api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${google.guice.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>jsp-api</artifactId>
+            <version>${jsp-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Polarion UI dependency -->
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-servlet</artifactId>
+            <version>${gwt-servlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${maven-dependency-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>build-bundle-classpath</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>build-classpath</goal>
+                            </goals>
+                            <configuration>
+                                <prefix>webapp/${web.app.name}/WEB-INF/lib</prefix>
+                                <pathSeparator>,</pathSeparator>
+                                <fileSeparator>/</fileSeparator>
+                                <outputProperty>maven-jar-plugin.Bundle-ClassPath</outputProperty>
+                                <includeScope>runtime</includeScope>
+                            </configuration>
+                        </execution>
+
+                        <execution>
+                            <id>copy-dependencies</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>copy-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${basedir}/target/classes/webapp/${web.app.name}/WEB-INF/lib</outputDirectory>
+                                <includeScope>runtime</includeScope>
+                            </configuration>
+                        </execution>
+
+                        <execution>
+                            <id>copy-dependencies-admin</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>copy</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>ch.sbb.polarion.extensions</groupId>
+                                        <artifactId>ch.sbb.polarion.extension.generic.app</artifactId>
+                                        <version>${project.parent.version}</version>
+                                        <type>jar</type>
+                                    </artifactItem>
+                                </artifactItems>
+                                <outputDirectory>${basedir}/target/classes/webapp/${web.app.name}-admin/WEB-INF/lib</outputDirectory>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
+                    <configuration>
+                        <archive>
+                            <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+                            <manifestEntries>
+                                <Manifest-Version>${maven-jar-plugin.Manifest-Version}</Manifest-Version>
+                                <Bundle-ManifestVersion>${maven-jar-plugin.Bundle-ManifestVersion}</Bundle-ManifestVersion>
+                                <Bundle-Vendor>${maven-jar-plugin.Bundle-Vendor}</Bundle-Vendor>
+                                <Automatic-Module-Name>${maven-jar-plugin.Automatic-Module-Name}</Automatic-Module-Name>
+                                <Bundle-SymbolicName>${maven-jar-plugin.Bundle-SymbolicName}</Bundle-SymbolicName>
+                                <Bundle-Version>${maven-jar-plugin.Bundle-Version}</Bundle-Version>
+                                <Bundle-Build-Timestamp>${maven-jar-plugin.Bundle-Build-Timestamp}</Bundle-Build-Timestamp>
+                                <Bundle-ClassPath>.,${maven-jar-plugin.Bundle-ClassPath}</Bundle-ClassPath>
+                                <Extension-Context>${maven-jar-plugin.Extension-Context}</Extension-Context>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                    <configuration>
+                        <!-- hide unwanted exceptions logging -->
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <configuration>
+                        <excludes>**/*.jar</excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>jacoco-initialize</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>jacoco-site</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven-source-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <sourcepath>${basedir}/src/main/java</sourcepath>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven-gpg-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
