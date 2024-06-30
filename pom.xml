@@ -7,7 +7,7 @@
     <version>5.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Generic extension of Polarion ALM</name>
+    <name>A versatile extension for developing additional extensions within Polarion ALM</name>
     <description>This is a Polarion extension which provides common part to other extensions reducing code duplication</description>
     <url>https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic</url>
 
@@ -47,23 +47,29 @@
         <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
     </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>${maven-gpg-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven-gpg-plugin.version}</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
