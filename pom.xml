@@ -220,7 +220,7 @@
         </profile>
 
         <profile>
-            <id>release</id>
+            <id>gpg-sign</id>
             <build>
                 <plugins>
                     <plugin>
