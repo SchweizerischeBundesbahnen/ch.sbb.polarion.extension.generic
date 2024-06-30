@@ -94,7 +94,7 @@ jobs:
         if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
         run: mvn --batch-mode deploy -Ps3Deploy -Prelease
       - name: Publish to GitHub Packages
-        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
+        # if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
         run: mvn --batch-mode deploy -PgithubDeploy -Prelease
         env:
           GITHUB_TOKEN: ${{ github.token }}
