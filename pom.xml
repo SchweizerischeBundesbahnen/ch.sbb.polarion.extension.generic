@@ -101,7 +101,7 @@
 
         <convert.readme.to.about.input.file>${basedir}/README.md</convert.readme.to.about.input.file>
         <convert.readme.to.about.output.file>${basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-admin/html/about.html</convert.readme.to.about.output.file>
-        <nexus-staging-maven-plugin.version>1.6.7</nexus-staging-maven-plugin.version>
+        <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
     </properties>
 
     <profiles>
