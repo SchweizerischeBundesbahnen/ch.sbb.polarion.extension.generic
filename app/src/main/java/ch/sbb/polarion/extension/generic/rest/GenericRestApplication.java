@@ -12,6 +12,7 @@ import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsApiControl
 import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsApiScopeAgnosticController;
 import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsInternalController;
 import ch.sbb.polarion.extension.generic.rest.exception.ForbiddenExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.IllegalStateExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.ObjectNotFoundExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.filter.CorsFilter;
 import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
@@ -82,6 +83,7 @@ public class GenericRestApplication extends Application {
                 new BadRequestExceptionMapper(),
                 new ForbiddenExceptionMapper(),
                 new IllegalArgumentExceptionMapper(),
+                new IllegalStateExceptionMapper(),
                 new InternalServerErrorExceptionMapper(),
                 new NotFoundExceptionMapper(),
                 new ObjectNotFoundExceptionMapper(),
