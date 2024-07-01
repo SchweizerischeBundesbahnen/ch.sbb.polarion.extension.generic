@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.0.0...v6.0.1) (2024-07-01)
+
+
+### Bug Fixes
+
+* mvn central deployment ([#58](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/58)) ([b187ed0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/b187ed08debd6da4f4e936a5b0d216b93dc87f5b))
+
 ## [6.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v5.0.1...v6.0.0) (2024-07-01)
 
 
