@@ -5,14 +5,12 @@ This is a Polarion extension which provides common part to other extensions redu
 An extension which inherits from this generic extension will automatically get following functionality:
 
 * An "about" page on administrative section of Polarion with basic information about this extension
-* API to manipulate settings of this extension - to read, save settings and reverting them to default values
-  as well as getting list of settings history revisions
+* API to manipulate settings of this extension - to read, save settings and reverting them to default values as well as getting list of settings history revisions
 * API to serialize/deserialize XML data (`JAXBUtils`)
-* REST application and end points giving access to settings functionality described above as well as access
-  to extension information and version
+* REST application and end points giving access to settings functionality described above as well as access to extension information and version
 * Swagger UI page listing information about REST API provided
 
-## Ho to use
+## How to use
 
 To properly inherit from this generic extension and to take advantage of all mentioned above functionality
 out of the box certain steps should be done, see below.
@@ -26,8 +24,8 @@ Maven's `pom.xml` should contain following content:
 ```xml
 <parent>
   <groupId>ch.sbb.polarion.extensions</groupId>
-  <artifactId>ch.sbb.polarion.extension.generic.parent-pom</artifactId>
-  <version>1.1.5</version>
+  <artifactId>ch.sbb.polarion.extension.generic</artifactId>
+  <version>6.0.0</version>
 </parent>
 ```
 
@@ -66,6 +64,15 @@ Maven's `pom.xml` should contain following content:
       <artifactId>jacoco-maven-plugin</artifactId>
     </plugin>
 
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-javadoc-plugin</artifactId>
+    </plugin>
+
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-source-plugin</artifactId>
+    </plugin>
   </plugins>
 </build>
 ```
@@ -155,33 +162,37 @@ public class CssModel extends SettingsModel {
 }
 ```
 
-### Rest application
+### REST application
 
-Rest application class should inherit from `GenericRestApplication` of generic extension,
+REST application class should inherit from `GenericRestApplication` of generic extension,
 registering settings classes and extending classes of REST controller, web application filters and exception mappers:
 
 ```java
 public class PdfExporterRestApplication extends GenericRestApplication {
+  private final Logger logger = Logger.getLogger(PdfExporterRestApplication.class);
 
-    public PdfExporterRestApplication() {
-        SettingsRegistry.INSTANCE.register(Arrays.asList(new CssSettings(), new HeaderFooterSettings(), new LocalizationSettings()));
+  public PdfExporterRestApplication() {
+    logger.debug("Creating PDF-Exporter REST Application...");
+
+    try {
+      NamedSettingsRegistry.INSTANCE.register(
+              Arrays.asList(
+                      new StylePackageSettings(),
+                      new HeaderFooterSettings(),
+                      new CssSettings(),
+                      new LocalizationSettings(),
+                      new CoverPageSettings(),
+                      new FileNameTemplateSettings()
+              )
+      );
+    } catch (Exception e) {
+      logger.error("Error during registration of named settings", e);
     }
 
-    @Override
-    @NotNull
-    protected Set<Class<?>> getControllerClasses() {
-        final Set<Class<?>> controllerClasses = super.getControllerClasses();
-        controllerClasses.addAll(Set.of(
-            ApiController.class,
-            InternalController.class
-        ));
-        return controllerClasses;
-    }
+    logger.debug("PDF-Exporter REST Application has been created");
+  }
 
-    // potentially override also methods
-    //   protected @NotNull Set<Class<?>> getExceptionMappers()
-    // and
-    //   protected @NotNull Set<Class<?>> getFilters()
+  ...
 }
 ```
 
@@ -191,9 +202,14 @@ If new extension will contain UI parts/pages/artifacts, UI servlet class should 
 simply specifying servlet name in constructor:
 
 ```java
-public class PdfAdminUiServlet extends GenericUiServlet {
-    public PdfAdminUiServlet() {
-        super("pdf-exporter-admin");
-    }
+public class PdfExporterAdminUiServlet extends GenericUiServlet {
+
+  @Serial
+  private static final long serialVersionUID = -6337912330074718317L;
+
+  public PdfExporterAdminUiServlet() {
+    super("pdf-exporter-admin");
+    CurrentExtensionConfiguration.getInstance().setExtensionConfiguration(PdfExporterExtensionConfiguration.getInstance());
+  }
 }
 ```
