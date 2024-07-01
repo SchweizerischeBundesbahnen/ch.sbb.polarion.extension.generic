@@ -1,5 +1,16 @@
 # Changelog
 
+## [6.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v5.0.1...v6.0.0) (2024-07-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* maven central deployment ([#55](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/55))
+
+### Features
+
+* maven central deployment ([#55](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/55)) ([a891203](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/a89120341a0cab3906c18a95dd452d75af0dcf9c))
+
 ## [5.0.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v5.0.0...v5.0.1) (2024-06-29)
 
 
