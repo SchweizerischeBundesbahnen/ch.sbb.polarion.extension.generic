@@ -3,6 +3,8 @@ package ch.sbb.polarion.extension.generic.rest;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Application;
 
@@ -10,6 +12,7 @@ import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsApiControl
 import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsApiScopeAgnosticController;
 import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsInternalController;
 import ch.sbb.polarion.extension.generic.rest.exception.ForbiddenExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.IllegalStateExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.ObjectNotFoundExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.filter.CorsFilter;
 import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
@@ -32,74 +35,140 @@ public class GenericRestApplication extends Application {
 
     @Override
     @NotNull
+    public Set<Object> getSingletons() {
+        Set<Object> singletons = new HashSet<>();
+        singletons.addAll(getAllExceptionMapperSingletons());
+        singletons.addAll(getAllFilterSingletons());
+        singletons.addAll(getAllControllerSingletons());
+        return singletons;
+    }
+
+    @Override
+    @NotNull
     public Set<Class<?>> getClasses() {
         Set<Class<?>> classes = new HashSet<>();
-        classes.addAll(getExceptionMappers());
-        classes.addAll(getFilters());
-        classes.addAll(getControllerClasses());
+        classes.addAll(getAllExceptionMapperClasses());
+        classes.addAll(getAllFilterClasses());
+        classes.addAll(getAllControllerClasses());
         classes.add(JacksonFeature.class);
         return classes;
     }
 
     @NotNull
-    protected Set<Class<?>> getExceptionMappers() {
-        return new HashSet<>();
-    }
-
-    @NotNull
-    protected Set<Class<?>> getFilters() {
-        return new HashSet<>();
-    }
-
-    @NotNull
-    protected Set<Class<?>> getControllerClasses() {
-        return new HashSet<>();
-    }
-
-    @Override
-    @NotNull
-    public Set<Object> getSingletons() {
-        Set<Object> singletons = new HashSet<>();
-        singletons.addAll(getExceptionMapperSingletons());
-        singletons.addAll(getFilterSingletons());
-        singletons.addAll(getControllerSingletons());
-        return singletons;
-    }
-
-    @NotNull
-    protected Set<Object> getExceptionMapperSingletons() {
-        return new HashSet<>(Arrays.asList(
-                new BadRequestExceptionMapper(),
-                new ForbiddenExceptionMapper(),
-                new IllegalArgumentExceptionMapper(),
-                new InternalServerErrorExceptionMapper(),
-                new NotFoundExceptionMapper(),
-                new ObjectNotFoundExceptionMapper(),
-                new UncaughtExceptionMapper()
-        ));
-    }
-
-    @NotNull
-    protected Set<Object> getFilterSingletons() {
-        return new HashSet<>(Arrays.asList(
-                new AuthenticationFilter(),
-                new CorsFilter(),
-                new LogoutFilter()
-        ));
-    }
-
-    @NotNull
-    protected Set<Object> getControllerSingletons() {
-        HashSet<Object> controllerSingletons = new HashSet<>(Arrays.asList(
+    protected Set<Object> getGenericControllerSingletons() {
+        HashSet<Object> genericControllerSingletons = new HashSet<>(Arrays.asList(
                 new ExtensionInfoApiController(),
                 new ExtensionInfoInternalController(),
                 new SwaggerController(),
                 new SwaggerDefinitionController()
         ));
         if (!NamedSettingsRegistry.INSTANCE.getAll().isEmpty()) {
-            controllerSingletons.add(NamedSettingsRegistry.INSTANCE.isScopeAgnostic() ? new NamedSettingsApiScopeAgnosticController() : new NamedSettingsApiController());
-            controllerSingletons.add(new NamedSettingsInternalController());
+            genericControllerSingletons.add(NamedSettingsRegistry.INSTANCE.isScopeAgnostic() ? new NamedSettingsApiScopeAgnosticController() : new NamedSettingsApiController());
+            genericControllerSingletons.add(new NamedSettingsInternalController());
         }
-        return controllerSingletons;
+        return genericControllerSingletons;
+    }
+
+    @NotNull
+    protected Set<Object> getGenericFilterSingletons() {
+        return Set.of(
+                new AuthenticationFilter(),
+                new CorsFilter(),
+                new LogoutFilter()
+        );
+    }
+
+    protected Set<Object> getGenericExceptionMapperSingletons() {
+        return Set.of(
+                new BadRequestExceptionMapper(),
+                new ForbiddenExceptionMapper(),
+                new IllegalArgumentExceptionMapper(),
+                new IllegalStateExceptionMapper(),
+                new InternalServerErrorExceptionMapper(),
+                new NotFoundExceptionMapper(),
+                new ObjectNotFoundExceptionMapper(),
+                new UncaughtExceptionMapper()
+        );
+    }
+
+    @NotNull
+    protected Set<Object> getExtensionControllerSingletons() {
+        return Set.of();
+    }
+
+    @NotNull
+    protected Set<Object> getExtensionFilterSingletons() {
+        return Set.of();
+    }
+
+    @NotNull
+    protected Set<Object> getExtensionExceptionMapperSingletons() {
+        return Set.of();
+    }
+
+    @NotNull
+    protected Set<Class<?>> getGenericControllerClasses() {
+        return Set.of();
+    }
+
+    @NotNull
+    protected Set<Class<?>> getGenericFilterClasses() {
+        return Set.of();
+    }
+
+    @NotNull
+    protected Set<Class<?>> getGenericExceptionMapperClasses() {
+        return Set.of();
+    }
+
+    @NotNull
+    protected Set<Class<?>> getExtensionControllerClasses() {
+        return Set.of();
+    }
+
+    @NotNull
+    protected Set<Class<?>> getExtensionExceptionMapperClasses() {
+        return Set.of();
+    }
+
+    @NotNull
+    protected Set<Class<?>> getExtensionFilterClasses() {
+        return Set.of();
+    }
+
+    @NotNull
+    private Set<Object> getAllControllerSingletons() {
+        return Stream.concat(getGenericControllerSingletons().stream(), getExtensionControllerSingletons().stream())
+                .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    private Set<Object> getAllFilterSingletons() {
+        return Stream.concat(getGenericFilterSingletons().stream(), getExtensionFilterSingletons().stream())
+                .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    private Set<Object> getAllExceptionMapperSingletons() {
+        return Stream.concat(getGenericExceptionMapperSingletons().stream(), getExtensionExceptionMapperSingletons().stream())
+                .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    private Set<Class<?>> getAllControllerClasses() {
+        return Stream.concat(getGenericControllerClasses().stream(), getExtensionControllerClasses().stream())
+                .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    private Set<Class<?>> getAllFilterClasses() {
+        return Stream.concat(getGenericFilterClasses().stream(), getExtensionFilterClasses().stream())
+                .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    private Set<Class<?>> getAllExceptionMapperClasses() {
+        return Stream.concat(getGenericExceptionMapperClasses().stream(), getExtensionExceptionMapperClasses().stream())
+                .collect(Collectors.toSet());
     }
 }

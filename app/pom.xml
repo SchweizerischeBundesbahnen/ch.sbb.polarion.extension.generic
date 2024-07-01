@@ -4,12 +4,26 @@
 
     <parent>
         <groupId>ch.sbb.polarion.extensions</groupId>
-        <artifactId>ch.sbb.polarion.extension.generic.parent-pom</artifactId>
+        <artifactId>ch.sbb.polarion.extension.generic</artifactId>
         <version>5.0.2-SNAPSHOT</version>
-        <relativePath>../pom</relativePath>
     </parent>
 
+    <name>A versatile extension for developing additional extensions within Polarion ALM: common code and resources</name>
     <artifactId>ch.sbb.polarion.extension.generic.app</artifactId>
+
+    <profiles>
+        <profile>
+            <id>gpg-sign</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
@@ -42,7 +56,12 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
