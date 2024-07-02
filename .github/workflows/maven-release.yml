@@ -57,24 +57,10 @@ jobs:
           profiles: >
             [
               {
-                "id": "s3Deploy",
+                "id": "deploy-github-packages",
                 "properties":
                 {
-                  "altDeploymentRepository": "s3::default::s3://sbb-polarion-maven-repo/polarion.mvn"
-                }
-              },
-              {
-                "id": "githubDeploy",
-                "properties":
-                {
-                  "altDeploymentRepository": "github::default::https://maven.pkg.github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic"
-                }
-              },
-              {
-                "id": "mavenCentralDeploy",
-                "properties":
-                {
-                  "altDeploymentRepository": "ossrh::default::https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                  "altDeploymentRepository": "github::default::https://maven.pkg.github.com/${{ github.repository }}"
                 }
               }
             ]
@@ -87,12 +73,9 @@ jobs:
         run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
       - name: Publish to Maven Central
         if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
-        run: mvn --batch-mode deploy -P mavenCentralDeploy -P gpg-sign
-      - name: Publish to S3 bucket
-        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
-        run: mvn --batch-mode deploy -P s3Deploy -P gpg-sign
+        run: mvn --batch-mode deploy -P gpg-sign -P nexus-staging
       - name: Publish to GitHub Packages
         if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
-        run: mvn --batch-mode deploy -P githubDeploy -P gpg-sign
+        run: mvn --batch-mode deploy -P gpg-sign -P deploy-github-packages
         env:
           GITHUB_TOKEN: ${{ github.token }}
