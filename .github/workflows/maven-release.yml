@@ -54,16 +54,16 @@ jobs:
                 "passphrase": "${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}"
               }
             ]
-#          profiles: >
-#            [
-#              {
-#                "id": "githubDeploy",
-#                "properties":
-#                {
-#                  "altDeploymentRepository": "github::default::https://maven.pkg.github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic"
-#                }
-#              }
-#            ]
+          profiles: >
+            [
+              {
+                "id": "deploy-github-packages",
+                "properties":
+                {
+                  "altDeploymentRepository": "github::default::https://maven.pkg.github.com/${{ github.repository }}"
+                }
+              }
+            ]
       - name: Print settings.xml
         run: cat /home/runner/.m2/settings.xml
       - name: Build with Maven
@@ -74,8 +74,8 @@ jobs:
       - name: Publish to Maven Central
         if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
         run: mvn --batch-mode deploy -P gpg-sign -P nexus-staging
-#      - name: Publish to GitHub Packages
-#        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
-#        run: mvn --batch-mode deploy -P githubDeploy -P gpg-sign
-#        env:
-#          GITHUB_TOKEN: ${{ github.token }}
+      - name: Publish to GitHub Packages
+        if: ${{ !endsWith(steps.artefact_version.outputs.version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
+        run: mvn --batch-mode deploy -P gpg-sign -P deploy-github-packages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
