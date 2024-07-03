@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.0.1...v6.0.2) (2024-07-03)
+
+
+### Bug Fixes
+
+* Changed exception mapping logic. ([#69](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/69)) ([a5290cd](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/a5290cd310bc146acbf0fc8ad7ced6569c39cce7))
+
 ## [6.0.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.0.0...v6.0.1) (2024-07-01)
 
 
