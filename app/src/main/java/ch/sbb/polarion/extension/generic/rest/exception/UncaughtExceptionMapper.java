@@ -21,7 +21,7 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
     private static final Logger logger = Logger.getLogger(UncaughtExceptionMapper.class);
 
     public Response toResponse(Throwable throwable) {
-         logger.error("Error in controller: " + throwable.getMessage(), throwable);
+        logger.error("Error in controller: " + throwable.getMessage(), throwable);
         if (throwable instanceof WebApplicationException webapplicationexception) {
             //this block covers cases when the specific WebApplicationException was thrown but
             //there is no explicit mapper for it (e.g. NotAuthorizedException)
