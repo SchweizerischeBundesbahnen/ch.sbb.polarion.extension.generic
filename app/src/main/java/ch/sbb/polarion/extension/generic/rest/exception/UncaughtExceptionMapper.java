@@ -1,9 +1,11 @@
 package ch.sbb.polarion.extension.generic.rest.exception;
 
+import ch.sbb.polarion.extension.generic.rest.model.ErrorEntity;
 import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
 import com.polarion.core.util.logging.Logger;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -26,7 +28,8 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
             return webapplicationexception.getResponse();
         } else {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
-                    .entity(throwable.getMessage())
+                    .entity(new ErrorEntity(throwable.getMessage()))
+                    .type(MediaType.APPLICATION_JSON)
                     .build();
         }
     }
