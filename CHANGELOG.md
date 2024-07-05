@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.0.2...v6.0.3) (2024-07-05)
+
+
+### Miscellaneous Chores
+
+* release 6.0.3 ([#73](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/73)) ([35a441b](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/35a441bd046c6295c23c33b32a32e9db3d94607d))
+
 ## [6.0.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.0.1...v6.0.2) (2024-07-03)
 
 
