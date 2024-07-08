@@ -130,14 +130,16 @@ const SbbCommon = {
                 if (xhr.status === 200 || xhr.status === 204) {
                     onOk(xhr.responseText);
                 } else {
+                    const error = xhr.responseText && JSON.parse(xhr.responseText);
+                    const errorMessage = error && (error.message ? error.message : xhr.responseText);
                     if (onError === undefined) {
                         try {
-                            SbbCommon.showActionAlert({containerId: 'action-error', message: xhr.responseText});
+                            SbbCommon.showActionAlert({containerId: 'action-error', message: errorMessage});
                         } catch {
                             alert('Error occurred (' + xhr.responseText + ').');
                         }
                     } else {
-                        onError(xhr.status, xhr.responseText)
+                        onError(xhr.status, errorMessage)
                     }
                 }
             }
