@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.0.3...v6.1.0) (2024-07-09)
+
+
+### Features
+
+* default about page changed to display help, if help is was not included link to README.md will be displayed ([#79](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/79)) ([030fc3f](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/030fc3fd49c3d2dfe9129b26c81f1891355483af))
+
+
+### Bug Fixes
+
+* Changed logic for exception handling ([#76](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/76)) ([9b17f32](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/9b17f32163bc8766faedfb5c5e0a7e190a755192))
+
 ## [6.0.3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.0.2...v6.0.3) (2024-07-05)
 
 
