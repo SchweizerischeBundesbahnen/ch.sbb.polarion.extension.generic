@@ -2,18 +2,32 @@
 <%@ page import="ch.sbb.polarion.extension.generic.rest.model.Version" %>
 <%@ page import="ch.sbb.polarion.extension.generic.util.ExtensionInfo" %>
 <%@ page import="ch.sbb.polarion.extension.generic.util.VersionUtils" %>
-<%@ page import="java.util.Enumeration" %>
+<%@ page import="java.util.Collections" %>
 <%@ page import="java.util.Properties" %>
+<%@ page import="java.io.InputStream" %>
+<%@ page import="java.nio.charset.StandardCharsets" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Set" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="ch.sbb.polarion.extension.generic.rest.model.Context" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
-<%! Version version = ExtensionInfo.getInstance().getVersion(); %>
-<%! Properties properties = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration().getProperties(); %>
+<%!
+    private static final String ABOUT_TABLE_ROW = "<tr><td>%s</td><td>%s</td></tr>";
+    private static final String CONFIGURATION_PROPERTIES_TABLE_ROW = "<tr><td>%s</td><td>%s</td></tr>";
+
+    Context context = ExtensionInfo.getInstance().getContext();
+    Version version = ExtensionInfo.getInstance().getVersion();
+    Properties properties = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration().getProperties();
+%>
 
 <head>
     <title></title>
     <link rel="stylesheet" href="../ui/generic/css/common.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
     <link rel="stylesheet" href="../ui/generic/css/about.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
+    <link rel="stylesheet" href="../ui/generic/css/github-markdown-light.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
 </head>
 
 <body>
@@ -23,57 +37,72 @@
     <div class="about-page-text">
         <img class="app-icon" src="../ui/images/app-icon.svg?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>" alt="" onerror="this.style.display='none'"/>
 
-        <h3>Version</h3>
+        <h3>Extension info</h3>
 
         <table>
+            <thead>
+            <tr>
+                <th>Manifest entry</th>
+                <th>Value</th>
+            </tr>
+            </thead>
             <tbody>
             <%
-                out.println("<tr><td>%s</td><td>%s</td></tr>".formatted(VersionUtils.BUNDLE_NAME, version.getBundleName()));
-                out.println("<tr><td>%s</td><td>%s</td></tr>".formatted(VersionUtils.BUNDLE_VENDOR, version.getBundleVendor()));
+                out.println(ABOUT_TABLE_ROW.formatted(VersionUtils.BUNDLE_NAME, version.getBundleName()));
+                out.println(ABOUT_TABLE_ROW.formatted(VersionUtils.BUNDLE_VENDOR, version.getBundleVendor()));
                 if (version.getSupportEmail() != null) {
-                    out.println("<tr><td>%s</td><td><a target=\"_blank\" href=\"mailto:%s\">%s</a></td></tr>".formatted(VersionUtils.SUPPORT_EMAIL, version.getSupportEmail(), version.getSupportEmail()));
+                    String mailToLink = "<a target=\"_blank\" href=\"mailto:%s\">%s</a>".formatted(version.getSupportEmail(), version.getSupportEmail());
+                    out.println(ABOUT_TABLE_ROW.formatted(VersionUtils.SUPPORT_EMAIL, mailToLink));
                 }
-                out.println("<tr><td>%s</td><td>%s</td></tr>".formatted(VersionUtils.AUTOMATIC_MODULE_NAME, version.getAutomaticModuleName()));
-                out.println("<tr><td>%s</td><td>%s</td></tr>".formatted(VersionUtils.BUNDLE_VERSION, version.getBundleVersion()));
-                out.println("<tr><td>%s</td><td>%s</td></tr>".formatted(VersionUtils.BUNDLE_BUILD_TIMESTAMP, version.getBundleBuildTimestamp()));
+                out.println(ABOUT_TABLE_ROW.formatted(VersionUtils.AUTOMATIC_MODULE_NAME, version.getAutomaticModuleName()));
+                out.println(ABOUT_TABLE_ROW.formatted(VersionUtils.BUNDLE_VERSION, version.getBundleVersion()));
+                out.println(ABOUT_TABLE_ROW.formatted(VersionUtils.BUNDLE_BUILD_TIMESTAMP, version.getBundleBuildTimestamp()));
             %>
             </tbody>
         </table>
 
-        <h3>Configuration properties</h3>
+        <h3>Extension configuration properties</h3>
 
         <table>
+            <thead>
+            <tr>
+                <th>Configuration property</th>
+                <th>Value</th>
+            </tr>
+            </thead>
             <tbody>
             <%
-                Enumeration<?> propertyNames = properties.propertyNames();
-                while (propertyNames.hasMoreElements()) {
-                    String key = (String) propertyNames.nextElement();
+                Set<Object> keySet = properties.keySet();
+                List<String> propertyNames = new ArrayList<>();
+                for (Object key : keySet) {
+                    propertyNames.add((String) key);
+                }
+                Collections.sort(propertyNames);
+
+                for (String key : propertyNames) {
                     String value = properties.getProperty(key);
-                    String row = "<tr><td>%s</td><td>%s</td></tr>".formatted(key, value);
+                    String row = CONFIGURATION_PROPERTIES_TABLE_ROW.formatted(key, value);
                     out.println(row);
                 }
             %>
             </tbody>
         </table>
 
-        <div id="configuration_help"></div>
+        <input id="scope" type="hidden" value="<%= request.getParameter("scope")%>"/>
 
-        <script type="application/javascript">
-            fetch("../ui/html/help/configuration.html?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>")
-                .then((response) => {
-                    if (response.ok) {
-                        return response.text()
+        <article class="markdown-body">
+            <%
+                String extensionContext = context.getExtensionContext();
+                try (InputStream inputStream = ExtensionInfo.class.getResourceAsStream("/webapp/" + extensionContext + "-admin/html/about.html")) {
+                    if (inputStream != null) {
+                        String configurationHelp = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+                        out.println(configurationHelp);
                     } else {
-                        throw new Error("no configuration help found", {cause: response});
+                        out.println("No help has been generated during build. Please check <a href=\"" + version.getProjectURL() + "/README.md\" target=\"_blank\">the online documentation</a>.");
                     }
-                })
-                .then((html) => {
-                    document.getElementById("configuration_help").innerHTML = html;
-                })
-                .catch((error) => {
-                    console.warn(error);
-                });
-        </script>
+                }
+            %>
+        </article>
     </div>
 </div>
 </body>
