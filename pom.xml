@@ -23,14 +23,14 @@
             <name>SBB Polarion Team</name>
             <email>polarion-opensource@sbb.ch</email>
             <organization>SBB AG</organization>
-            <organizationUrl>http://www.sbb.ch</organizationUrl>
+            <organizationUrl>https://www.sbb.ch</organizationUrl>
         </developer>
     </developers>
 
     <scm>
         <connection>scm:git:git://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic.git</connection>
         <developerConnection>scm:git:ssh://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic.git</developerConnection>
-        <url>http://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/tree/main</url>
+        <url>https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/tree/main</url>
     </scm>
 
     <issueManagement>
@@ -97,6 +97,7 @@
         <!--suppress UnresolvedMavenProperty -->
         <maven-jar-plugin.Bundle-Version>${project.artifact.selectedVersion.majorVersion}.${project.artifact.selectedVersion.minorVersion}.${project.artifact.selectedVersion.incrementalVersion}</maven-jar-plugin.Bundle-Version>
         <maven-jar-plugin.Extension-Context/>
+        <maven-jar-plugin.Project-URL>${project.scm.url}</maven-jar-plugin.Project-URL>
 
         <convert.readme.to.about.input.file>${basedir}/README.md</convert.readme.to.about.input.file>
         <convert.readme.to.about.output.file>${basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-admin/html/about.html</convert.readme.to.about.output.file>
@@ -571,6 +572,7 @@
                                 <Bundle-Build-Timestamp>${maven-jar-plugin.Bundle-Build-Timestamp}</Bundle-Build-Timestamp>
                                 <Bundle-ClassPath>.,${maven-jar-plugin.Bundle-ClassPath}</Bundle-ClassPath>
                                 <Extension-Context>${maven-jar-plugin.Extension-Context}</Extension-Context>
+                                <Project-URL>${maven-jar-plugin.Project-URL}</Project-URL>
                             </manifestEntries>
                         </archive>
                     </configuration>

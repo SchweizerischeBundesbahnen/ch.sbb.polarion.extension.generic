@@ -30,10 +30,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
+                <configuration combine.self="override">
                     <excludes>
                         <exclude>**/*Test.class</exclude>
                     </excludes>
+                    <archive>
+                        <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+                        <manifestEntries>
+                            <Version>${maven-jar-plugin.Bundle-Version}</Version>
+                            <Timestamp>${maven-jar-plugin.Bundle-Build-Timestamp}</Timestamp>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
                 <executions>
                     <execution>
