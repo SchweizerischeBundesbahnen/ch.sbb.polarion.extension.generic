@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.1.0...v6.2.0) (2024-07-10)
+
+
+### Features
+
+* use markdown2html-maven-plugin for making generation of about.html based on README.md cross-platform ([#82](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/82)) ([e78475b](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/e78475b8ac112ecc3206d2c1dc0fa6770d3a7c4c)), closes [#81](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/81)
+
+
+### Documentation
+
+* README.md updated according to the latest changes ([#84](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/84)) ([09042ba](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/09042baa02d22a373bed8be2b1bc7b1e8f2857d4)), closes [#81](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/81)
+
 ## [6.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.0.3...v6.1.0) (2024-07-09)
 
 
