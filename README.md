@@ -23,9 +23,9 @@ Maven's `pom.xml` should contain following content:
 
 ```xml
 <parent>
-  <groupId>ch.sbb.polarion.extensions</groupId>
-  <artifactId>ch.sbb.polarion.extension.generic</artifactId>
-  <version>6.0.0</version>
+    <groupId>ch.sbb.polarion.extensions</groupId>
+    <artifactId>ch.sbb.polarion.extension.generic</artifactId>
+    <version>6.2.0</version>
 </parent>
 ```
 
@@ -33,9 +33,9 @@ Maven's `pom.xml` should contain following content:
 
 ```xml
 <properties>
-  <maven-jar-plugin.Extension-Context>pdf-exporter</maven-jar-plugin.Extension-Context>
-  <maven-jar-plugin.Automatic-Module-Name>ch.sbb.polarion.extension.pdf_exporter</maven-jar-plugin.Automatic-Module-Name>
-  <web.app.name>${maven-jar-plugin.Extension-Context}</web.app.name>
+    <maven-jar-plugin.Extension-Context>pdf-exporter</maven-jar-plugin.Extension-Context>
+    <maven-jar-plugin.Automatic-Module-Name>ch.sbb.polarion.extension.pdf_exporter</maven-jar-plugin.Automatic-Module-Name>
+    <web.app.name>${maven-jar-plugin.Extension-Context}</web.app.name>
 </properties>
 ```
 
@@ -43,37 +43,47 @@ Maven's `pom.xml` should contain following content:
 
 ```xml
 <build>
-  <plugins>
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-dependency-plugin</artifactId>
-    </plugin>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+        </plugin>
 
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-jar-plugin</artifactId>
-    </plugin>
+        <plugin>
+            <groupId>ch.sbb.maven.plugins</groupId>
+            <artifactId>markdown2html-maven-plugin</artifactId>
+        </plugin>
 
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-surefire-plugin</artifactId>
-    </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+        </plugin>
 
-    <plugin>
-      <groupId>org.jacoco</groupId>
-      <artifactId>jacoco-maven-plugin</artifactId>
-    </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+        </plugin>
 
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-javadoc-plugin</artifactId>
-    </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+        </plugin>
 
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-source-plugin</artifactId>
-    </plugin>
-  </plugins>
+        <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+        </plugin>
+
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+        </plugin>
+
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+        </plugin>
+    </plugins>
 </build>
 ```
 
@@ -169,30 +179,29 @@ registering settings classes and extending classes of REST controller, web appli
 
 ```java
 public class PdfExporterRestApplication extends GenericRestApplication {
-  private final Logger logger = Logger.getLogger(PdfExporterRestApplication.class);
+    private final Logger logger = Logger.getLogger(PdfExporterRestApplication.class);
 
-  public PdfExporterRestApplication() {
-    logger.debug("Creating PDF-Exporter REST Application...");
+    public PdfExporterRestApplication() {
+        logger.debug("Creating PDF-Exporter REST Application...");
 
-    try {
-      NamedSettingsRegistry.INSTANCE.register(
-              Arrays.asList(
-                      new StylePackageSettings(),
-                      new HeaderFooterSettings(),
-                      new CssSettings(),
-                      new LocalizationSettings(),
-                      new CoverPageSettings(),
-                      new FileNameTemplateSettings()
-              )
-      );
-    } catch (Exception e) {
-      logger.error("Error during registration of named settings", e);
+        try {
+            NamedSettingsRegistry.INSTANCE.register(
+                    Arrays.asList(
+                            new StylePackageSettings(),
+                            new HeaderFooterSettings(),
+                            new CssSettings(),
+                            new LocalizationSettings(),
+                            new CoverPageSettings(),
+                            new FileNameTemplateSettings()
+                    )
+            );
+        } catch (Exception e) {
+            logger.error("Error during registration of named settings", e);
+        }
+
+        logger.debug("PDF-Exporter REST Application has been created");
     }
-
-    logger.debug("PDF-Exporter REST Application has been created");
-  }
-
-  ...
+...
 }
 ```
 
@@ -204,12 +213,12 @@ simply specifying servlet name in constructor:
 ```java
 public class PdfExporterAdminUiServlet extends GenericUiServlet {
 
-  @Serial
-  private static final long serialVersionUID = -6337912330074718317L;
+    @Serial
+    private static final long serialVersionUID = -6337912330074718317L;
 
-  public PdfExporterAdminUiServlet() {
-    super("pdf-exporter-admin");
-    CurrentExtensionConfiguration.getInstance().setExtensionConfiguration(PdfExporterExtensionConfiguration.getInstance());
-  }
+    public PdfExporterAdminUiServlet() {
+        super("pdf-exporter-admin");
+        CurrentExtensionConfiguration.getInstance().setExtensionConfiguration(PdfExporterExtensionConfiguration.getInstance());
+    }
 }
 ```
