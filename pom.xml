@@ -131,7 +131,7 @@
                                         <fileset>
                                             <directory>${env.POLARION_HOME}/polarion/extensions/${project.artifactId}/eclipse/plugins</directory>
                                             <includes>
-                                                <include>**/*</include>
+                                                <include>${project.artifactId}*.jar</include>
                                             </includes>
                                             <followSymlinks>false</followSymlinks>
                                         </fileset>
