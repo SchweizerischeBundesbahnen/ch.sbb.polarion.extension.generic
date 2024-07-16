@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.2.0...v6.3.0) (2024-07-16)
+
+
+### Features
+
+* by default markdown2html-maven-plugin stops building on error ([#87](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/87)) ([9c57c49](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/9c57c499fc4b3102973df31f7fdcfa2f13168cef))
+
 ## [6.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.1.0...v6.2.0) (2024-07-10)
 
 
