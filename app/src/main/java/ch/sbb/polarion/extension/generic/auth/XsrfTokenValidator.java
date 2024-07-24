@@ -1,13 +1,14 @@
 package ch.sbb.polarion.extension.generic.auth;
 
+import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
 import com.polarion.core.util.security.PasswordEncryptor;
 import com.polarion.platform.internal.XsrfTokenKeyStorage;
-import com.polarion.platform.internal.security.UserPrincipal;
 import com.polarion.platform.security.AuthenticationFailedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.security.auth.Subject;
+import javax.ws.rs.container.ContainerRequestContext;
 import java.util.Date;
 import java.util.Objects;
 
@@ -16,10 +17,16 @@ public class XsrfTokenValidator extends AbstractAuthValidator {
     @Override
     public @NotNull Subject validate() throws AuthenticationFailedException {
         if (isXsrfTokenValid(userId, secret)) {
-            return createAuthenticatedSubject(userId);
+            return getUserSubject(userId);
         } else {
             throw new AuthenticationFailedException("Invalid XSRF token");
         }
+    }
+
+    @Override
+    public void updateRequestContext(@NotNull ContainerRequestContext requestContext, @NotNull Subject subject) {
+        super.updateRequestContext(requestContext, subject);
+        requestContext.setProperty(LogoutFilter.ASYNC_SKIP_LOGOUT, Boolean.TRUE);
     }
 
     private boolean isXsrfTokenValid(@NotNull String userId, @NotNull String encryptedXsrfToken) {
@@ -59,10 +66,13 @@ public class XsrfTokenValidator extends AbstractAuthValidator {
         }
     }
 
-    private @NotNull Subject createAuthenticatedSubject(@NotNull String userId) {
-        Subject subject = new Subject();
-        subject.getPrincipals().add(new UserPrincipal(userId));
-        subject.setReadOnly();
-        return subject;
+    private @NotNull Subject getUserSubject(@NotNull String userId) throws AuthenticationFailedException {
+        Subject currentSubject = securityService.getCurrentSubject();
+        String currentUserId = securityService.getSubjectUser(currentSubject);
+        if (Objects.equals(currentUserId, userId)) {
+            return currentSubject;
+        } else {
+            throw new AuthenticationFailedException("Invalid user ID");
+        }
     }
 }

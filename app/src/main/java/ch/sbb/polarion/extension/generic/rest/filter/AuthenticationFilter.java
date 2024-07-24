@@ -54,7 +54,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
         try {
             @NotNull Subject subject = authValidator.validate();
-            requestContext.setProperty(USER_SUBJECT, subject);
+            authValidator.updateRequestContext(requestContext, subject);
         } catch (AuthenticationFailedException e) {
             throw new NotAuthorizedException("Authentication failed: " + e.getMessage(),
                     Response.status(Response.Status.UNAUTHORIZED)
@@ -70,7 +70,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         } else {
             throw new NotAuthorizedException("Authorization header must be provided",
                     Response.status(Response.Status.UNAUTHORIZED)
-                            .header("WWW-Authenticate", BEARER)
+                            .header(HttpHeaders.WWW_AUTHENTICATE, BEARER)
                             .build());
         }
     }
@@ -79,20 +79,21 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         if (!authorizationHeader.startsWith(BEARER)) {
             throw new NotAuthorizedException("Invalid authorization header format",
                     Response.status(Response.Status.UNAUTHORIZED)
-                            .header("WWW-Authenticate", BEARER)
+                            .header(HttpHeaders.WWW_AUTHENTICATE, BEARER)
                             .build());
         }
 
         String personalAccessToken = authorizationHeader.substring(BEARER.length()).trim();
         return ValidatorFactory.getValidator(ValidatorType.PERSONAL_ACCESS_TOKEN)
-                .withSecret(personalAccessToken)
-                .withSecurityService(securityService);
+                .secret(personalAccessToken)
+                .securityService(securityService);
     }
 
     private @NotNull AuthValidator createXsrfTokenValidator(@NotNull String xsrfToken) {
         String userId = httpServletRequest.getUserPrincipal().getName();
         return ValidatorFactory.getValidator(ValidatorType.XSRF_TOKEN)
-                .withUserId(userId)
-                .withSecret(xsrfToken);
+                .userId(userId)
+                .secret(xsrfToken)
+                .securityService(securityService);
     }
 }

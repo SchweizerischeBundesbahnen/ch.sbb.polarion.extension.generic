@@ -10,19 +10,19 @@ public abstract class AbstractAuthValidator implements AuthValidator {
     protected ISecurityService securityService;
 
     @Override
-    public @NotNull AuthValidator withUserId(@NotNull String userId) {
+    public @NotNull AuthValidator userId(@NotNull String userId) {
         this.userId = userId;
         return this;
     }
 
     @Override
-    public @NotNull AuthValidator withSecret(@NotNull String secret) {
+    public @NotNull AuthValidator secret(@NotNull String secret) {
         this.secret = secret;
         return this;
     }
 
     @Override
-    public @NotNull AuthValidator withSecurityService(@NotNull ISecurityService securityService) {
+    public @NotNull AuthValidator securityService(@NotNull ISecurityService securityService) {
         this.securityService = securityService;
         return this;
     }

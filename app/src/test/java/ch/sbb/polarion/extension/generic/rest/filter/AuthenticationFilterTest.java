@@ -117,8 +117,10 @@ class AuthenticationFilterTest {
 
         AuthValidator xsrfValidator = mock(AuthValidator.class);
         when(xsrfValidator.validate()).thenReturn(new Subject());
-        when(xsrfValidator.withUserId(anyString())).thenReturn(xsrfValidator);
-        when(xsrfValidator.withSecret(anyString())).thenReturn(xsrfValidator);
+        when(xsrfValidator.userId(anyString())).thenReturn(xsrfValidator);
+        when(xsrfValidator.secret(anyString())).thenReturn(xsrfValidator);
+        when(xsrfValidator.securityService(securityService)).thenReturn(xsrfValidator);
+        doCallRealMethod().when(xsrfValidator).updateRequestContext(any(), any());
         try (MockedStatic<ValidatorFactory> validatorFactoryMockedStatic = mockStatic(ValidatorFactory.class)) {
             when(ValidatorFactory.getValidator(ValidatorType.XSRF_TOKEN)).thenReturn(xsrfValidator);
 
