@@ -1,5 +1,14 @@
 # Changelog
 
+## [6.4.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.3.0...v6.4.0) (2024-07-24)
+
+
+### Features
+
+* allowed resource file types set expanded (woff/woff2/ico) ([#91](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/91)) ([47de7c7](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/47de7c7bb8b4eb65cb62c1c729031d1c7037fb7d)), closes [#90](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/90)
+* exclude "## Build", "## Installation to Polarion" and "## Changelog" sections from About page ([#96](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/96)) ([2822842](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2822842ceee56aca0b7a107b3176605a552fcafb)), closes [#94](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/94)
+* XSRF Token support ([#95](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/95)) ([f7df6f3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/f7df6f347786b2c9571fb097809b4acdc9cbb3aa)), closes [#93](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/93)
+
 ## [6.3.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.2.0...v6.3.0) (2024-07-16)
 
 
