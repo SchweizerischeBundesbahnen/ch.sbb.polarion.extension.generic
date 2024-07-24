@@ -102,7 +102,7 @@
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
         <nexus-staging-maven-plugin.autoReleaseAfterClose>true</nexus-staging-maven-plugin.autoReleaseAfterClose>
 
-        <markdown2html-maven-plugin.version>1.1.0</markdown2html-maven-plugin.version>
+        <markdown2html-maven-plugin.version>1.2.0</markdown2html-maven-plugin.version>
         <markdown2html-maven-plugin.inputFile>${project.basedir}/README.md</markdown2html-maven-plugin.inputFile>
         <markdown2html-maven-plugin.extensionContextAdminHtml>${project.basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-admin/html</markdown2html-maven-plugin.extensionContextAdminHtml>
         <markdown2html-maven-plugin.outputFileName>about.html</markdown2html-maven-plugin.outputFileName>
@@ -496,6 +496,11 @@
                         <outputFile>${markdown2html-maven-plugin.outputFile}</outputFile>
                         <tokenEnvVarName>${markdown2html-maven-plugin.tokenEnvVarName}</tokenEnvVarName>
                         <failOnError>${markdown2html-maven-plugin.failOnError}</failOnError>
+                        <excludeChapters>
+                            <excludeChapter>## Build</excludeChapter>
+                            <excludeChapter>## Installation to Polarion</excludeChapter>
+                            <excludeChapter>## Changelog</excludeChapter>
+                        </excludeChapters>
                     </configuration>
                 </plugin>
 
