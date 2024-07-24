@@ -1,16 +1,20 @@
 package ch.sbb.polarion.extension.generic.rest.filter;
 
-import com.polarion.core.util.logging.Logger;
+import ch.sbb.polarion.extension.generic.auth.AuthValidator;
+import ch.sbb.polarion.extension.generic.auth.ValidatorFactory;
+import ch.sbb.polarion.extension.generic.auth.ValidatorType;
 import com.polarion.platform.core.PlatformContext;
 import com.polarion.platform.security.AuthenticationFailedException;
 import com.polarion.platform.security.ISecurityService;
-import com.polarion.platform.security.login.AccessToken;
-import com.polarion.platform.security.login.IToken;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.security.auth.Subject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
@@ -19,47 +23,76 @@ import java.io.IOException;
 @Secured
 @Provider
 public class AuthenticationFilter implements ContainerRequestFilter {
-    private static final Logger logger = Logger.getLogger(AuthenticationFilter.class);
-
     public static final String BEARER = "Bearer";
     public static final String USER_SUBJECT = "user_subject";
-    private final ISecurityService securityService;
+    public static final String X_POLARION_REST_TOKEN_HEADER = "X-Polarion-REST-Token";
 
-    public AuthenticationFilter(ISecurityService securityService) {
-        this.securityService = securityService;
-    }
+    @Context
+    private HttpServletRequest httpServletRequest;
+
+    private final ISecurityService securityService;
 
     public AuthenticationFilter() {
         this.securityService = PlatformContext.getPlatform().lookupService(ISecurityService.class);
     }
 
+    public AuthenticationFilter(@NotNull ISecurityService securityService) {
+        this.securityService = securityService;
+    }
+
+    public AuthenticationFilter(@NotNull ISecurityService securityService, @NotNull HttpServletRequest httpServletRequest) {
+        this.securityService = securityService;
+        this.httpServletRequest = httpServletRequest;
+    }
+
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        final String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+        @Nullable String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+        @Nullable String xsrfToken = requestContext.getHeaderString(X_POLARION_REST_TOKEN_HEADER);
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER)) {
-            logger.error("Missing authorization header in request");
-            throw new NotAuthorizedException("Authorization header must be provided", Response.status(Response.Status.UNAUTHORIZED).header("WWW-Authenticate", BEARER).build());
-        }
-
-        final String token = authorizationHeader.substring(BEARER.length()).trim();
+        @NotNull AuthValidator authValidator = getAuthValidator(authorizationHeader, xsrfToken);
 
         try {
-            Subject subject = validateToken(token);
+            @NotNull Subject subject = authValidator.validate();
             requestContext.setProperty(USER_SUBJECT, subject);
         } catch (AuthenticationFailedException e) {
-            logger.error("Authentication failed: " + e.getMessage(), e);
-            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+            throw new NotAuthorizedException("Authentication failed: " + e.getMessage(),
+                    Response.status(Response.Status.UNAUTHORIZED)
+                            .build());
         }
     }
 
-    private Subject validateToken(String token) throws AuthenticationFailedException {
-        final IToken<AccessToken> accessToken = AccessToken.token(token);
+    private @NotNull AuthValidator getAuthValidator(@Nullable String authorizationHeader, @Nullable String xsrfToken) {
+        if (authorizationHeader != null) {
+            return createPersonalAccessTokenValidator(authorizationHeader);
+        } else if (xsrfToken != null) {
+            return createXsrfTokenValidator(xsrfToken);
+        } else {
+            throw new NotAuthorizedException("Authorization header must be provided",
+                    Response.status(Response.Status.UNAUTHORIZED)
+                            .header("WWW-Authenticate", BEARER)
+                            .build());
+        }
+    }
 
-        return securityService.login()
-                .from("REST")
-                .authenticator(AccessToken.id())
-                .with(accessToken)
-                .perform();
+    private @NotNull AuthValidator createPersonalAccessTokenValidator(@NotNull String authorizationHeader) {
+        if (!authorizationHeader.startsWith(BEARER)) {
+            throw new NotAuthorizedException("Invalid authorization header format",
+                    Response.status(Response.Status.UNAUTHORIZED)
+                            .header("WWW-Authenticate", BEARER)
+                            .build());
+        }
+
+        String personalAccessToken = authorizationHeader.substring(BEARER.length()).trim();
+        return ValidatorFactory.getValidator(ValidatorType.PERSONAL_ACCESS_TOKEN)
+                .withSecret(personalAccessToken)
+                .withSecurityService(securityService);
+    }
+
+    private @NotNull AuthValidator createXsrfTokenValidator(@NotNull String xsrfToken) {
+        String userId = httpServletRequest.getUserPrincipal().getName();
+        return ValidatorFactory.getValidator(ValidatorType.XSRF_TOKEN)
+                .withUserId(userId)
+                .withSecret(xsrfToken);
     }
 }
