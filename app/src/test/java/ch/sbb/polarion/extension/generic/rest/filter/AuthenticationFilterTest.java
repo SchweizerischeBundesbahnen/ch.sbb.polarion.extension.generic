@@ -3,6 +3,9 @@ package ch.sbb.polarion.extension.generic.rest.filter;
 import ch.sbb.polarion.extension.generic.auth.AuthValidator;
 import ch.sbb.polarion.extension.generic.auth.ValidatorFactory;
 import ch.sbb.polarion.extension.generic.auth.ValidatorType;
+import com.polarion.core.config.Configuration;
+import com.polarion.core.config.IConfiguration;
+import com.polarion.core.config.IRestConfiguration;
 import com.polarion.platform.security.AuthenticationFailedException;
 import com.polarion.platform.security.ISecurityService;
 import com.polarion.platform.security.login.AccessToken;
@@ -43,6 +46,10 @@ class AuthenticationFilterTest {
     private ILogin.IFinal loginFinal;
     @Mock
     private HttpServletRequest httpServletRequest;
+    @Mock
+    private IConfiguration configuration;
+    @Mock
+    private IRestConfiguration restConfiguration;
 
     @Test
     void filterRequestWithoutAuthorizationHeaderAndXsrfHeader() {
@@ -135,30 +142,62 @@ class AuthenticationFilterTest {
         when(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn(null);
         when(requestContext.getHeaderString(AuthenticationFilter.X_POLARION_REST_TOKEN_HEADER)).thenReturn("invalid_xsrf_token");
 
-        Principal userPrincipal = mock(Principal.class);
-        when(httpServletRequest.getUserPrincipal()).thenReturn(userPrincipal);
-        when(userPrincipal.getName()).thenReturn("user");
+        try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class)) {
+            configurationMockedStatic.when(Configuration::getInstance).thenReturn(configuration);
+            when(configuration.rest()).thenReturn(restConfiguration);
+            when(restConfiguration.restApiTokenEnabled()).thenReturn(true);
 
-        AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
+            Principal userPrincipal = mock(Principal.class);
+            when(httpServletRequest.getUserPrincipal()).thenReturn(userPrincipal);
+            when(userPrincipal.getName()).thenReturn("user");
 
-        assertThatThrownBy(() -> filter.filter(requestContext))
-                .isInstanceOf(NotAuthorizedException.class)
-                .hasMessageContaining("Invalid XSRF token");
+            AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
+
+            assertThatThrownBy(() -> filter.filter(requestContext))
+                    .isInstanceOf(NotAuthorizedException.class)
+                    .hasMessageContaining("Invalid XSRF token");
+        }
+    }
+
+    @Test
+    void filterRequestWithXsrfTokenButConfigurationIsDisabled() {
+        when(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+        when(requestContext.getHeaderString(AuthenticationFilter.X_POLARION_REST_TOKEN_HEADER)).thenReturn("xsrf_token");
+        try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class)) {
+            configurationMockedStatic.when(Configuration::getInstance).thenReturn(configuration);
+            when(configuration.rest()).thenReturn(restConfiguration);
+            when(restConfiguration.restApiTokenEnabled()).thenReturn(false);
+
+            Principal userPrincipal = mock(Principal.class);
+            when(httpServletRequest.getUserPrincipal()).thenReturn(userPrincipal);
+            when(userPrincipal.getName()).thenReturn("user");
+
+            AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
+
+            assertThatThrownBy(() -> filter.filter(requestContext))
+                    .isInstanceOf(NotAuthorizedException.class)
+                    .hasMessageContaining("REST API token is disabled");
+        }
     }
 
     @Test
     void filterRequestWithXsrfTokenForDifferentUser() {
         when(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn(null);
         when(requestContext.getHeaderString(AuthenticationFilter.X_POLARION_REST_TOKEN_HEADER)).thenReturn("xsrf_token_for_different_user");
+        try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class)) {
+            configurationMockedStatic.when(Configuration::getInstance).thenReturn(configuration);
+            when(configuration.rest()).thenReturn(restConfiguration);
+            when(restConfiguration.restApiTokenEnabled()).thenReturn(true);
 
-        Principal userPrincipal = mock(Principal.class);
-        when(httpServletRequest.getUserPrincipal()).thenReturn(userPrincipal);
-        when(userPrincipal.getName()).thenReturn("different_user");
+            Principal userPrincipal = mock(Principal.class);
+            when(httpServletRequest.getUserPrincipal()).thenReturn(userPrincipal);
+            when(userPrincipal.getName()).thenReturn("different_user");
 
-        AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
+            AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
 
-        assertThatThrownBy(() -> filter.filter(requestContext))
-                .isInstanceOf(NotAuthorizedException.class)
-                .hasMessageContaining("Invalid XSRF token");
+            assertThatThrownBy(() -> filter.filter(requestContext))
+                    .isInstanceOf(NotAuthorizedException.class)
+                    .hasMessageContaining("Invalid XSRF token");
+        }
     }
 }

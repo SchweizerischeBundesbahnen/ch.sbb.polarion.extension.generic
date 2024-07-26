@@ -1,6 +1,7 @@
 package ch.sbb.polarion.extension.generic.auth;
 
 import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
+import com.polarion.core.config.Configuration;
 import com.polarion.core.util.security.PasswordEncryptor;
 import com.polarion.platform.internal.XsrfTokenKeyStorage;
 import com.polarion.platform.security.AuthenticationFailedException;
@@ -16,6 +17,10 @@ public class XsrfTokenValidator extends AbstractAuthValidator {
 
     @Override
     public @NotNull Subject validate() throws AuthenticationFailedException {
+        if (!Configuration.getInstance().rest().restApiTokenEnabled()) {
+            throw new AuthenticationFailedException("REST API token is disabled");
+        }
+
         if (isXsrfTokenValid(userId, secret)) {
             return getUserSubject(userId);
         } else {
