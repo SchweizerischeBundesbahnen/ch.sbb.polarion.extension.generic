@@ -65,6 +65,7 @@
         <maven-surefire-plugin.version>3.3.1</maven-surefire-plugin.version>
         <maven-dependency-plugin.version>3.7.1</maven-dependency-plugin.version>
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
+        <swagger-maven-plugin.version>2.2.22</swagger-maven-plugin.version>
 
         <!-- Test dependencies -->
         <junit.version>5.10.3</junit.version>
@@ -502,6 +503,34 @@
                             <excludeChapter>## Changelog</excludeChapter>
                         </excludeChapters>
                     </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>io.swagger.core.v3</groupId>
+                    <artifactId>swagger-maven-plugin</artifactId>
+                    <version>${swagger-maven-plugin.version}</version>
+                    <configuration>
+                        <outputFileName>openapi</outputFileName>
+                        <outputPath>${project.basedir}/docs</outputPath>
+                        <outputFormat>JSONANDYAML</outputFormat>
+                        <prettyPrint>true</prettyPrint>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>resolve</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.glassfish.jersey.core</groupId>
+                            <artifactId>jersey-common</artifactId>
+                            <version>${jersey.version}</version>
+                            <scope>runtime</scope>
+                        </dependency>
+                    </dependencies>
                 </plugin>
 
                 <plugin>
