@@ -25,7 +25,7 @@ Maven's `pom.xml` should contain following content:
 <parent>
     <groupId>ch.sbb.polarion.extensions</groupId>
     <artifactId>ch.sbb.polarion.extension.generic</artifactId>
-    <version>6.2.0</version>
+    <version><!-- version goes here --></version>
 </parent>
 ```
 
@@ -82,6 +82,20 @@ Maven's `pom.xml` should contain following content:
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
+        </plugin>
+
+        <plugin>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-maven-plugin</artifactId>
+            <configuration>
+                <outputFormat>YAML</outputFormat>
+                <resourcePackages>
+                    <package>ch.sbb.polarion.extension.generic.rest.controller</package>
+                    <package>ch.sbb.polarion.extension.generic.rest.model</package>
+                    <package>ch.sbb.polarion.extension.pdf.exporter.rest.controller</package>
+                    <package>ch.sbb.polarion.extension.pdf.exporter.rest.model</package>
+                </resourcePackages>
+            </configuration>
         </plugin>
     </plugins>
 </build>
