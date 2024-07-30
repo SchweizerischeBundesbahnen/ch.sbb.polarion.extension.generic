@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.5.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.4.0...v6.5.0) (2024-07-30)
+
+
+### Features
+
+* swagger-maven-plugin added for OpenAPl spec generation ([#101](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/101)) ([e907109](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/e9071096c20d85e3c7cb8dd2cb3271efe7120e48)), closes [#100](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/100)
+
+
+### Bug Fixes
+
+* check polarion configuration whether XSRF Token is enabled ([#98](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/98)) ([6549a95](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6549a95a4e79632e787c2138f9a803556ab31aea)), closes [#93](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/93)
+
 ## [6.4.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.3.0...v6.4.0) (2024-07-24)
 
 
