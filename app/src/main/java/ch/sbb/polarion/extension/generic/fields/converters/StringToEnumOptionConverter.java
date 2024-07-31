@@ -38,7 +38,11 @@ public class StringToEnumOptionConverter implements IConverter<String, IEnumOpti
 
     @Nullable
     @SuppressWarnings({"squid:S5852", "squid:S3776"}) // regex is safe here, ignore cognitive complexity warning
-    private IEnumOption getEnumerationOptionForField(@NotNull FieldMetadata fieldMetadata, @NotNull String value, @NotNull ConverterContext context) {
+    private IEnumOption getEnumerationOptionForField(@NotNull FieldMetadata fieldMetadata, @NotNull String initialValue, @NotNull ConverterContext context) {
+        String value = initialValue.trim();
+        if (value.isEmpty() && !fieldMetadata.isRequired()) { // default enum value should be used if the field is required
+            return null;
+        }
         if (FieldType.unwrapIfListType(fieldMetadata.getType()) instanceof IEnumType enumType) {//attempt to unwrap type coz this converter may be used from ListConverter
             IEnumeration<IEnumOption> enumeration = new PolarionService().getEnumeration(enumType, context.getContextId());
 
@@ -112,7 +116,7 @@ public class StringToEnumOptionConverter implements IConverter<String, IEnumOpti
         } catch (EnumOptionNotFoundByIdException e) {
             //if nothing found then we peek first option by name ignore case
             return options.stream()
-                    .filter(option -> option.getName().equalsIgnoreCase(value))
+                    .filter(option -> option.getName().trim().equalsIgnoreCase(value)) // enum names in Polarion can have spaces at the end
                     .findFirst()
                     .orElseThrow(() -> new EnumOptionNotFoundException(String.format("Unsupported value '%s' for enum '%s'", value, enumType.getEnumerationId())));
         }

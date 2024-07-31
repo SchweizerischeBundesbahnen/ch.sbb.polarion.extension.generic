@@ -42,7 +42,10 @@ public class CustomFieldEnumConverterTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     MockedStatic<PlatformContext> mockPlatformContext;
 
+    private ArrayList<IEnumOption> allOptions;
+
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setup() {
         IPlatform platform = mock(IPlatform.class);
         mockPlatformContext.when(PlatformContext::getPlatform).thenReturn(platform);
@@ -57,7 +60,7 @@ public class CustomFieldEnumConverterTest {
         IEnumeration<IEnumOption> enumeration = mock(IEnumeration.class);
         lenient().when(dataService.getEnumerationForEnumId(any(), any())).thenReturn(enumeration);
 
-        List<IEnumOption> allOptions = new ArrayList<>();
+        allOptions = new ArrayList<>();
         allOptions.add(new EnumOption(YES_NO_ENUM_ID, YES.left(), YES.right(), 1, true));
         allOptions.add(new EnumOption(YES_NO_ENUM_ID, NO.left(), NO.right(), 2, false));
         lenient().when(enumeration.getAllOptions()).thenReturn(allOptions);
@@ -86,11 +89,21 @@ public class CustomFieldEnumConverterTest {
     }
 
     @Test
+    void testGetEnumOptionByValueIgnoringSpaces() {
+        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
+        // Experimentally proven that Polarion allows to create an enum with spaces at the end of its name
+        allOptions.add(new EnumOption(YES_NO_ENUM_ID, "probably", "Probably ", 3, false));
+
+        assertEquals(new EnumOption(YES_NO_ENUM_ID, "probably"), ConverterTestUtils.process("  Probably     ", fieldMetadata));
+    }
+
+    @Test
     void testEmptyValueForRequiredField() {
         FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
         fieldMetadata.setRequired(true);
 
         assertEquals(new EnumOption(YES_NO_ENUM_ID, YES.left()), ConverterTestUtils.process("", fieldMetadata)); // default enum value should be used if field is required
+        assertEquals(new EnumOption(YES_NO_ENUM_ID, YES.left()), ConverterTestUtils.process(" \n  \t", fieldMetadata)); // same for empty trimmed value
     }
 
     @Test
@@ -98,6 +111,8 @@ public class CustomFieldEnumConverterTest {
         FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
 
         assertNull(ConverterTestUtils.process("", fieldMetadata)); // nothing should be used if field is not required
+        assertNull(ConverterTestUtils.process("  ", fieldMetadata));
+        assertNull(ConverterTestUtils.process(" \n  \t", fieldMetadata));
     }
 
     @Test
@@ -186,5 +201,18 @@ public class CustomFieldEnumConverterTest {
                 .containsAll((List<String>) ConverterTestUtils.process("Ja,no", fieldMetadata)));
         assertTrue(Arrays.asList(NO.left(), YES.left())
                 .containsAll((List<String>) ConverterTestUtils.process("Nein,Ja", fieldMetadata)));
+
+        // trim spaces and similar symbols
+        assertTrue(Arrays.asList(NO.left(), YES.left())
+                .containsAll((List<String>) ConverterTestUtils.process("Nein,   Ja", fieldMetadata)));
+        assertTrue(Arrays.asList(NO.left(), YES.left())
+                .containsAll((List<String>) ConverterTestUtils.process(" , Nein, , ,  Ja", fieldMetadata)));
+        assertTrue(((List<String>) ConverterTestUtils.process("", fieldMetadata)).isEmpty());
+        assertTrue(((List<String>) ConverterTestUtils.process(",  ,  \n \t", fieldMetadata)).isEmpty());
+
+        // trim & return default for required field
+        fieldMetadata.setRequired(true);
+        assertTrue(List.of(YES.left()).containsAll((List<String>) ConverterTestUtils.process("", fieldMetadata)));
+        assertTrue(List.of(YES.left()).containsAll((List<String>) ConverterTestUtils.process(",  ,  \n \t", fieldMetadata)));
     }
 }
