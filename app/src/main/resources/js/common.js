@@ -117,21 +117,31 @@ const SbbCommon = {
         }
     },
 
-    callAsync: function ({method, url, contentType, body, onOk, onError}) {
+    callAsync: function ({method, url, contentType, responseType, body, onOk, onError}) {
+        // restrict directory traversal attempts
+        if (url.includes('..')) {
+            const errorMessage = 'directory traversal restricted';
+            onError === undefined ? alert(errorMessage) : onError(undefined, errorMessage);
+            return;
+        }
         const xhr = new XMLHttpRequest();
         xhr.open(method, url, true);
         if (contentType) {
             xhr.setRequestHeader('Content-Type', contentType);
         }
+        if (responseType) {
+            xhr.responseType = responseType;
+        }
         xhr.send(body);
 
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
-                if (xhr.status === 200 || xhr.status === 204) {
-                    onOk(xhr.responseText);
+                if ([200, 202, 204].includes(xhr.status)) {
+                    onOk(this.getStringIfTextResponse(xhr), xhr);
                 } else {
-                    const error = xhr.responseText && JSON.parse(xhr.responseText);
-                    const errorMessage = error && (error.message ? error.message : xhr.responseText);
+                    const responseText = this.getStringIfTextResponse(xhr);
+                    const error = responseText && JSON.parse(responseText);
+                    const errorMessage = error && (error.message ? error.message : responseText);
                     if (onError === undefined) {
                         try {
                             SbbCommon.showActionAlert({containerId: 'action-error', message: errorMessage});
@@ -139,14 +149,20 @@ const SbbCommon = {
                             alert('Error occurred (' + xhr.responseText + ').');
                         }
                     } else {
-                        onError(xhr.status, errorMessage)
+                        onError(xhr.status, errorMessage, xhr)
                     }
                 }
             }
         };
         xhr.onerror = function () {
-            onError === undefined ? alert('Error occurred') : onError();
+            onError === undefined ? alert('Error occurred') : onError(xhr.status, undefined, xhr);
         };
+    },
+
+    // if the responseType isn't empty or 'text' then getting xhr.responseType will fail
+    // with "Uncaught InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest'"
+    getStringIfTextResponse: function (xhr) {
+        return xhr.responseType === '' || xhr.responseType === 'text' ? xhr.responseText : undefined;
     },
 
     // we have to allow overriding settingName coz some extensions may have several settings on the single page
