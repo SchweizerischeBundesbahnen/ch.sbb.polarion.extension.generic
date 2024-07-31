@@ -17,7 +17,9 @@ public class StringCSVToListConverter implements IConverter<String, List<Object>
     @Override
     public List<Object> convert(@NotNull String initialValue, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
         String[] values = initialValue.split(Pattern.quote(SEPARATOR));
-        return Arrays.asList(values);
+        List<Object> list = Arrays.stream(values).map(s -> (Object) s.trim()).filter(s -> !((String) s).isEmpty()).toList();
+        // at least in case of required enums this will attempt to set default value, other cases can require this too (probably)
+        return list.isEmpty() && fieldMetadata.isRequired() ? List.of("") : list;
     }
 
     @Override
