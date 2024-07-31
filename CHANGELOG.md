@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.5.0...v6.5.1) (2024-07-31)
+
+
+### Bug Fixes
+
+* cannot insert csv with spaces next to comma into multi-enum field ([#105](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/105)) ([426fd74](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/426fd74a1ca09b865370191f8f19815a0e1c97a1)), closes [#104](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/104)
+
 ## [6.5.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.4.0...v6.5.0) (2024-07-30)
 
 
