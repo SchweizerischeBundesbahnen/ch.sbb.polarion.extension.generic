@@ -137,9 +137,9 @@ const SbbCommon = {
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 if ([200, 202, 204].includes(xhr.status)) {
-                    onOk(this.getStringIfTextResponse(xhr), xhr);
+                    onOk(SbbCommon.getStringIfTextResponse(xhr), xhr);
                 } else {
-                    const responseText = this.getStringIfTextResponse(xhr);
+                    const responseText = SbbCommon.getStringIfTextResponse(xhr);
                     const error = responseText && JSON.parse(responseText);
                     const errorMessage = error && (error.message ? error.message : responseText);
                     if (onError === undefined) {
