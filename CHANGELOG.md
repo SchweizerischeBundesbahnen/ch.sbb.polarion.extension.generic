@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.5.1...v6.5.2) (2024-08-01)
+
+
+### Bug Fixes
+
+* JavaScript error 'getStringIfTextResponse not a function' fixed ([#108](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/108)) ([046195d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/046195d70ac95826066d205f1e17c906425d5bee))
+
 ## [6.5.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.5.0...v6.5.1) (2024-07-31)
 
 
