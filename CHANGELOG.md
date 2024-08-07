@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.6.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.6.0...v6.6.1) (2024-08-07)
+
+
+### Bug Fixes
+
+* update markdown2html maven plugin to v1.3.0 to generate heading IDs ([#116](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/116)) ([2b195ff](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2b195ffabe5d8b423ddf9a33633202b1c0570228))
+
 ## [6.6.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.5.2...v6.6.0) (2024-08-07)
 
 
