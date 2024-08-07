@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.6.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.5.2...v6.6.0) (2024-08-07)
+
+
+### Features
+
+* jersey-client added as test dependency ([#113](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/113)) ([d0c48eb](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d0c48eb9cbcfc1394c1b18a5ca04466facb7edee)), closes [#112](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/112)
+
 ## [6.5.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.5.1...v6.5.2) (2024-08-01)
 
 
