@@ -15,6 +15,7 @@ jobs:
       COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN }}
       COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}
       GITHUB_TOKEN: ${{ github.token }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       MARKDOWN2HTML_MAVEN_PLUGIN_FAIL_ON_ERROR: true
     steps:
       - name: 📄 Checkout
@@ -85,7 +86,7 @@ jobs:
       - name: 🔘 Print settings.xml
         run: cat /home/runner/.m2/settings.xml
       - name: 📦 Build with Maven
-        run: mvn --batch-mode clean package
+        run: mvn --batch-mode clean package sonar:sonar
       - name: 📝 Store project version
         id: project_version
         run: echo "project_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
