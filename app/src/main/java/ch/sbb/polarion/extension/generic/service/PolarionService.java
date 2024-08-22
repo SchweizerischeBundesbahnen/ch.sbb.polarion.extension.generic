@@ -99,7 +99,7 @@ public class PolarionService {
 
         //Note: it seems that there is no way to get project for already deleted project (unlike workitems/modules & collections)
         //so method below will throw exception in this case
-        return getResolvableObjectOrThrow(projectService.getProject(projectId), revision, String.format("Project '%s' not found", projectId));
+        return getResolvableObjectOrThrow(projectService.getProject(projectId), revision, String.format("Project '%s'%s not found", projectId, getRevisionMessagePart(revision)));
     }
 
     @NotNull
@@ -120,7 +120,7 @@ public class PolarionService {
             throw new IllegalArgumentException("Parameter 'workItemId' should be provided");
         }
 
-        return getResolvableObjectOrThrow(trackerProject.getWorkItem(workItemId), revision, String.format("WorkItem '%s' not found in project '%s'", workItemId, projectId));
+        return getResolvableObjectOrThrow(trackerProject.getWorkItem(workItemId), revision, String.format("WorkItem '%s'%s not found in project '%s'", workItemId, getRevisionMessagePart(revision), projectId));
     }
 
     @NotNull
@@ -139,7 +139,7 @@ public class PolarionService {
         }
 
         ILocation location = Location.getLocation(spaceId + "/" + documentName);
-        return getResolvableObjectOrThrow(getModule(project, location), revision, String.format("Document '%s' not found in space '%s' of project '%s'", documentName, spaceId, projectId));
+        return getResolvableObjectOrThrow(getModule(project, location), revision, String.format("Document '%s'%s not found in space '%s' of project '%s'", documentName, getRevisionMessagePart(revision), spaceId, projectId));
     }
 
     @NotNull
@@ -166,7 +166,7 @@ public class PolarionService {
                                 .getOldApi()
                 )
         );
-        return getResolvableObjectOrThrow(collection, revision, String.format("Collection with id '%s' not found in project '%s'", collectionId, projectId));
+        return getResolvableObjectOrThrow(collection, revision, String.format("Collection with id '%s'%s not found in project '%s'", collectionId, getRevisionMessagePart(revision), projectId));
     }
 
     public <T extends IPObject> T getResolvableObjectOrThrow(@NotNull IPObject object, @Nullable String revision, @NotNull String notFoundMessage) {
@@ -292,5 +292,9 @@ public class PolarionService {
     @NotNull
     public IRepositoryReadOnlyConnection getReadOnlyConnection(@NotNull ILocation location) {
         return repositoryService.getReadOnlyConnection(location);
+    }
+
+    private String getRevisionMessagePart(String revision) {
+        return StringUtils.isEmpty(revision) ? "" : " (rev. %s)".formatted(revision);
     }
 }
