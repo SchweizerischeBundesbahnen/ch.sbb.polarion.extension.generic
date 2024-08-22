@@ -87,7 +87,11 @@ public class PolarionServiceTest {
     void testGetNotExistentProject() {
         mockProject(Boolean.FALSE);
 
-        assertThrows(ObjectNotFoundException.class, () -> polarionService.getProject(PROJECT_ID, null));
+        ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class, () -> polarionService.getProject(PROJECT_ID, null));
+        assertEquals("Project 'project_id' not found", exception.getMessage());
+
+        exception = assertThrows(ObjectNotFoundException.class, () -> polarionService.getProject(PROJECT_ID, "123"));
+        assertEquals("Project 'project_id' (rev. 123) not found", exception.getMessage());
     }
 
     @Test
@@ -95,7 +99,11 @@ public class PolarionServiceTest {
         IProject project = mockProject(Boolean.TRUE);
         mockWorkItem(project, Boolean.FALSE);
 
-        assertThrows(ObjectNotFoundException.class, () -> polarionService.getWorkItem(PROJECT_ID, WI_ID));
+        ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class, () -> polarionService.getWorkItem(PROJECT_ID, WI_ID));
+        assertEquals("WorkItem 'wi_id' not found in project 'project_id'", exception.getMessage());
+
+        exception = assertThrows(ObjectNotFoundException.class, () -> polarionService.getWorkItem(PROJECT_ID, WI_ID, "123"));
+        assertEquals("WorkItem 'wi_id' (rev. 123) not found in project 'project_id'", exception.getMessage());
     }
 
     @Test
@@ -103,7 +111,11 @@ public class PolarionServiceTest {
         IProject project = mockProject(Boolean.TRUE);
         mockModule(project, Boolean.FALSE);
 
-        assertThrows(ObjectNotFoundException.class, () -> polarionService.getModule(PROJECT_ID, SPACE_ID, DOCUMENT_NAME));
+        ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class, () -> polarionService.getModule(PROJECT_ID, SPACE_ID, DOCUMENT_NAME));
+        assertEquals("Document 'document_name' not found in space 'space_id' of project 'project_id'", exception.getMessage());
+
+        exception = assertThrows(ObjectNotFoundException.class, () -> polarionService.getModule(PROJECT_ID, SPACE_ID, DOCUMENT_NAME, "123"));
+        assertEquals("Document 'document_name' (rev. 123) not found in space 'space_id' of project 'project_id'", exception.getMessage());
     }
 
     @Test
@@ -113,7 +125,11 @@ public class PolarionServiceTest {
             IBaselineCollection collection = mockCollection(Boolean.FALSE);
             transactionalExecutorMockedStatic.when(() -> TransactionalExecutor.executeSafelyInReadOnlyTransaction(any())).thenReturn(collection);
 
-            assertThrows(ObjectNotFoundException.class, () -> polarionService.getCollection(PROJECT_ID, COLLECTION_ID));
+            ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class, () -> polarionService.getCollection(PROJECT_ID, COLLECTION_ID));
+            assertEquals("Collection with id '1' not found in project 'project_id'", exception.getMessage());
+
+            exception = assertThrows(ObjectNotFoundException.class, () -> polarionService.getCollection(PROJECT_ID, COLLECTION_ID, "123"));
+            assertEquals("Collection with id '1' (rev. 123) not found in project 'project_id'", exception.getMessage());
         }
     }
 
