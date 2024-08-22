@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.6.3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.6.2...v6.6.3) (2024-08-22)
+
+
+### Bug Fixes
+
+* show revision in the exception message if it was provided as a p… ([#128](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/128)) ([107e96e](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/107e96e91a80ccbe96b971b358cb6ad524ef8fcb))
+
 ## [6.6.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.6.1...v6.6.2) (2024-08-09)
 
 
