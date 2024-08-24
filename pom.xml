@@ -120,7 +120,7 @@
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-<!--        <sonar.language>java</sonar.language>-->
+        <sonar.language>java</sonar.language>
         <sonar.verbose>false</sonar.verbose>
         <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
     </properties>
