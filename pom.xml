@@ -117,6 +117,12 @@
         <sonar.projectKey>SchweizerischeBundesbahnen_${project.artifactId}</sonar.projectKey>
         <sonar.organization>schweizerischebundesbahnen</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.language>java</sonar.language>
+        <sonar.verbose>true</sonar.verbose>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
     </properties>
 
     <profiles>
