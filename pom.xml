@@ -77,8 +77,12 @@
         <log4j.version>2.23.1</log4j.version>
         <jackson.annotations.version>2.17.2</jackson.annotations.version>
 
-        <!-- JaCoCo -->
+        <!-- Sonar and JaCoCo -->
         <jacoco.version>0.8.12</jacoco.version>
+        <sonar.projectKey>SchweizerischeBundesbahnen_${project.artifactId}</sonar.projectKey>
+        <sonar.organization>schweizerischebundesbahnen</sonar.organization>
+        <sonar.projectName>${project.artifactId}</sonar.projectName>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.language>java</sonar.language>
@@ -116,10 +120,6 @@
         <markdown2html-maven-plugin.tokenEnvVarName>GITHUB_TOKEN</markdown2html-maven-plugin.tokenEnvVarName>
         <markdown2html-maven-plugin.failOnError>false</markdown2html-maven-plugin.failOnError>
         <markdown2html-maven-plugin.generateHeadingIds>true</markdown2html-maven-plugin.generateHeadingIds>
-
-        <sonar.projectKey>SchweizerischeBundesbahnen_${project.artifactId}</sonar.projectKey>
-        <sonar.organization>schweizerischebundesbahnen</sonar.organization>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <profiles>
