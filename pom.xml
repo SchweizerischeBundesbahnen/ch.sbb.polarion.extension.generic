@@ -654,22 +654,17 @@
                     </configuration>
                     <executions>
                         <execution>
-                            <id>prepare-agent</id>
+                            <id>jacoco-initialize</id>
                             <goals>
                                 <goal>prepare-agent</goal>
                             </goals>
                         </execution>
                         <execution>
-                            <id>report</id>
-                            <phase>package</phase>
+                            <id>jacoco-site</id>
+                            <phase>verify</phase>
                             <goals>
                                 <goal>report</goal>
                             </goals>
-                            <configuration>
-                                <formats>
-                                    <format>XML</format>
-                                </formats>
-                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
