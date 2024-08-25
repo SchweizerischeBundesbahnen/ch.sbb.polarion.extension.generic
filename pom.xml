@@ -77,11 +77,18 @@
         <log4j.version>2.23.1</log4j.version>
         <jackson.annotations.version>2.17.2</jackson.annotations.version>
 
-        <!-- JaCoCo -->
+        <!-- Sonar and JaCoCo -->
         <jacoco.version>0.8.12</jacoco.version>
+        <sonar.projectKey>SchweizerischeBundesbahnen_${project.artifactId}</sonar.projectKey>
+        <sonar.organization>schweizerischebundesbahnen</sonar.organization>
+        <sonar.projectName>${project.artifactId}</sonar.projectName>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.language>java</sonar.language>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.verbose>true</sonar.verbose>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
 
         <!-- Others -->
         <lombok.version>1.18.30</lombok.version>
@@ -650,22 +657,17 @@
                     </configuration>
                     <executions>
                         <execution>
-                            <id>prepare-agent</id>
+                            <id>jacoco-initialize</id>
                             <goals>
                                 <goal>prepare-agent</goal>
                             </goals>
                         </execution>
                         <execution>
-                            <id>report</id>
-                            <phase>package</phase>
+                            <id>jacoco-site</id>
+                            <phase>verify</phase>
                             <goals>
                                 <goal>report</goal>
                             </goals>
-                            <configuration>
-                                <formats>
-                                    <format>XML</format>
-                                </formats>
-                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
@@ -674,6 +676,15 @@
                     <groupId>org.sonarsource.scanner.maven</groupId>
                     <artifactId>sonar-maven-plugin</artifactId>
                     <version>${sonar-maven-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>sonar</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sonar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <plugin>
