@@ -1,6 +1,5 @@
 package ch.sbb.polarion.extension.generic.rest.controller;
 
-import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import ch.sbb.polarion.extension.generic.service.PolarionService;
 import ch.sbb.polarion.extension.generic.settings.GenericNamedSettings;
 import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
@@ -109,12 +108,7 @@ public class NamedSettingsInternalController {
     public SettingsModel readSetting(@PathParam("feature") String feature, @PathParam("name") String name,
                                      @QueryParam("scope") @DefaultValue("") String scope, @QueryParam("revision") String revision) {
         GenericNamedSettings<?> settings = NamedSettingsRegistry.INSTANCE.getByFeatureName(feature);
-        SettingsModel model = settings.read(scope, SettingId.fromName(name), revision);
-        if (model != null) {
-            return model;
-        } else {
-            throw new ObjectNotFoundException("Cannot find data using specified parameters");
-        }
+        return settings.read(scope, SettingId.fromName(name), revision);
     }
 
     @PUT

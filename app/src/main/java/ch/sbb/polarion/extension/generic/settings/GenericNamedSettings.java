@@ -58,7 +58,7 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
     }
 
     @SuppressWarnings("unused")
-    public T load(@Nullable String project, @NotNull SettingId id) {
+    public @NotNull T load(@Nullable String project, @NotNull SettingId id) {
         try {
             return read(ScopeUtils.getScopeFromProject(project), id, null);
         } catch (ObjectNotFoundException e) {
@@ -233,7 +233,7 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
     }
 
     private @NotNull T saveDefaultSettingsInGlobalScope() {
-        T defaultModel = defaultValues();
+        @NotNull T defaultModel = defaultValues();
         defaultModel.setName(DEFAULT_NAME);
         return save(DEFAULT_SCOPE, SettingId.fromId(DEFAULT_NAME), defaultModel);
     }
