@@ -26,6 +26,12 @@ jobs:
           distribution: adopt
           java-version: 17
           gpg-private-key: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}
+      - name: 📝 Store project version
+        id: project_version
+        run: echo "project_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
+      - name: 📝 Store cache key
+        id: cache_key
+        run: echo "cache_key=${{ runner.os }}-mvn-${{ hashFiles('**/pom.xml') }}-${{ github.sha }}" >> $GITHUB_OUTPUT
       - name: 💾 Prepare Cache
         id: prepare-cache
         uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4
@@ -33,7 +39,7 @@ jobs:
           path: |
             /home/runner/.m2
             /home/runner/work
-          key: ${{ runner.os }}-mvn-${{ hashFiles('**/pom.xml') }}
+          key: ${{ steps.cache_key.outputs.cache_key }}
       - name: 🔘 Generate settings.xml
         uses: whelk-io/maven-settings-xml-action@9dc09b23833fa9aa7f27b63db287951856f3433d  # v22
         with:
@@ -85,12 +91,6 @@ jobs:
         run: cat /home/runner/.m2/settings.xml
       - name: 📦 Build with Maven
         run: mvn --batch-mode clean package sonar:sonar
-      - name: 📝 Store project version
-        id: project_version
-        run: echo "project_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
-      - name: 📝 Store cache key
-        id: cache_key
-        run: echo "cache_key=${{ runner.os }}-mvn-${{ hashFiles('**/pom.xml') }}" >> $GITHUB_OUTPUT
     outputs:
       project_version: ${{ steps.project_version.outputs.project_version }}
       cache_key: ${{ steps.cache_key.outputs.cache_key }}
