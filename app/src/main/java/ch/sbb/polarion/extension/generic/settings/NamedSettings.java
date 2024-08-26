@@ -25,7 +25,7 @@ public interface NamedSettings<T extends SettingsModel> {
 
     @SneakyThrows
     @SuppressWarnings("unchecked")
-    @NotNull default T fromString(String content) {
+    default @NotNull T fromString(String content) {
         T model = ((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0]).getConstructor().newInstance();
         model.deserialize(content);
         return model;

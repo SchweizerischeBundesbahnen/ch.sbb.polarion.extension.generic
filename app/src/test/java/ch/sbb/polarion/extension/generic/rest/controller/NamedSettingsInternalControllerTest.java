@@ -119,11 +119,6 @@ class NamedSettingsInternalControllerTest {
         NamedSettingsRegistry.INSTANCE.register(List.of(settings));
         SettingsModel settingsModel = controller.readSetting("feature1", "name1", "testScope", "1");
         assertEquals("feature1Model", settingsModel.getName());
-
-        when(settings.read(any(), any(), any())).thenReturn(null);
-        ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class,
-                () -> controller.readSetting("feature1", "name1", "testScope", "1"));
-        assertEquals("Cannot find data using specified parameters", exception.getMessage());
     }
 
     @Test

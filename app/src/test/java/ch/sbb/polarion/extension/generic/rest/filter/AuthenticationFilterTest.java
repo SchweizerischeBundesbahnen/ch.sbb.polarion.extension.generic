@@ -95,7 +95,7 @@ class AuthenticationFilterTest {
 
 
     @Test
-    void filterRequestWithFailedAuthentication() throws IOException, AuthenticationFailedException {
+    void filterRequestWithFailedAuthentication() throws AuthenticationFailedException {
         when(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer failed_token");
         when(requestContext.getHeaderString(AuthenticationFilter.X_POLARION_REST_TOKEN_HEADER)).thenReturn(null);
 

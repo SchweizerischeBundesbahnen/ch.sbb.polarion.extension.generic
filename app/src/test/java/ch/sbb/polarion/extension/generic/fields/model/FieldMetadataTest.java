@@ -4,9 +4,8 @@ import com.polarion.platform.persistence.model.IPrototype;
 import com.polarion.subterra.base.data.model.ICustomField;
 import org.junit.jupiter.api.Test;
 
-import java.util.Objects;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

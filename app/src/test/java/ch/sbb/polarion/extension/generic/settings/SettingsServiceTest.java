@@ -236,7 +236,7 @@ class SettingsServiceTest {
             when(mockedConnection.exists(any(ILocation.class))).thenReturn(true);
             revisions = settingsService.listRevisions(location, null);
             assertEquals(4, revisions.size());
-            assertEquals(Arrays.asList("789", "555", "456", "73"), revisions.stream().map(Revision::getName).collect(Collectors.toList()));
+            assertEquals(Arrays.asList("789", "555", "456", "73"), revisions.stream().map(Revision::getName).toList());
             assertEquals("author3", revisions.get(0).getAuthor());
             assertEquals("USER NAME 2", revisions.get(2).getAuthor());
             assertEquals(Set.of("baselineName"), revisions.stream().map(Revision::getBaseline).collect(Collectors.toSet()));

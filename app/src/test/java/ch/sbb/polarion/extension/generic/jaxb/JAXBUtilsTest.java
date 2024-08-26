@@ -12,13 +12,11 @@ import static org.mockito.Mockito.mock;
 
 class JAXBUtilsTest {
 
-    private final String TEST_OBJECT = "" +
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.lineSeparator() +
+    private static final String TEST_OBJECT = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.lineSeparator() +
             "<TestObject>" + System.lineSeparator() +
             "    <testKey>key</testKey>" + System.lineSeparator() +
             "    <testValue>100</testValue>" + System.lineSeparator() +
-            "</TestObject>" + System.lineSeparator() +
-            "";
+            "</TestObject>" + System.lineSeparator();
 
     @Test
     void deserialize() throws JAXBException {
