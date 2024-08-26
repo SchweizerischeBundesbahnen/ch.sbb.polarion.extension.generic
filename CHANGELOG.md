@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.7.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.6.3...v6.7.0) (2024-08-26)
+
+
+### Features
+
+* sonarcloud with coverage support added ([#125](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/125)) ([7f50d15](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/7f50d15e1f503c3fe62e272dfef4239f8c5b5d1f))
+
+
+### Bug Fixes
+
+* sonar configuration ([#135](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/135)) ([d783261](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d783261add5de1cce254a64cd9739e62d106883e))
+* sonarqube quality issues ([#134](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/134)) ([f7873d3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/f7873d30abedb71ba213540057aa44245f8fd8a2))
+
 ## [6.6.3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.6.2...v6.6.3) (2024-08-22)
 
 
