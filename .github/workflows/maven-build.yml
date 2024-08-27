@@ -105,7 +105,7 @@ jobs:
 
       # Build with Maven
       - name: 📦 Build with Maven
-        run: mvn --batch-mode clean package sonar:sonar
+        run: mvn --batch-mode clean package sonar:sonar -Dsonar.coverage.jacoco.xmlReportPaths=$(pwd)/app/target/site/jacoco/jacoco.xml
     outputs:
       project_version: ${{ steps.project_version.outputs.project_version }}
       cache_key: ${{ steps.cache_key.outputs.cache_key }}
