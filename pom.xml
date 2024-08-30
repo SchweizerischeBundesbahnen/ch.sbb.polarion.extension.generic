@@ -96,6 +96,8 @@
         <google.guice.version>7.0.0</google.guice.version>
         <gwt-servlet.version>2.9.0</gwt-servlet.version>
         <jsp-api.version>2.2</jsp-api.version>
+        <re2j.version>1.7</re2j.version>
+        <reflections.version>0.10.2</reflections.version>
 
         <!-- Manifest entries -->
         <maven-jar-plugin.Manifest-Version>1.0</maven-jar-plugin.Manifest-Version>
@@ -107,6 +109,7 @@
         <!--suppress UnresolvedMavenProperty -->
         <maven-jar-plugin.Bundle-Version>${project.artifact.selectedVersion.majorVersion}.${project.artifact.selectedVersion.minorVersion}.${project.artifact.selectedVersion.incrementalVersion}</maven-jar-plugin.Bundle-Version>
         <maven-jar-plugin.Extension-Context/>
+        <maven-jar-plugin.Discover-Base-Package>${project.artifactId}</maven-jar-plugin.Discover-Base-Package>
         <maven-jar-plugin.Project-URL>${project.scm.url}</maven-jar-plugin.Project-URL>
 
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
@@ -495,6 +498,18 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Will be packaged to final extensions jars -->
+        <dependency>
+            <groupId>com.google.re2j</groupId>
+            <artifactId>re2j</artifactId>
+            <version>${re2j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${reflections.version}</version>
+        </dependency>
+
         <!-- Polarion UI dependency -->
         <dependency>
             <groupId>com.google.gwt</groupId>
@@ -632,6 +647,7 @@
                                 <Bundle-Build-Timestamp>${maven-jar-plugin.Bundle-Build-Timestamp}</Bundle-Build-Timestamp>
                                 <Bundle-ClassPath>.,${maven-jar-plugin.Bundle-ClassPath}</Bundle-ClassPath>
                                 <Extension-Context>${maven-jar-plugin.Extension-Context}</Extension-Context>
+                                <Discover-Base-Package>${maven-jar-plugin.Discover-Base-Package}</Discover-Base-Package>
                                 <Project-URL>${maven-jar-plugin.Project-URL}</Project-URL>
                             </manifestEntries>
                         </archive>
