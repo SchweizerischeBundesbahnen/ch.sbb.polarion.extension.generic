@@ -31,13 +31,13 @@ public class RegexEngineRE2JImpl implements IRegexEngine {
     }
 
     @Override
-    public String group() {
-        return matcher.group();
+    public String group(int group) {
+        return matcher.group(group);
     }
 
     @Override
-    public String group(int group) {
-        return matcher.group(group);
+    public String group() {
+        return matcher.group();
     }
 
     @Override
@@ -46,13 +46,13 @@ public class RegexEngineRE2JImpl implements IRegexEngine {
     }
 
     @Override
-    public void appendReplacement(StringBuilder sb, String replacement) {
-        matcher.appendReplacement(sb, replacement);
+    public void appendTail(StringBuilder sb) {
+        matcher.appendTail(sb);
     }
 
     @Override
-    public void appendTail(StringBuilder sb) {
-        matcher.appendTail(sb);
+    public void appendReplacement(StringBuilder sb, String replacement) {
+        matcher.appendReplacement(sb, replacement);
     }
 
     @Override

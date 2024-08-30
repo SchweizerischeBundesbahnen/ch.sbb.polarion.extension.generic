@@ -13,7 +13,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class RegexMatcherTest {
+class RegexMatcherTest {
 
     private static final String REGEX_TAG = "<(?<tagName>[a-z]+)>";
 
