@@ -11,7 +11,6 @@ import java.util.Properties;
 @Getter
 public class ExtensionConfiguration implements IExtensionConfiguration {
 
-    private static final String CH_SBB_POLARION_EXTENSION = "ch.sbb.polarion.extension";
     private static final String DEBUG = "debug";
 
     @NotNull
@@ -24,7 +23,7 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
 
     protected ExtensionConfiguration() {
         String extensionContext = ContextUtils.getContext().getExtensionContext();
-        this.propertyPrefix = CH_SBB_POLARION_EXTENSION + "." + extensionContext + ".";
+        this.propertyPrefix = ContextUtils.CH_SBB_POLARION_EXTENSION + "." + extensionContext + ".";
     }
 
     @Override

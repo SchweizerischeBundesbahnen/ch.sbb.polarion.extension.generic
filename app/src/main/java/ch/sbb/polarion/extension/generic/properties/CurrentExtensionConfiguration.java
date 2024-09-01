@@ -1,16 +1,26 @@
 package ch.sbb.polarion.extension.generic.properties;
 
-import lombok.Setter;
+import ch.sbb.polarion.extension.generic.util.ContextUtils;
+import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 
-@Setter
+import java.util.Set;
+
 public class CurrentExtensionConfiguration {
 
     private ExtensionConfiguration extensionConfiguration;
 
-    public @NotNull ExtensionConfiguration getExtensionConfiguration() {
+    @SneakyThrows
+    public synchronized @NotNull ExtensionConfiguration getExtensionConfiguration() {
         if (extensionConfiguration == null) {
-            extensionConfiguration = new ExtensionConfiguration();
+            Set<Class<? extends ExtensionConfiguration>> configurationTypes = ContextUtils.findSubTypes(ExtensionConfiguration.class);
+            if (configurationTypes.isEmpty()) {
+                extensionConfiguration = new ExtensionConfiguration();
+            } else if (configurationTypes.size() == 1) {
+                extensionConfiguration = configurationTypes.iterator().next().getConstructor().newInstance();
+            } else {
+                throw new IllegalStateException("Multiple extension configurations found");
+            }
         }
         return extensionConfiguration;
     }
