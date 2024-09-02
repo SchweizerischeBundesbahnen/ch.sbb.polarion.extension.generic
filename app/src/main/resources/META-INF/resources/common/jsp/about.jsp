@@ -12,6 +12,7 @@
 <%@ page import="ch.sbb.polarion.extension.generic.rest.model.Context" %>
 <%@ page import="ch.sbb.polarion.extension.generic.configuration.ConfigurationStatus" %>
 <%@ page import="ch.sbb.polarion.extension.generic.configuration.ConfigurationStatusProvider" %>
+<%@ page import="java.util.Collection" %>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -91,7 +92,7 @@
             </tbody>
         </table>
 
-        <% List<ConfigurationStatus> configurationStatuses = ConfigurationStatusProvider.getAllStatuses(request.getParameter("scope")); %>
+        <% Collection<ConfigurationStatus> configurationStatuses = ConfigurationStatusProvider.getAllStatuses(request.getParameter("scope")); %>
         <% if (!configurationStatuses.isEmpty()) { %>
         <h3>Extension configuration status</h3>
 
