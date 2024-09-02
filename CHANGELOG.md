@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.0.0...v7.0.1) (2024-09-02)
+
+
+### Bug Fixes
+
+* use separate attribute for XSRF token in LogoutFilter ([#143](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/143)) ([37e3364](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/37e33644b2aa0a5f708fcc0c5ebc736aa2faf57a))
+
 ## [7.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.7.0...v7.0.0) (2024-09-02)
 
 
