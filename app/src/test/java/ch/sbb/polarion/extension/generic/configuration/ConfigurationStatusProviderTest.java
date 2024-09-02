@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -19,7 +20,7 @@ class ConfigurationStatusProviderTest {
     void testGetAllStatuses() {
         try (MockedStatic<ContextUtils> contextUtilsMockedStatic = mockStatic(ContextUtils.class)) {
             contextUtilsMockedStatic.when(() -> ContextUtils.findSubTypes(any())).thenReturn(Set.of(TestSingleProvider.class, TestMultipleProvider.class));
-            List<ConfigurationStatus> statuses = ConfigurationStatusProvider.getAllStatuses("some scope");
+            Collection<ConfigurationStatus> statuses = ConfigurationStatusProvider.getAllStatuses("some scope");
             assertEquals(3, statuses.size());
             assertTrue(statuses.containsAll(List.of(
                     new ConfigurationStatus("single", Status.OK, "single details"),
