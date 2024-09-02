@@ -37,6 +37,7 @@ public class GenericRestApplication extends Application {
     @NotNull
     public Set<Object> getSingletons() {
         Set<Object> singletons = new HashSet<>();
+        singletons.add(JacksonFeature.withoutExceptionMappers());
         singletons.addAll(getAllExceptionMapperSingletons());
         singletons.addAll(getAllFilterSingletons());
         singletons.addAll(getAllControllerSingletons());
@@ -50,7 +51,6 @@ public class GenericRestApplication extends Application {
         classes.addAll(getAllExceptionMapperClasses());
         classes.addAll(getAllFilterClasses());
         classes.addAll(getAllControllerClasses());
-        classes.add(JacksonFeature.class);
         return classes;
     }
 
