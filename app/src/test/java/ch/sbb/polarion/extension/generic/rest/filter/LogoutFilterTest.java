@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.polarion.platform.security.ISecurityService;
 
 import static ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter.ASYNC_SKIP_LOGOUT;
+import static ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter.XSRF_SKIP_LOGOUT;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +28,8 @@ class LogoutFilterTest {
     void successfulLogoutCallIfSubjectExists() throws IOException {
         Subject subject = new Subject();
         when(requestContext.getProperty(AuthenticationFilter.USER_SUBJECT)).thenReturn(subject);
+        when(requestContext.getProperty(ASYNC_SKIP_LOGOUT)).thenReturn(Boolean.FALSE);
+        when(requestContext.getProperty(XSRF_SKIP_LOGOUT)).thenReturn(Boolean.FALSE);
         LogoutFilter filter = new LogoutFilter(securityService);
         filter.filter(requestContext, null);
         verify(securityService, times(1)).logout(subject);
@@ -35,6 +38,8 @@ class LogoutFilterTest {
     @Test
     void doNotCallLogoutIfThereIsNoSubject() throws IOException {
         when(requestContext.getProperty(AuthenticationFilter.USER_SUBJECT)).thenReturn(null);
+        when(requestContext.getProperty(ASYNC_SKIP_LOGOUT)).thenReturn(Boolean.FALSE);
+        when(requestContext.getProperty(XSRF_SKIP_LOGOUT)).thenReturn(Boolean.FALSE);
         LogoutFilter filter = new LogoutFilter(securityService);
         filter.filter(requestContext, null);
         verify(securityService, times(0)).logout(any());
@@ -42,9 +47,16 @@ class LogoutFilterTest {
 
     @Test
     void doNotCallLogoutIfAsyncSkipPropertyIsSet() throws IOException {
-        Subject subject = new Subject();
-        when(requestContext.getProperty(AuthenticationFilter.USER_SUBJECT)).thenReturn(subject);
         when(requestContext.getProperty(ASYNC_SKIP_LOGOUT)).thenReturn(Boolean.TRUE);
+        LogoutFilter filter = new LogoutFilter(securityService);
+        filter.filter(requestContext, null);
+        verify(securityService, times(0)).logout(any());
+    }
+
+    @Test
+    void doNotCallLogoutIfXsrfSkipPropertyIsSet() throws IOException {
+        when(requestContext.getProperty(ASYNC_SKIP_LOGOUT)).thenReturn(Boolean.FALSE);
+        when(requestContext.getProperty(XSRF_SKIP_LOGOUT)).thenReturn(Boolean.TRUE);
         LogoutFilter filter = new LogoutFilter(securityService);
         filter.filter(requestContext, null);
         verify(securityService, times(0)).logout(any());
