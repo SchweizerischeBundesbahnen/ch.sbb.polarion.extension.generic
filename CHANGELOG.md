@@ -1,5 +1,21 @@
 # Changelog
 
+## [7.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.7.0...v7.0.0) (2024-09-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* additional block for internal extension information on the abo… ([#139](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/139))
+
+### Features
+
+* additional block for internal extension information on the abo… ([#139](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/139)) ([d27c5cd](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d27c5cd4840395463e29f5aeb06b9121b4896b50)), closes [#138](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/138)
+
+
+### Bug Fixes
+
+* jacoco "can't add different class with same name" issue introduced in v6.7.0 ([#141](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/141)) ([c46bb87](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/c46bb87aee8b4743abe58e5605f6b8c60d76eaf5))
+
 ## [6.7.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v6.6.3...v6.7.0) (2024-08-26)
 
 
