@@ -31,7 +31,7 @@ public class XsrfTokenValidator extends AbstractAuthValidator {
     @Override
     public void updateRequestContext(@NotNull ContainerRequestContext requestContext, @NotNull Subject subject) {
         super.updateRequestContext(requestContext, subject);
-        requestContext.setProperty(LogoutFilter.ASYNC_SKIP_LOGOUT, Boolean.TRUE);
+        requestContext.setProperty(LogoutFilter.XSRF_SKIP_LOGOUT, Boolean.TRUE);
     }
 
     private boolean isXsrfTokenValid(@NotNull String userId, @NotNull String encryptedXsrfToken) {

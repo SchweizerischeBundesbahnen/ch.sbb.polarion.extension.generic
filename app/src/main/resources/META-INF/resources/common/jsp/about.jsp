@@ -10,6 +10,9 @@
 <%@ page import="java.util.Set" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="ch.sbb.polarion.extension.generic.rest.model.Context" %>
+<%@ page import="ch.sbb.polarion.extension.generic.configuration.ConfigurationStatus" %>
+<%@ page import="ch.sbb.polarion.extension.generic.configuration.ConfigurationStatusProvider" %>
+<%@ page import="java.util.Collection" %>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -17,6 +20,7 @@
 <%!
     private static final String ABOUT_TABLE_ROW = "<tr><td>%s</td><td>%s</td></tr>";
     private static final String CONFIGURATION_PROPERTIES_TABLE_ROW = "<tr><td>%s</td><td>%s</td></tr>";
+    private static final String CHECK_CONFIGURATION_TABLE_ROW = "<tr><td>%s</td><td>%s</td><td>%s</td></tr>";
 
     Context context = ExtensionInfo.getInstance().getContext();
     Version version = ExtensionInfo.getInstance().getVersion();
@@ -87,6 +91,29 @@
             %>
             </tbody>
         </table>
+
+        <% Collection<ConfigurationStatus> configurationStatuses = ConfigurationStatusProvider.getAllStatuses(request.getParameter("scope")); %>
+        <% if (!configurationStatuses.isEmpty()) { %>
+        <h3>Extension configuration status</h3>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Configuration</th>
+                <th>Status</th>
+                <th>Info</th>
+            </tr>
+            </thead>
+            <tbody>
+            <%
+                for (ConfigurationStatus configurationStatus : configurationStatuses) {
+                    String row = CHECK_CONFIGURATION_TABLE_ROW.formatted(configurationStatus.getName(), configurationStatus.getStatus().toHtml(), configurationStatus.getDetails());
+                    out.println(row);
+                }
+            %>
+            </tbody>
+        </table>
+        <% } %>
 
         <input id="scope" type="hidden" value="<%= request.getParameter("scope")%>"/>
 

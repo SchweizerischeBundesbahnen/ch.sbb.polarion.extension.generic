@@ -36,12 +36,13 @@ Maven's `pom.xml` should contain following content:
 </parent>
 ```
 
-* Specify extension context, automatic module name and web application name in POM's properties:
+* Specify extension context, automatic module name, discover base package and web application name in POM's properties:
 
 ```xml
 <properties>
     <maven-jar-plugin.Extension-Context>pdf-exporter</maven-jar-plugin.Extension-Context>
     <maven-jar-plugin.Automatic-Module-Name>ch.sbb.polarion.extension.pdf_exporter</maven-jar-plugin.Automatic-Module-Name>
+    <maven-jar-plugin.Discover-Base-Package>ch.sbb.polarion.extension.pdf.exporter</maven-jar-plugin.Discover-Base-Package>
     <web.app.name>${maven-jar-plugin.Extension-Context}</web.app.name>
 </properties>
 ```
