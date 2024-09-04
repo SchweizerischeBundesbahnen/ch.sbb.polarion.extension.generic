@@ -16,6 +16,13 @@ repos:
       - id: check-yaml
       - id: no-commit-to-branch
       - id: mixed-line-ending
+  - repo: local
+    hooks:
+      - id: sensitive-data-leak
+        name: Sensitive data leak hook
+        entry: (?<!www)\.sbb\.ch
+        language: pygrep
+        types: [text]
   - repo: https://github.com/zricethezav/gitleaks
     rev: v8.18.4
     hooks:
