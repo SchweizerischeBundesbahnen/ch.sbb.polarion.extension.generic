@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.polarion.core.util.logging.Logger;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
 @Data
+@Schema(description = "Settings model")
 public abstract class SettingsModel {
 
     private static final Logger logger = Logger.getLogger(SettingsModel.class);
@@ -19,8 +21,11 @@ public abstract class SettingsModel {
     public static final String NAME = "NAME";
 
     @JsonIgnore
+    @Schema(description = "The name of the setting", hidden = true)
     @SuppressWarnings("squid:S1845") // field has same name as a constant intentionally
     protected String name;
+
+    @Schema(description = "The bundle timestamp of the setting")
     protected String bundleTimestamp;
 
     public String serialize() {
