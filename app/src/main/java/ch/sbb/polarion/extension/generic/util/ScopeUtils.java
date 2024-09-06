@@ -57,6 +57,8 @@ public class ScopeUtils {
             Matcher matcher = pattern.matcher(scope);
             if (matcher.matches()) {
                 return matcher.group(1); // project
+            } else {
+                return null;
             }
         }
         return null;

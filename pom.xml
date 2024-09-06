@@ -86,9 +86,11 @@
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.language>java</sonar.language>
-        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.jacoco.xmlReportPaths>app/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.verbose>true</sonar.verbose>
         <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
+<!--        <sonar.leak.period>7.0.0</sonar.leak.period>-->
+<!--        <sonar.leak.period.type>version</sonar.leak.period.type>-->
 
         <!-- Others -->
         <lombok.version>1.18.30</lombok.version>
