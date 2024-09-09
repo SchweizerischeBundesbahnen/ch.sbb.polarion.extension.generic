@@ -1,5 +1,14 @@
 # Changelog
 
+## [7.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.0.2...v7.1.0) (2024-09-09)
+
+
+### Features
+
+* deserialize methods with defaultValue parameter ([#159](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/159)) ([91e4c61](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/91e4c615c8cbd0ab767618d32368eca3e2df51fa)), closes [#158](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/158)
+* deserialize methods with defaultValue parameter ([#160](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/160)) ([3c8f10f](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/3c8f10fecc75126abbb33d9b7839af9c291aed9b))
+* Extended REST APi annotation ([#155](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/155)) ([2cd1808](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2cd1808e4a6191bef17d8ce2e40e207f8d3552a5)), closes [#154](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/154)
+
 ## [7.0.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.0.1...v7.0.2) (2024-09-02)
 
 
