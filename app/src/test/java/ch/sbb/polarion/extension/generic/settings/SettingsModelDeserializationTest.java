@@ -145,4 +145,24 @@ public class SettingsModelDeserializationTest {
         Object deserializedObject = model.deserializeEntry(TEST_STRING, null, Object.class);
         Assertions.assertNull(deserializedObject);
     }
+
+    @Test
+    void testDeserializeEmptyString() {
+        Object deserializedObject = model.deserializeEntry(TEST_STRING, "", Object.class);
+        Assertions.assertNull(deserializedObject);
+    }
+
+    @Test
+    void testDeserializeEmptyEntryWithDefaultStringValue() {
+        String deserializedString = model.deserializeEntry(TEST_OBJECT, null, String.class, "defaultValue");
+        Assertions.assertEquals("defaultValue", deserializedString);
+    }
+
+
+    @Test
+    void testDeserializeEmptyEntryWithDefaultObjectValue() {
+        TestObject defaultValue = new TestObject("testKey", 1);
+        final TestObject deserializedObject = model.deserializeEntry(TEST_OBJECT, null, TestObject.class, defaultValue);
+        Assertions.assertEquals(defaultValue, deserializedObject);
+    }
 }
