@@ -88,7 +88,7 @@
         <sonar.language>java</sonar.language>
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.verbose>true</sonar.verbose>
-        <sonar.qualitygate.wait>false</sonar.qualitygate.wait>
+        <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
 
         <!-- Others -->
         <lombok.version>1.18.30</lombok.version>
