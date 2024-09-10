@@ -254,7 +254,8 @@ public class PdfExporterExtensionConfiguration extends ExtensionConfiguration {
     @Override
     public @NotNull List<String> getSupportedProperties() {
         List<String> supportedProperties = new ArrayList<>(super.getSupportedProperties());
-        supportedProperties.add("additionalProperty");
+        supportedProperties.add("weasyprint.service");
+        ...
         return supportedProperties;
     }
     ...
