@@ -240,7 +240,23 @@ public class PdfExporterAdminUiServlet extends GenericUiServlet {
 
     public PdfExporterAdminUiServlet() {
         super("pdf-exporter-admin");
-        CurrentExtensionConfiguration.getInstance().setExtensionConfiguration(PdfExporterExtensionConfiguration.getInstance());
     }
+}
+```
+
+### Custom extension configuration
+
+In order to register additional configuration properties a subclass of `ExtensionConfiguration` must be marked with the `@Discoverable`:
+
+```java
+@Discoverable
+public class PdfExporterExtensionConfiguration extends ExtensionConfiguration {
+    @Override
+    public @NotNull List<String> getSupportedProperties() {
+        List<String> supportedProperties = new ArrayList<>(super.getSupportedProperties());
+        supportedProperties.add("additionalProperty");
+        return supportedProperties;
+    }
+    ...
 }
 ```
