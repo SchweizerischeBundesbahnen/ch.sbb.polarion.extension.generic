@@ -22,8 +22,7 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
     }
 
     protected ExtensionConfiguration() {
-        String extensionContext = ContextUtils.getContext().getExtensionContext();
-        this.propertyPrefix = ContextUtils.CH_SBB_POLARION_EXTENSION + "." + extensionContext + ".";
+        this.propertyPrefix = ContextUtils.getConfigurationPropertiesPrefix();
     }
 
     @Override
