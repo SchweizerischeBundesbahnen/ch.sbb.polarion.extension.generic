@@ -110,6 +110,7 @@
         <maven-jar-plugin.Bundle-Version>${project.artifact.selectedVersion.majorVersion}.${project.artifact.selectedVersion.minorVersion}.${project.artifact.selectedVersion.incrementalVersion}</maven-jar-plugin.Bundle-Version>
         <maven-jar-plugin.Extension-Context/>
         <maven-jar-plugin.Discover-Base-Package>${project.artifactId}</maven-jar-plugin.Discover-Base-Package>
+        <maven-jar-plugin.Configuration-Properties-Prefix/>
         <maven-jar-plugin.Project-URL>${project.scm.url}</maven-jar-plugin.Project-URL>
 
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
@@ -650,6 +651,7 @@
                                 <Bundle-ClassPath>.,${maven-jar-plugin.Bundle-ClassPath}</Bundle-ClassPath>
                                 <Extension-Context>${maven-jar-plugin.Extension-Context}</Extension-Context>
                                 <Discover-Base-Package>${maven-jar-plugin.Discover-Base-Package}</Discover-Base-Package>
+                                <Configuration-Properties-Prefix>${maven-jar-plugin.Configuration-Properties-Prefix}</Configuration-Properties-Prefix>
                                 <Project-URL>${maven-jar-plugin.Project-URL}</Project-URL>
                             </manifestEntries>
                         </archive>

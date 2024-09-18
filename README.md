@@ -42,7 +42,8 @@ Maven's `pom.xml` should contain following content:
 <properties>
     <maven-jar-plugin.Extension-Context>pdf-exporter</maven-jar-plugin.Extension-Context>
     <maven-jar-plugin.Automatic-Module-Name>ch.sbb.polarion.extension.pdf_exporter</maven-jar-plugin.Automatic-Module-Name>
-    <maven-jar-plugin.Discover-Base-Package>ch.sbb.polarion.extension.pdf.exporter</maven-jar-plugin.Discover-Base-Package>
+    <maven-jar-plugin.Discover-Base-Package>ch.sbb.polarion.extension.pdf_exporter</maven-jar-plugin.Discover-Base-Package>
+    <maven-jar-plugin.Configuration-Properties-Prefix>ch.sbb.polarion.extension.pdf-exporter</maven-jar-plugin.Configuration-Properties-Prefix>
     <web.app.name>${maven-jar-plugin.Extension-Context}</web.app.name>
 </properties>
 ```
