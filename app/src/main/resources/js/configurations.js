@@ -4,7 +4,7 @@ const Configurations = {
     setConfigurationContentCallback: () => {},
     setContentAreaEnabledCallback: null,
     preDeleteCallback: null, // It should return Promise
-    newConfigurationCallback: null,
+    newConfigurationCallback: () => {},
     configurationsPane: document.getElementById("configurations-pane"),
     editConfigurationPane: document.getElementById("edit-configuration-pane"),
     newConfigurationInput: document.getElementById("new-configuration-input"),
