@@ -74,7 +74,7 @@
         <assertj-core.version>3.26.3</assertj-core.version>
         <jaxb.impl.version>2.4.0-b180830.0438</jaxb.impl.version>
         <istack.version>4.2.0</istack.version>
-        <log4j.version>2.24.0</log4j.version>
+        <log4j.version>2.24.1</log4j.version>
         <jackson.annotations.version>2.18.0</jackson.annotations.version>
 
         <!-- Sonar and JaCoCo -->
