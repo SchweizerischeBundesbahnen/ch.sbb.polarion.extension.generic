@@ -19,7 +19,6 @@ import javax.ws.rs.core.MediaType;
 
 @Hidden
 @Tag(name = "Extension Information")
-@OpenAPIDefinition(info = @Info(title = "REST API"))
 @Path("/internal")
 public class ExtensionInfoInternalController {
 
