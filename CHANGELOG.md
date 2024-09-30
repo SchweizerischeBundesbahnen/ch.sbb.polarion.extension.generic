@@ -1,5 +1,17 @@
 # Changelog
 
+## [7.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.1.0...v7.2.0) (2024-09-30)
+
+
+### Features
+
+* Configuration-Properties-Prefix added to manifest ([#164](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/164)) ([d2eec01](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d2eec018359284c72cea77e8e6816c0e638d9d61)), closes [#163](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/163)
+
+
+### Bug Fixes
+
+* SonarQube code smells ([#170](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/170)) ([837a95a](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/837a95ad293861368472594aedc1287a806b2aba))
+
 ## [7.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.0.2...v7.1.0) (2024-09-09)
 
 
