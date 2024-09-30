@@ -561,6 +561,7 @@
                         <outputPath>${project.basedir}/docs</outputPath>
                         <outputFormat>JSONANDYAML</outputFormat>
                         <prettyPrint>true</prettyPrint>
+                        <sortOutput>true</sortOutput>
                     </configuration>
                     <executions>
                         <execution>
