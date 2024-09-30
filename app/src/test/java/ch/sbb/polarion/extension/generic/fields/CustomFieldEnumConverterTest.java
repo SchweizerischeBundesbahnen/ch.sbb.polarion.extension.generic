@@ -81,14 +81,6 @@ public class CustomFieldEnumConverterTest {
     }
 
     @Test
-    void testGetEnumOptionByValue() {
-        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
-
-        assertEquals(new EnumOption(YES_NO_ENUM_ID, YES.left()), ConverterTestUtils.process(YES.left(), fieldMetadata));
-        assertEquals(new EnumOption(YES_NO_ENUM_ID, NO.left()), ConverterTestUtils.process(NO.left(), fieldMetadata));
-    }
-
-    @Test
     void testGetEnumOptionByValueIgnoringSpaces() {
         FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
         // Experimentally proven that Polarion allows to create an enum with spaces at the end of its name

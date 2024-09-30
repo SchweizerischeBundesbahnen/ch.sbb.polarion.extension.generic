@@ -31,14 +31,17 @@ public class PObjectListStub<T extends IPObject> extends ArrayList<T> implements
 
     @Override
     public void resolveAll() {
+        // do nothing
     }
 
     @Override
-    public void resolveFirst(int i) {
+    public void resolveFirst(int n) {
+        // do nothing
     }
 
     @Override
-    public void resolve(int i, int i1) {
+    public void resolve(int first, int length) {
+        // do nothing
     }
 
     @Override

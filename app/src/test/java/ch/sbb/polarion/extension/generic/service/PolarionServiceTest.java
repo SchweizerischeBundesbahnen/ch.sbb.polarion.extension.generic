@@ -243,11 +243,11 @@ public class PolarionServiceTest {
 
     @Test
     void testGetGeneralFields() {
-        IDataService dataService = mock(IDataService.class);
-        when(trackerService.getDataService()).thenReturn(dataService);
+        IDataService mockDataService = mock(IDataService.class);
+        when(trackerService.getDataService()).thenReturn(mockDataService);
         IPrototype prototype = mock(IPrototype.class);
         when(prototype.getKeyNames()).thenReturn(List.of("key1", "key2", "key3"));
-        when(dataService.getPrototype(anyString())).thenReturn(prototype);
+        when(mockDataService.getPrototype(anyString())).thenReturn(prototype);
 
         FieldMetadata metadata1 = FieldMetadata.builder().id("id1").build();
         FieldMetadata metadata2 = FieldMetadata.builder().id("id2").build();
@@ -263,14 +263,14 @@ public class PolarionServiceTest {
 
     @Test
     void testGetCustomFields() {
-        IDataService dataService = mock(IDataService.class);
-        when(trackerService.getDataService()).thenReturn(dataService);
+        IDataService mockDataService = mock(IDataService.class);
+        when(trackerService.getDataService()).thenReturn(mockDataService);
         ICustomFieldsService customFieldsService = mock(ICustomFieldsService.class);
         ICustomField customField1 = mock(ICustomField.class);
         ICustomField customField2 = mock(ICustomField.class);
         ICustomField customField3 = mock(ICustomField.class);
         when(customFieldsService.getCustomFields(anyString(), any(), anyString())).thenReturn(List.of(customField1, customField2, customField3));
-        when(dataService.getCustomFieldsService()).thenReturn(customFieldsService);
+        when(mockDataService.getCustomFieldsService()).thenReturn(customFieldsService);
 
         FieldMetadata metadata1 = FieldMetadata.builder().id("id1").build();
         FieldMetadata metadata2 = FieldMetadata.builder().id("id2").build();
@@ -407,10 +407,10 @@ public class PolarionServiceTest {
     void testGetEnumeration() {
         when(polarionService.getEnumeration(any(), any())).thenCallRealMethod();
 
-        IDataService dataService = mock(IDataService.class);
-        when(trackerService.getDataService()).thenReturn(dataService);
+        IDataService mockDataService = mock(IDataService.class);
+        when(trackerService.getDataService()).thenReturn(mockDataService);
         IEnumeration enumeration = mock(IEnumeration.class);
-        when(dataService.getEnumerationForEnumId(any(), any())).thenReturn(enumeration);
+        when(mockDataService.getEnumerationForEnumId(any(), any())).thenReturn(enumeration);
 
         assertSame(enumeration, polarionService.getEnumeration(mock(IEnumType.class), mock(IContextId.class)));
     }
