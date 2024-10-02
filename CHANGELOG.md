@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.3.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.2.0...v7.3.0) (2024-10-02)
+
+
+### Features
+
+* extension context should not be null or blank ([#173](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/173)) ([ae54c17](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/ae54c17afa589d6a7a7004f96f30e648d1001a72))
+
 ## [7.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.1.0...v7.2.0) (2024-09-30)
 
 
