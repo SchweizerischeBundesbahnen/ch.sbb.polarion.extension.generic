@@ -10,12 +10,13 @@ import javax.ws.rs.InternalServerErrorException;
 
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.NotNull;
 
 @UtilityClass
 public class ManifestUtils {
 
     @SneakyThrows
-    public static Attributes getManifestAttributes() {
+    public static @NotNull Attributes getManifestAttributes() {
         Enumeration<URL> resources = VersionUtils.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
         if (resources.hasMoreElements()) {
             try (InputStream inputStream = resources.nextElement().openStream()) {

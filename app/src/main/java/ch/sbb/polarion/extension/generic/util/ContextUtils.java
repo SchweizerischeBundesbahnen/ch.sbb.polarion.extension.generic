@@ -3,6 +3,7 @@ package ch.sbb.polarion.extension.generic.util;
 import ch.sbb.polarion.extension.generic.rest.model.Context;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
 
@@ -24,8 +25,11 @@ public class ContextUtils {
 
     @NotNull
     public static Context getContext() {
-        final Attributes attributes = ManifestUtils.getManifestAttributes();
-        String extensionContext = attributes.getValue(EXTENSION_CONTEXT);
+        @NotNull Attributes attributes = ManifestUtils.getManifestAttributes();
+        @Nullable String extensionContext = attributes.getValue(EXTENSION_CONTEXT);
+        if (extensionContext == null || extensionContext.isBlank()) {
+            throw new IllegalStateException("Extension context is not provided");
+        }
         return new Context(extensionContext);
     }
 
@@ -38,7 +42,11 @@ public class ContextUtils {
     }
 
     public static String getConfigurationPropertiesPrefix() {
-        return Optional.ofNullable(ManifestUtils.getManifestAttributes().getValue(CONFIGURATION_PROPERTIES_PREFIX))
-                .orElse(CH_SBB_POLARION_EXTENSION + ContextUtils.getContext().getExtensionContext());
+        String configurationPropertiesPrefix = ManifestUtils.getManifestAttributes().getValue(CONFIGURATION_PROPERTIES_PREFIX);
+        if (configurationPropertiesPrefix == null || configurationPropertiesPrefix.isBlank()) {
+            return CH_SBB_POLARION_EXTENSION + ContextUtils.getContext().getExtensionContext();
+        } else {
+            return configurationPropertiesPrefix.endsWith(".") ? configurationPropertiesPrefix : configurationPropertiesPrefix + ".";
+        }
     }
 }
