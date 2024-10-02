@@ -26,9 +26,9 @@ public class Context {
         return getRestUrl() + "/swagger";
     }
 
-    public Context(@NotNull String extensionContext) {
-        if (extensionContext.isBlank()) {
-            throw new IllegalArgumentException("Extension context can not be blank");
+    public Context(String extensionContext) {
+        if (extensionContext == null || extensionContext.isBlank()) {
+            throw new IllegalArgumentException("Extension context must be provided");
         }
         this.extensionContext = extensionContext;
     }
