@@ -68,9 +68,8 @@ class GenericNamedSettingsTest {
             verify(settingsSpy).beforeSave(model);
             verify(settingsSpy).afterSave(model);
 
-            assertThrows(IllegalArgumentException.class, () -> {
-                settingsSpy.save("project/some_project/", SettingId.fromId(""), model);
-            });
+            SettingId emptySettingId = SettingId.fromId("");
+            assertThrows(IllegalArgumentException.class, () -> settingsSpy.save("project/some_project/", emptySettingId, model));
         }
     }
 
@@ -120,13 +119,11 @@ class GenericNamedSettingsTest {
             TestModel testModelGlobalDefaultTest1 = testSettings.read("", SettingId.fromName("default_test1"), null);
             assertEquals("default_test1", testModelGlobalDefaultTest1.getName());
 
-            assertThrows(ObjectNotFoundException.class, () -> {
-                TestModel testModelProjectTest1Rev34 = testSettings.read("project/some_project/", SettingId.fromName("default_test1"), "55");
-            });
+            SettingId defaultTest1SettingId = SettingId.fromName("unknown");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.read("project/some_project/", defaultTest1SettingId, "55"));
 
-            assertThrows(ObjectNotFoundException.class, () -> {
-                TestModel testModelProjectTest1Rev34 = testSettings.read("project/some_project/", SettingId.fromName("unknown"), null);
-            });
+            SettingId unknownSettingId = SettingId.fromName("unknown");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.read("project/some_project/", unknownSettingId, null));
 
             TestModel testModelDefaultSaved = testSettings.read("project/some_project/", SettingId.fromName(DEFAULT_NAME), null);
             assertEquals("Default", testModelDefaultSaved.getName());
@@ -218,16 +215,14 @@ class GenericNamedSettingsTest {
             when(settingsService.read(eq(mockProjectTest1Location), any())).thenReturn(getModelContent("project_delete1"));
             when(settingsService.read(eq(mockDefaultTest1Location), any())).thenReturn(getModelContent("default_delete1"));
 
-            assertThrows(ObjectNotFoundException.class, () -> {
-                testSettings.delete("project/delete_project/", SettingId.fromName("unknown"));
-            });
+            SettingId unknownSettingId = SettingId.fromName("unknown");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.delete("project/delete_project/", unknownSettingId));
 
             testSettings.delete("project/delete_project/", SettingId.fromName("project_delete1"));
             verify(settingsService).delete(mockProjectTest1Location);
 
-            assertThrows(ObjectNotFoundException.class, () -> {
-                testSettings.delete("project/delete_project/", SettingId.fromName("default_delete1"));
-            });
+            SettingId defaultDelete1SettingId = SettingId.fromName("default_delete1");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.delete("project/delete_project/", defaultDelete1SettingId));
         }
     }
 
@@ -279,9 +274,8 @@ class GenericNamedSettingsTest {
 
             when(settingsService.read(eq(mockDefaultTest1Location), any())).thenReturn(getModelContent("default_list_revisions1"));
 
-            assertThrows(ObjectNotFoundException.class, () -> {
-                testSettings.listRevisions("project/list_revisions_project/", SettingId.fromName("unknown"));
-            });
+            SettingId unknownSettingId = SettingId.fromName("unknown");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.listRevisions("project/list_revisions_project/", unknownSettingId));
 
             List<Revision> projectListRevisions1 = testSettings.listRevisions("project/list_revisions_project/", SettingId.fromName("project_list_revisions1"));
             assertThat(projectListRevisions1).extracting(Revision::getName).containsExactly("3", "2", "1");
