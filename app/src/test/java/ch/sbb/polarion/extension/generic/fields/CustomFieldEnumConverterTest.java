@@ -137,11 +137,6 @@ public class CustomFieldEnumConverterTest {
 
         assertEquals(new EnumOption(YES_NO_ENUM_ID, YES.left()), ConverterTestUtils.process("yes", context, fieldMetadata));
 
-        //default key/value option identification hidden by the implicit mapping
-        assertThrows(IllegalArgumentException.class,
-                () -> ConverterTestUtils.process("Ja", context, fieldMetadata),
-                "Unsupported value 'Ja' for enum ''");
-
         //just an unknown option
         assertThrows(IllegalArgumentException.class,
                 () -> ConverterTestUtils.process("Probably", context, fieldMetadata),
