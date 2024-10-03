@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.3.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.3.0...v7.3.1) (2024-10-02)
+
+
+### Bug Fixes
+
+* options mapping refactoring ([#176](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/176)) ([243f4f9](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/243f4f937ef2f347b0f0d1f86f6c01fbd1b21572))
+* sonarqube code smells ([#178](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/178)) ([cc0cfc8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/cc0cfc81cf3facc26e62fb901fc5d2187f9e1591))
+
 ## [7.3.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.2.0...v7.3.0) (2024-10-02)
 
 
