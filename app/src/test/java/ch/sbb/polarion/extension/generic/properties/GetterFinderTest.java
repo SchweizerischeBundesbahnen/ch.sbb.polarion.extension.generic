@@ -1,35 +1,15 @@
 package ch.sbb.polarion.extension.generic.properties;
 
-import ch.sbb.polarion.extension.generic.rest.model.Context;
-import ch.sbb.polarion.extension.generic.util.ContextUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import ch.sbb.polarion.extension.generic.context.CurrentContextExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, CurrentContextExtension.class})
 class GetterFinderTest {
-
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    MockedStatic<ContextUtils> contextUtils;
-
-    @BeforeEach
-    void setUp() {
-        Context context = new Context("test-extension");
-        contextUtils.when(ContextUtils::getContext).thenReturn(context);
-    }
-
-    @AfterEach
-    void tearDown() {
-        contextUtils.close();
-    }
 
     @Test
     void testGetValue() {
