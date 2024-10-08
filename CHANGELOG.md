@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.4.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.3.1...v7.4.0) (2024-10-08)
+
+
+### Features
+
+* current context for test classes ([#180](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/180)) ([244de95](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/244de95898488926f2171478b366213446dcd6e3))
+
 ## [7.3.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.3.0...v7.3.1) (2024-10-02)
 
 
