@@ -10,12 +10,17 @@ import org.jetbrains.annotations.NotNull;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConfigurationStatus {
+public class ConfigurationStatus implements Comparable<ConfigurationStatus> {
     private @NotNull String name;
     private @NotNull Status status;
     private @NotNull String details;
 
     public ConfigurationStatus(@NotNull String name, @NotNull Status status) {
         this(name, status, "");
+    }
+
+    @Override
+    public int compareTo(@NotNull ConfigurationStatus o) {
+        return name.compareTo(o.name);
     }
 }

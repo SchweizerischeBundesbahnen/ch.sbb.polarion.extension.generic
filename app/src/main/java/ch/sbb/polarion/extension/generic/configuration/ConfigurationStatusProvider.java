@@ -8,18 +8,19 @@ import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 @SuppressWarnings("unused")
 public abstract class ConfigurationStatusProvider {
 
     @SneakyThrows
-    public static List<ConfigurationStatus> getAllStatuses(String scope) {
+    public static Collection<ConfigurationStatus> getAllStatuses(String scope) {
         Context context = new Context(scope);
         Set<Class<? extends ConfigurationStatusProvider>> subTypes = ContextUtils.findSubTypes(ConfigurationStatusProvider.class);
-        List<ConfigurationStatus> statuses = new ArrayList<>();
+        Collection<ConfigurationStatus> statuses = new TreeSet<>();
         for (Class<? extends ConfigurationStatusProvider> subType : subTypes) {
             ConfigurationStatusProvider provider = subType.getConstructor().newInstance();
             statuses.addAll(provider.getStatuses(context));
@@ -27,7 +28,7 @@ public abstract class ConfigurationStatusProvider {
         return statuses;
     }
 
-    public @NotNull List<ConfigurationStatus> getStatuses(@NotNull Context context) {
+    public @NotNull Collection<ConfigurationStatus> getStatuses(@NotNull Context context) {
         return List.of(getStatus(context));
     }
 

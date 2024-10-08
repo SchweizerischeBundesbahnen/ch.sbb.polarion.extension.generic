@@ -4,12 +4,13 @@ const Configurations = {
     setConfigurationContentCallback: () => {},
     setContentAreaEnabledCallback: null,
     preDeleteCallback: null, // It should return Promise
+    newConfigurationCallback: () => {},
     configurationsPane: document.getElementById("configurations-pane"),
     editConfigurationPane: document.getElementById("edit-configuration-pane"),
     newConfigurationInput: document.getElementById("new-configuration-input"),
     editConfigurationInput: document.getElementById("edit-configuration-input"),
 
-    init: function ({label, setConfigurationContentCallback, setContentAreaEnabledCallback, preDeleteCallback}) {
+    init: function ({label, setConfigurationContentCallback, setContentAreaEnabledCallback, preDeleteCallback, newConfigurationCallback}) {
         if (label) {
             document.querySelectorAll('span.configuration-label').forEach(labelSpan => {
                 labelSpan.innerText = label;
@@ -24,6 +25,7 @@ const Configurations = {
         this.setConfigurationContentCallback = setConfigurationContentCallback;
         this.setContentAreaEnabledCallback = setContentAreaEnabledCallback;
         this.preDeleteCallback = preDeleteCallback;
+        this.newConfigurationCallback = newConfigurationCallback;
 
         this.configurationsSelect = new SbbCustomSelect({
             selectContainer: document.getElementById("configurations-select"),
@@ -74,6 +76,7 @@ const Configurations = {
         });
         this.editConfigurationPane.style.display = "block";
         this.setContentAreaEnabled(false);
+        this.newConfigurationCallback();
     },
 
     editConfiguration: function() {

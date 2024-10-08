@@ -9,6 +9,6 @@ public class TestSettingsModel extends SettingsModel {
 
     @Override
     protected void deserializeModelData(String serializedString) {
-
+        // do nothing
     }
 }

@@ -1,5 +1,7 @@
 package ch.sbb.polarion.extension.generic.settings;
 
+import ch.sbb.polarion.extension.generic.context.CurrentContextConfig;
+import ch.sbb.polarion.extension.generic.context.CurrentContextExtension;
 import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import ch.sbb.polarion.extension.generic.settings.named_settings.TestModel;
 import ch.sbb.polarion.extension.generic.settings.named_settings.TestSettings;
@@ -25,9 +27,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, CurrentContextExtension.class})
+@CurrentContextConfig(GenericNamedSettingsTest.POLARION_TEXT_EXTENSION)
 @SuppressWarnings("unused")
 class GenericNamedSettingsTest {
+
+    public static final String POLARION_TEXT_EXTENSION = "polarion-text-extension";
 
     @Test
     void testBeforeAndAfterSave() {
@@ -48,9 +53,8 @@ class GenericNamedSettingsTest {
             verify(settingsSpy).beforeSave(model);
             verify(settingsSpy).afterSave(model);
 
-            assertThrows(IllegalArgumentException.class, () -> {
-                settingsSpy.save("project/some_project/", SettingId.fromId(""), model);
-            });
+            SettingId emptySettingId = SettingId.fromId("");
+            assertThrows(IllegalArgumentException.class, () -> settingsSpy.save("project/some_project/", emptySettingId, model));
         }
     }
 
@@ -61,11 +65,11 @@ class GenericNamedSettingsTest {
 
             ILocation mockProjectLocation = mock(ILocation.class);
             ILocation mockProjectSettingsFolderLocation = mock(ILocation.class);
-            when(mockProjectLocation.append(".polarion/extensions/null/Test")).thenReturn(mockProjectSettingsFolderLocation);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockProjectSettingsFolderLocation);
             ILocation mockProjectTest1Location = mock(ILocation.class);
             ILocation mockProjectTest2Location = mock(ILocation.class);
-            when(mockProjectLocation.append(".polarion/extensions/null/Test/project_test1.settings")).thenReturn(mockProjectTest1Location);
-            when(mockProjectLocation.append(".polarion/extensions/null/Test/project_test2.settings")).thenReturn(mockProjectTest2Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/project_test1.settings")).thenReturn(mockProjectTest1Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/project_test2.settings")).thenReturn(mockProjectTest2Location);
 
             mockScopeUtils.when(() -> ScopeUtils.getContextLocation("project/some_project/")).thenReturn(mockProjectLocation);
             when(settingsService.getLastRevision(mockProjectSettingsFolderLocation)).thenReturn("34");
@@ -73,11 +77,11 @@ class GenericNamedSettingsTest {
 
             ILocation mockDefaultLocation = mock(ILocation.class);
             ILocation mockDefaultSettingsFolderLocation = mock(ILocation.class);
-            when(mockDefaultLocation.append(".polarion/extensions/null/Test")).thenReturn(mockDefaultSettingsFolderLocation);
+            when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockDefaultSettingsFolderLocation);
             ILocation mockDefaultTest1Location = mock(ILocation.class);
-            when(mockDefaultLocation.append(".polarion/extensions/null/Test/default_test1.settings")).thenReturn(mockDefaultTest1Location);
+            when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/default_test1.settings")).thenReturn(mockDefaultTest1Location);
             ILocation mockDefaultDefaultLocation = mock(ILocation.class);
-            when(mockDefaultLocation.append(".polarion/extensions/null/Test/Default.settings")).thenReturn(mockDefaultDefaultLocation);
+            when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/Default.settings")).thenReturn(mockDefaultDefaultLocation);
 
             mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
             when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn("42");
@@ -100,13 +104,11 @@ class GenericNamedSettingsTest {
             TestModel testModelGlobalDefaultTest1 = testSettings.read("", SettingId.fromName("default_test1"), null);
             assertEquals("default_test1", testModelGlobalDefaultTest1.getName());
 
-            assertThrows(ObjectNotFoundException.class, () -> {
-                TestModel testModelProjectTest1Rev34 = testSettings.read("project/some_project/", SettingId.fromName("default_test1"), "55");
-            });
+            SettingId defaultTest1SettingId = SettingId.fromName("unknown");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.read("project/some_project/", defaultTest1SettingId, "55"));
 
-            assertThrows(ObjectNotFoundException.class, () -> {
-                TestModel testModelProjectTest1Rev34 = testSettings.read("project/some_project/", SettingId.fromName("unknown"), null);
-            });
+            SettingId unknownSettingId = SettingId.fromName("unknown");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.read("project/some_project/", unknownSettingId, null));
 
             TestModel testModelDefaultSaved = testSettings.read("project/some_project/", SettingId.fromName(DEFAULT_NAME), null);
             assertEquals("Default", testModelDefaultSaved.getName());
@@ -175,10 +177,10 @@ class GenericNamedSettingsTest {
 
             ILocation mockProjectLocation = mock(ILocation.class);
             ILocation mockProjectSettingsFolderLocation = mock(ILocation.class);
-            when(mockProjectLocation.append(".polarion/extensions/null/Test")).thenReturn(mockProjectSettingsFolderLocation);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockProjectSettingsFolderLocation);
             ILocation mockProjectTest1Location = mock(ILocation.class);
             ILocation mockProjectTest2Location = mock(ILocation.class);
-            when(mockProjectLocation.append(".polarion/extensions/null/Test/project_delete1.settings")).thenReturn(mockProjectTest1Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/project_delete1.settings")).thenReturn(mockProjectTest1Location);
 
             mockScopeUtils.when(() -> ScopeUtils.getContextLocation("project/delete_project/")).thenReturn(mockProjectLocation);
             when(settingsService.getLastRevision(mockProjectSettingsFolderLocation)).thenReturn("11");
@@ -186,9 +188,9 @@ class GenericNamedSettingsTest {
 
             ILocation mockDefaultLocation = mock(ILocation.class);
             ILocation mockDefaultSettingsFolderLocation = mock(ILocation.class);
-            when(mockDefaultLocation.append(".polarion/extensions/null/Test")).thenReturn(mockDefaultSettingsFolderLocation);
+            when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockDefaultSettingsFolderLocation);
             ILocation mockDefaultTest1Location = mock(ILocation.class);
-            when(mockDefaultLocation.append(".polarion/extensions/null/Test/default_delete1.settings")).thenReturn(mockDefaultTest1Location);
+            when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/default_delete1.settings")).thenReturn(mockDefaultTest1Location);
 
             mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
             when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn("66");
@@ -198,16 +200,14 @@ class GenericNamedSettingsTest {
             when(settingsService.read(eq(mockProjectTest1Location), any())).thenReturn(getModelContent("project_delete1"));
             when(settingsService.read(eq(mockDefaultTest1Location), any())).thenReturn(getModelContent("default_delete1"));
 
-            assertThrows(ObjectNotFoundException.class, () -> {
-                testSettings.delete("project/delete_project/", SettingId.fromName("unknown"));
-            });
+            SettingId unknownSettingId = SettingId.fromName("unknown");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.delete("project/delete_project/", unknownSettingId));
 
             testSettings.delete("project/delete_project/", SettingId.fromName("project_delete1"));
             verify(settingsService).delete(mockProjectTest1Location);
 
-            assertThrows(ObjectNotFoundException.class, () -> {
-                testSettings.delete("project/delete_project/", SettingId.fromName("default_delete1"));
-            });
+            SettingId defaultDelete1SettingId = SettingId.fromName("default_delete1");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.delete("project/delete_project/", defaultDelete1SettingId));
         }
     }
 
@@ -220,11 +220,11 @@ class GenericNamedSettingsTest {
 
             ILocation mockProjectLocation = mock(ILocation.class);
             ILocation mockProjectSettingsFolderLocation = mock(ILocation.class);
-            when(mockProjectLocation.append(".polarion/extensions/null/Test")).thenReturn(mockProjectSettingsFolderLocation);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockProjectSettingsFolderLocation);
             ILocation mockProjectTest1Location = mock(ILocation.class);
-            when(mockProjectLocation.append(".polarion/extensions/null/Test/project_list_revisions1.settings")).thenReturn(mockProjectTest1Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/project_list_revisions1.settings")).thenReturn(mockProjectTest1Location);
             ILocation mockProjectDefault1Location = mock(ILocation.class);
-            when(mockProjectLocation.append(".polarion/extensions/null/Test/default_list_revisions1.settings")).thenReturn(mockProjectDefault1Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/default_list_revisions1.settings")).thenReturn(mockProjectDefault1Location);
 
             mockScopeUtils.when(() -> ScopeUtils.getContextLocation("project/list_revisions_project/")).thenReturn(mockProjectLocation);
             when(settingsService.getLastRevision(mockProjectSettingsFolderLocation)).thenReturn("11");
@@ -232,9 +232,9 @@ class GenericNamedSettingsTest {
 
             ILocation mockDefaultLocation = mock(ILocation.class);
             ILocation mockDefaultSettingsFolderLocation = mock(ILocation.class);
-            when(mockDefaultLocation.append(".polarion/extensions/null/Test")).thenReturn(mockDefaultSettingsFolderLocation);
+            when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockDefaultSettingsFolderLocation);
             ILocation mockDefaultTest1Location = mock(ILocation.class);
-            when(mockDefaultLocation.append(".polarion/extensions/null/Test/default_list_revisions1.settings")).thenReturn(mockDefaultTest1Location);
+            when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/default_list_revisions1.settings")).thenReturn(mockDefaultTest1Location);
 
             mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
             when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn("66");
@@ -259,9 +259,8 @@ class GenericNamedSettingsTest {
 
             when(settingsService.read(eq(mockDefaultTest1Location), any())).thenReturn(getModelContent("default_list_revisions1"));
 
-            assertThrows(ObjectNotFoundException.class, () -> {
-                testSettings.listRevisions("project/list_revisions_project/", SettingId.fromName("unknown"));
-            });
+            SettingId unknownSettingId = SettingId.fromName("unknown");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.listRevisions("project/list_revisions_project/", unknownSettingId));
 
             List<Revision> projectListRevisions1 = testSettings.listRevisions("project/list_revisions_project/", SettingId.fromName("project_list_revisions1"));
             assertThat(projectListRevisions1).extracting(Revision::getName).containsExactly("3", "2", "1");

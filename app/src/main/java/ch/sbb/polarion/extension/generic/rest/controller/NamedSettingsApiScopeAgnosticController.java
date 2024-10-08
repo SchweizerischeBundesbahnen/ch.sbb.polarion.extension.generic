@@ -6,6 +6,9 @@ import ch.sbb.polarion.extension.generic.settings.SettingName;
 import ch.sbb.polarion.extension.generic.settings.SettingsModel;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.jetbrains.annotations.NotNull;
 
 import javax.ws.rs.DELETE;
@@ -28,7 +31,15 @@ public class NamedSettingsApiScopeAgnosticController extends NamedSettingsApiCon
     @Override
     @GET
     @Path("/settings/{feature}/names")
-    @Operation(summary = "Returns names of specified setting")
+    @Operation(summary = "Returns names of specified setting",
+            responses = {
+                    @ApiResponse(description = "List of setting names",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = SettingName.class)
+                            )
+                    )
+            }
+    )
     public Collection<SettingName> readSettingNames(@PathParam("feature") String feature, @QueryParam("scope") @DefaultValue("") @Parameter(hidden = true) String scope) {
         return super.readSettingNames(feature, DEFAULT_SCOPE);
     }
@@ -36,7 +47,15 @@ public class NamedSettingsApiScopeAgnosticController extends NamedSettingsApiCon
     @Override
     @GET
     @Path("/settings/{feature}/names/{name}/content")
-    @Operation(summary = "Returns values (content) of specified setting by its id and revision")
+    @Operation(summary = "Returns values (content) of specified setting by its id and revision",
+            responses = {
+                    @ApiResponse(description = "Setting content",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = SettingsModel.class)
+                            )
+                    )
+            }
+    )
     public SettingsModel readSetting(@PathParam("feature") String feature, @PathParam("name") String name,
                                      @QueryParam("scope") @DefaultValue("") @Parameter(hidden = true) String scope, @QueryParam("revision") String revision) {
         return super.readSetting(feature, name, DEFAULT_SCOPE, revision);
@@ -45,7 +64,11 @@ public class NamedSettingsApiScopeAgnosticController extends NamedSettingsApiCon
     @Override
     @PUT
     @Path("/settings/{feature}/names/{name}/content")
-    @Operation(summary = "Creates or updates named setting. Creation scenario will use default setting value if no body specified in the request.")
+    @Operation(summary = "Creates or updates named setting. Creation scenario will use default setting value if no body specified in the request.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Setting created/updated successfully")
+            }
+    )
     public void saveSetting(@PathParam("feature") String feature, @PathParam("name") final String name,
                             @QueryParam("scope") @DefaultValue("") @Parameter(hidden = true) String scope, final String content) {
         super.saveSetting(feature, name, DEFAULT_SCOPE, content);
@@ -54,7 +77,11 @@ public class NamedSettingsApiScopeAgnosticController extends NamedSettingsApiCon
     @Override
     @POST
     @Path("/settings/{feature}/names/{name}")
-    @Operation(summary = "Updates name of specified named setting")
+    @Operation(summary = "Updates name of specified named setting",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Setting name updated successfully")
+            }
+    )
     public void renameSetting(@PathParam("feature") String feature, @PathParam("name") final String name,
                               @QueryParam("scope") @DefaultValue("") @Parameter(hidden = true) String scope, final String newName) {
         super.renameSetting(feature, name, DEFAULT_SCOPE, newName);
@@ -63,7 +90,11 @@ public class NamedSettingsApiScopeAgnosticController extends NamedSettingsApiCon
     @Override
     @DELETE
     @Path("/settings/{feature}/names/{name}")
-    @Operation(summary = "Deletes specified setting by id")
+    @Operation(summary = "Deletes specified setting by id",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Setting deleted successfully")
+            }
+    )
     public void deleteSetting(@PathParam("feature") String feature, @PathParam("name") String name,
                               @QueryParam("scope") @DefaultValue("") @Parameter(hidden = true) String scope) {
         super.deleteSetting(feature, name, DEFAULT_SCOPE);
@@ -72,7 +103,15 @@ public class NamedSettingsApiScopeAgnosticController extends NamedSettingsApiCon
     @Override
     @GET
     @Path("/settings/{feature}/names/{name}/revisions")
-    @Operation(summary = "Returns revisions history of specified setting with specified id")
+    @Operation(summary = "Returns revisions history of specified setting with specified id",
+            responses = {
+                    @ApiResponse(description = "List of revisions",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = Revision.class)
+                            )
+                    )
+            }
+    )
     public @NotNull List<Revision> readRevisionsList(@PathParam("feature") String feature, @PathParam("name") String name,
                                                      @QueryParam("scope") @DefaultValue("") @Parameter(hidden = true) String scope) {
         return super.readRevisionsList(feature, name, DEFAULT_SCOPE);

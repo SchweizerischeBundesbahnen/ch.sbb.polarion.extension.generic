@@ -42,7 +42,8 @@ Maven's `pom.xml` should contain following content:
 <properties>
     <maven-jar-plugin.Extension-Context>pdf-exporter</maven-jar-plugin.Extension-Context>
     <maven-jar-plugin.Automatic-Module-Name>ch.sbb.polarion.extension.pdf_exporter</maven-jar-plugin.Automatic-Module-Name>
-    <maven-jar-plugin.Discover-Base-Package>ch.sbb.polarion.extension.pdf.exporter</maven-jar-plugin.Discover-Base-Package>
+    <maven-jar-plugin.Discover-Base-Package>ch.sbb.polarion.extension.pdf_exporter</maven-jar-plugin.Discover-Base-Package>
+    <maven-jar-plugin.Configuration-Properties-Prefix>ch.sbb.polarion.extension.pdf-exporter</maven-jar-plugin.Configuration-Properties-Prefix>
     <web.app.name>${maven-jar-plugin.Extension-Context}</web.app.name>
 </properties>
 ```
@@ -240,7 +241,24 @@ public class PdfExporterAdminUiServlet extends GenericUiServlet {
 
     public PdfExporterAdminUiServlet() {
         super("pdf-exporter-admin");
-        CurrentExtensionConfiguration.getInstance().setExtensionConfiguration(PdfExporterExtensionConfiguration.getInstance());
     }
+}
+```
+
+### Custom extension configuration
+
+In order to register additional configuration properties a subclass of `ExtensionConfiguration` must be marked with the `@Discoverable`:
+
+```java
+@Discoverable
+public class PdfExporterExtensionConfiguration extends ExtensionConfiguration {
+    @Override
+    public @NotNull List<String> getSupportedProperties() {
+        List<String> supportedProperties = new ArrayList<>(super.getSupportedProperties());
+        supportedProperties.add("weasyprint.service");
+        ...
+        return supportedProperties;
+    }
+    ...
 }
 ```
