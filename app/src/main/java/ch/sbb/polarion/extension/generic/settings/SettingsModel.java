@@ -4,10 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.polarion.core.util.logging.Logger;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Array;
+import java.util.List;
+import java.util.Optional;
+
 @Data
+@Schema(description = "Settings model")
 public abstract class SettingsModel {
 
     private static final Logger logger = Logger.getLogger(SettingsModel.class);
@@ -19,8 +25,11 @@ public abstract class SettingsModel {
     public static final String NAME = "NAME";
 
     @JsonIgnore
+    @Schema(description = "The name of the setting", hidden = true)
     @SuppressWarnings("squid:S1845") // field has same name as a constant intentionally
     protected String name;
+
+    @Schema(description = "The bundle timestamp of the setting")
     protected String bundleTimestamp;
 
     public String serialize() {
@@ -61,6 +70,11 @@ public abstract class SettingsModel {
         deserializeModelData(serializedString);
     }
 
+    protected String deserializeEntry(String entryName, String serializedString, String defaultValue) {
+        String value = deserializeEntry(entryName, serializedString);
+        return Optional.ofNullable(value).orElse(defaultValue);
+    }
+
     protected String deserializeEntry(String entryName, String serializedString) {
         if (serializedString == null) {
             return null;
@@ -76,6 +90,11 @@ public abstract class SettingsModel {
             return beginPos >= endPos ? "" : serializedString.substring(beginPos, endPos);
         }
         return null;
+    }
+
+    protected <T> T deserializeEntry(String entryName, String serializedString, Class<T> aClass, T defaultValue) {
+        T value = deserializeEntry(entryName, serializedString, aClass);
+        return Optional.ofNullable(value).orElse(defaultValue);
     }
 
     @SuppressWarnings("unchecked")
@@ -94,6 +113,13 @@ public abstract class SettingsModel {
                 return null;
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> List<T> deserializeListEntry(String entryName, String serializedString, Class<T> aClass) {
+        Class<T[]> arrayClass = (Class<T[]>) Array.newInstance(aClass, 0).getClass();
+        T[] array = deserializeEntry(entryName, serializedString, arrayClass);
+        return array == null ? List.of() : List.of(array);
     }
 
     protected abstract String serializeModelData();

@@ -1,5 +1,48 @@
 # Changelog
 
+## [7.4.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.3.1...v7.4.0) (2024-10-08)
+
+
+### Features
+
+* current context for test classes ([#180](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/180)) ([244de95](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/244de95898488926f2171478b366213446dcd6e3))
+
+## [7.3.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.3.0...v7.3.1) (2024-10-02)
+
+
+### Bug Fixes
+
+* options mapping refactoring ([#176](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/176)) ([243f4f9](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/243f4f937ef2f347b0f0d1f86f6c01fbd1b21572))
+* sonarqube code smells ([#178](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/178)) ([cc0cfc8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/cc0cfc81cf3facc26e62fb901fc5d2187f9e1591))
+
+## [7.3.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.2.0...v7.3.0) (2024-10-02)
+
+
+### Features
+
+* extension context should not be null or blank ([#173](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/173)) ([ae54c17](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/ae54c17afa589d6a7a7004f96f30e648d1001a72))
+
+## [7.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.1.0...v7.2.0) (2024-09-30)
+
+
+### Features
+
+* Configuration-Properties-Prefix added to manifest ([#164](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/164)) ([d2eec01](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d2eec018359284c72cea77e8e6816c0e638d9d61)), closes [#163](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/163)
+
+
+### Bug Fixes
+
+* SonarQube code smells ([#170](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/170)) ([837a95a](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/837a95ad293861368472594aedc1287a806b2aba))
+
+## [7.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.0.2...v7.1.0) (2024-09-09)
+
+
+### Features
+
+* deserialize methods with defaultValue parameter ([#159](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/159)) ([91e4c61](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/91e4c615c8cbd0ab767618d32368eca3e2df51fa)), closes [#158](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/158)
+* deserialize methods with defaultValue parameter ([#160](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/160)) ([3c8f10f](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/3c8f10fecc75126abbb33d9b7839af9c291aed9b))
+* Extended REST APi annotation ([#155](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/155)) ([2cd1808](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2cd1808e4a6191bef17d8ce2e40e207f8d3552a5)), closes [#154](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/154)
+
 ## [7.0.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.0.1...v7.0.2) (2024-09-02)
 
 
