@@ -4,7 +4,7 @@
 
 <%! Version version = ExtensionInfo.getInstance().getVersion();%>
 
-<div class="actions-pane">
+<div class="actions-pane hide-on-edit-configuration">
     <div id="revisions-expand-container">
         <table id="revisions-table">
             <thead>
