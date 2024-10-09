@@ -2,7 +2,7 @@
 
 <p>There can be multiple named <span class="configuration-label">configuration</span>s. Please, chose one you would like to modify in dropdown below.
     Be aware that "Default" <span class="configuration-label">configuration</span> on global scope can't be deleted or renamed.</p>
-<div class="input-group">
+<div class="input-group common-configuration-panel">
     <div id="configurations-pane">
         <label id="configurations-label"><span class="configuration-label-capitalized">Configuration</span>:</label>
         <div id="configurations-select"></div>

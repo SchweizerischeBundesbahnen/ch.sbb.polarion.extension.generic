@@ -1,16 +1,18 @@
 const SELECTED_CONFIGURATION_COOKIE = 'selected-configuration-';
 
 const Configurations = {
-    setConfigurationContentCallback: () => {},
-    setContentAreaEnabledCallback: null,
-    preDeleteCallback: null, // It should return Promise
-    newConfigurationCallback: () => {},
     configurationsPane: document.getElementById("configurations-pane"),
     editConfigurationPane: document.getElementById("edit-configuration-pane"),
     newConfigurationInput: document.getElementById("new-configuration-input"),
     editConfigurationInput: document.getElementById("edit-configuration-input"),
 
-    init: function ({label, setConfigurationContentCallback, setContentAreaEnabledCallback, preDeleteCallback, newConfigurationCallback}) {
+    init: function ({
+                        label,
+                        setConfigurationContentCallback = () => {},
+                        setContentAreaEnabledCallback = null,
+                        preDeleteCallback = null, // It should return Promise
+                        newConfigurationCallback = () => {}
+                    }) {
         if (label) {
             document.querySelectorAll('span.configuration-label').forEach(labelSpan => {
                 labelSpan.innerText = label;
@@ -263,6 +265,23 @@ const Configurations = {
         document.querySelectorAll('.save-area .toolbar-button').forEach(inputContainer => {
             inputContainer.disabled = !enabled;
         });
+        if (!enabled) {
+            // hide all children of 'standard-admin-page' below configuration div
+            let foundConfigurationElement = false;
+            Array.from(document.querySelector('.standard-admin-page').children).forEach(item => {
+                if (item.classList.contains('common-configuration-panel')) {
+                    foundConfigurationElement = true;
+                } else if (foundConfigurationElement && !item.classList.contains('skip-hide-on-edit-configuration')) {
+                    item.classList.add("hidden-on-edit-configuration");
+                }
+            });
+            // also hide all components, explicitly marked with 'hide-on-edit-configuration'
+            document.querySelectorAll('.hide-on-edit-configuration')
+                .forEach(item => item.classList.add("hidden-on-edit-configuration"));
+        } else {
+            document.querySelectorAll('.hidden-on-edit-configuration')
+                .forEach(item => item.classList.remove("hidden-on-edit-configuration"));
+        }
         if (this.setContentAreaEnabledCallback) {
             this.setContentAreaEnabledCallback(enabled);
         }
