@@ -20,11 +20,11 @@ class ContextUtilsTest {
                 // configurationPropertiesPrefix is not provided
                 Arguments.of(null, null, null),
                 Arguments.of(null, "", null),
-                Arguments.of(null, "extension-name", ContextUtils.CH_SBB_POLARION_EXTENSION + "extension-name"),
+                Arguments.of(null, "extension-name", ContextUtils.CH_SBB_POLARION_EXTENSION + "extension-name."),
                 // configurationPropertiesPrefix is empty
                 Arguments.of("", null, null),
                 Arguments.of("", "", null),
-                Arguments.of("", "extension-name", ContextUtils.CH_SBB_POLARION_EXTENSION + "extension-name"),
+                Arguments.of("", "extension-name", ContextUtils.CH_SBB_POLARION_EXTENSION + "extension-name."),
                 // configurationPropertiesPrefix is provided without ending dot
                 Arguments.of("com.name.test.without.dot", null, "com.name.test.without.dot."),
                 Arguments.of("com.name.test.without.dot", "", "com.name.test.without.dot."),
