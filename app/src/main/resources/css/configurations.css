@@ -44,3 +44,6 @@
 .configuration-error {
     color: red;
 }
+.hidden-on-edit-configuration {
+    display: none !important;
+}

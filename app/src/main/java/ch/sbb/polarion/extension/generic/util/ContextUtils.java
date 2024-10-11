@@ -44,9 +44,8 @@ public class ContextUtils {
     public static String getConfigurationPropertiesPrefix() {
         String configurationPropertiesPrefix = ManifestUtils.getManifestAttributes().getValue(CONFIGURATION_PROPERTIES_PREFIX);
         if (configurationPropertiesPrefix == null || configurationPropertiesPrefix.isBlank()) {
-            return CH_SBB_POLARION_EXTENSION + ContextUtils.getContext().getExtensionContext();
-        } else {
-            return configurationPropertiesPrefix.endsWith(".") ? configurationPropertiesPrefix : configurationPropertiesPrefix + ".";
+            configurationPropertiesPrefix = CH_SBB_POLARION_EXTENSION + ContextUtils.getContext().getExtensionContext() + ".";
         }
+        return configurationPropertiesPrefix.endsWith(".") ? configurationPropertiesPrefix : configurationPropertiesPrefix + ".";
     }
 }
