@@ -26,7 +26,7 @@ repos:
         exclude: \b(www\.|polarion-opensource@)sbb\.ch\b
       - id: sensitive-data-leak-ue-numbers
         name: Sensitive data leak - UE numbers
-        entry: ([uU]|[eE])\d{6}
+        entry: ([uUeE]{1,2})\d{5,6}
         language: pygrep
         types: [text]
   - repo: https://github.com/zricethezav/gitleaks
