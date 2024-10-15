@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.4.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.4.0...v7.4.1) (2024-10-15)
+
+
+### Bug Fixes
+
+* fields data ignored on new style package creation ([#184](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/184)) ([f934104](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/f934104c3d9655c51908c62df7cababab1a8093d))
+* wrong configuration properties if no Configuration-Properties-Prefix provided in manifest ([#187](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/187)) ([473af1a](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/473af1a8dd7bcccf0415206e8c762a83ef127f53)), closes [#186](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/186)
+
 ## [7.4.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.3.1...v7.4.0) (2024-10-08)
 
 
