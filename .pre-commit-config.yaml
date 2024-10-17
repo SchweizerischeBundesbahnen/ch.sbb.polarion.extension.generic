@@ -20,13 +20,12 @@ repos:
     hooks:
       - id: sensitive-data-leak-urls
         name: Sensitive data leak - URLs
-        entry: sbb\.ch\b
+        entry: (?<!polarion-opensource@)(?<!www\.)sbb\.ch
         language: pygrep
         types: [text]
-        exclude: \b(www\.|polarion-opensource@)sbb\.ch\b
       - id: sensitive-data-leak-ue-numbers
         name: Sensitive data leak - UE numbers
-        entry: ([uUeE]{1,2})\d{5,6}
+        entry: \s([uUeE]{1,2})\d{5,6}\s
         language: pygrep
         types: [text]
   - repo: https://github.com/zricethezav/gitleaks
