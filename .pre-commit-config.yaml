@@ -25,7 +25,7 @@ repos:
         types: [text]
       - id: sensitive-data-leak-ue-numbers
         name: Sensitive data leak - UE numbers
-        entry: \s([uUeE]{1,2})\d{5,6}\s
+        entry: \b([uUeE]{1,2})\d{5,6}\b
         language: pygrep
         types: [text]
   - repo: https://github.com/zricethezav/gitleaks
