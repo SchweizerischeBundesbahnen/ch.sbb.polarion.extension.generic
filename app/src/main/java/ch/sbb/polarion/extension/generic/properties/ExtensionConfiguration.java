@@ -4,21 +4,33 @@ import ch.sbb.polarion.extension.generic.util.ContextUtils;
 import com.polarion.core.config.impl.SystemValueReader;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Properties;
 
 @Getter
 public class ExtensionConfiguration implements IExtensionConfiguration {
 
     private static final String DEBUG = "debug";
+    public static final boolean DEBUG_DEFAULT_VALUE = false;
+    private static final String DEBUG_DESCRIPTION = "Enable debug mode for current extension";
 
     @NotNull
     protected final String propertyPrefix;
 
-    @Override
+    @SuppressWarnings("unused")
     public boolean isDebug() {
-        return SystemValueReader.getInstance().readBoolean(propertyPrefix + DEBUG, false);
+        return SystemValueReader.getInstance().readBoolean(propertyPrefix + DEBUG, DEBUG_DEFAULT_VALUE);
+    }
+
+    @SuppressWarnings("unused")
+    public String getDebugDescription() {
+        return DEBUG_DESCRIPTION;
+    }
+
+    @SuppressWarnings("unused")
+    public Boolean getDebugDefault() {
+        return DEBUG_DEFAULT_VALUE;
     }
 
     protected ExtensionConfiguration() {
@@ -26,16 +38,18 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
     }
 
     @Override
-    public final @NotNull Properties getProperties() {
+    public final @NotNull ExtendedProperties getProperties() {
         List<String> supportedProperties = getSupportedProperties();
-        Properties properties = new Properties(supportedProperties.size());
+        ExtendedProperties properties = new ExtendedProperties(supportedProperties.size());
         ExtensionConfiguration configuration = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration();
 
         for (String supportedProperty : supportedProperties) {
-            String key = getPropertyPrefix() + supportedProperty;
-            String value = GetterFinder.getValue(configuration, supportedProperty);
+            @NotNull String key = getPropertyPrefix() + supportedProperty;
+            @Nullable String value = GetterFinder.getValue(configuration, supportedProperty);
+            @Nullable String defaultValue = GetterFinder.getDefaultValue(configuration, supportedProperty);
+            @Nullable String description = GetterFinder.getDescription(configuration, supportedProperty);
             if (value != null) {
-                properties.setProperty(key, value);
+                properties.setProperty(key, value, defaultValue, description);
             }
         }
 
