@@ -9,27 +9,42 @@ import java.lang.reflect.Method;
 @UtilityClass
 public class GetterFinder {
 
-    @SuppressWarnings({"squid:S1166", "findbugs:REC_CATCH_EXCEPTION"}) // no need to log or rethrow exception by design, findbugs wrongly assumes that getClass().getMethod() won't throw exceptions
     public static @Nullable <T extends ExtensionConfiguration> String getValue(@NotNull T extensionConfiguration, @NotNull String propertyName) {
-        String getterMethodName = toCamelCaseGetter(propertyName);
+        return invokeGetter(extensionConfiguration, propertyName, "");
+    }
 
+    public static @Nullable <T extends ExtensionConfiguration> String getDescription(@NotNull T extensionConfiguration, @NotNull String propertyName) {
+        return invokeGetter(extensionConfiguration, propertyName, "Description");
+    }
+
+    public static @Nullable <T extends ExtensionConfiguration> String getDefaultValue(@NotNull T extensionConfiguration, @NotNull String propertyName) {
+        return invokeGetter(extensionConfiguration, propertyName, "DefaultValue");
+    }
+
+    private static @Nullable <T extends ExtensionConfiguration> String invokeGetter(@NotNull T extensionConfiguration, @NotNull String propertyName, @NotNull String suffix) {
+        String getterMethodName = toCamelCaseGetter(propertyName) + suffix;
+
+        // try "get" prefix
+        String result = invokeMethod(extensionConfiguration, "get" + getterMethodName);
+        if (result != null) {
+            return result;
+        }
+
+        // try "is" prefix for boolean types
+        return invokeMethod(extensionConfiguration, "is" + getterMethodName);
+    }
+
+    @SuppressWarnings({"squid:S1166", "findbugs:REC_CATCH_EXCEPTION"}) // no need to log or rethrow exception by design, findbugs wrongly assumes that getClass().getMethod() won't throw exceptions
+    private static @Nullable <T extends ExtensionConfiguration> String invokeMethod(@NotNull T extensionConfiguration, @NotNull String methodName) {
         try {
-            Method getter = extensionConfiguration.getClass().getMethod("get" + getterMethodName);
+            Method getter = extensionConfiguration.getClass().getMethod(methodName);
+            if (methodName.startsWith("is") && getter.getReturnType() != boolean.class) {
+                return null;
+            }
             return String.valueOf(getter.invoke(extensionConfiguration));
         } catch (Exception ignored) {
-            //ignore
+            return null;
         }
-
-        try {
-            Method getter = extensionConfiguration.getClass().getMethod("is" + getterMethodName);
-            if (getter.getReturnType() == boolean.class) {
-                return String.valueOf(getter.invoke(extensionConfiguration));
-            }
-        } catch (Exception ignored) {
-            //ignore
-        }
-
-        return null;
     }
 
     private static @NotNull String toCamelCaseGetter(@NotNull String propertyName) {

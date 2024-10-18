@@ -1,30 +1,31 @@
+<%@ page import="ch.sbb.polarion.extension.generic.configuration.ConfigurationStatus" %>
+<%@ page import="ch.sbb.polarion.extension.generic.configuration.ConfigurationStatusProvider" %>
 <%@ page import="ch.sbb.polarion.extension.generic.properties.CurrentExtensionConfiguration" %>
+<%@ page import="ch.sbb.polarion.extension.generic.properties.ExtendedProperties" %>
+<%@ page import="ch.sbb.polarion.extension.generic.rest.model.Context" %>
 <%@ page import="ch.sbb.polarion.extension.generic.rest.model.Version" %>
 <%@ page import="ch.sbb.polarion.extension.generic.util.ExtensionInfo" %>
 <%@ page import="ch.sbb.polarion.extension.generic.util.VersionUtils" %>
-<%@ page import="java.util.Collections" %>
-<%@ page import="java.util.Properties" %>
+<%@ page import="org.jetbrains.annotations.Nullable" %>
 <%@ page import="java.io.InputStream" %>
 <%@ page import="java.nio.charset.StandardCharsets" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.Collection" %>
+<%@ page import="java.util.Collections" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Set" %>
-<%@ page import="java.util.ArrayList" %>
-<%@ page import="ch.sbb.polarion.extension.generic.rest.model.Context" %>
-<%@ page import="ch.sbb.polarion.extension.generic.configuration.ConfigurationStatus" %>
-<%@ page import="ch.sbb.polarion.extension.generic.configuration.ConfigurationStatusProvider" %>
-<%@ page import="java.util.Collection" %>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
 <%!
     private static final String ABOUT_TABLE_ROW = "<tr><td>%s</td><td>%s</td></tr>";
-    private static final String CONFIGURATION_PROPERTIES_TABLE_ROW = "<tr><td>%s</td><td>%s</td></tr>";
+    private static final String CONFIGURATION_PROPERTIES_TABLE_ROW = "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>";
     private static final String CHECK_CONFIGURATION_TABLE_ROW = "<tr><td>%s</td><td>%s</td><td>%s</td></tr>";
 
     Context context = ExtensionInfo.getInstance().getContext();
     Version version = ExtensionInfo.getInstance().getVersion();
-    Properties properties = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration().getProperties();
+    ExtendedProperties extensionConfigurationProperties = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration().getProperties();
 %>
 
 <head>
@@ -72,11 +73,13 @@
             <tr>
                 <th>Configuration property</th>
                 <th>Value</th>
+                <th>Default</th>
+                <th>Description</th>
             </tr>
             </thead>
             <tbody>
             <%
-                Set<Object> keySet = properties.keySet();
+                Set<Object> keySet = extensionConfigurationProperties.keySet();
                 List<String> propertyNames = new ArrayList<>();
                 for (Object key : keySet) {
                     propertyNames.add((String) key);
@@ -84,8 +87,10 @@
                 Collections.sort(propertyNames);
 
                 for (String key : propertyNames) {
-                    String value = properties.getProperty(key);
-                    String row = CONFIGURATION_PROPERTIES_TABLE_ROW.formatted(key, value);
+                    @Nullable String value = extensionConfigurationProperties.getProperty(key);
+                    @Nullable String defaultValue = extensionConfigurationProperties.getDefaultValue(key);
+                    @Nullable String description = extensionConfigurationProperties.getDescription(key);
+                    String row = CONFIGURATION_PROPERTIES_TABLE_ROW.formatted(key, value, defaultValue == null ? "" : defaultValue, description == null ? "" : description);
                     out.println(row);
                 }
             %>
