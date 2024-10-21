@@ -6,20 +6,20 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class ExtendedPropertiesTest {
+class ConfigurationPropertiesTest {
 
-    private ExtendedProperties properties;
+    private ConfigurationProperties properties;
 
     @BeforeEach
     void setUp() {
-        properties = new ExtendedProperties();
+        properties = new ConfigurationProperties();
     }
 
     @Test
     void testSetPropertyWithDescriptionAndDefaultValue() {
-        properties.setProperty("username", new ExtendedProperties.Value("admin", "root", "User for admin tasks"));
+        properties.setProperty("username", new ConfigurationProperties.Value("admin", "root", "User for admin tasks"));
 
-        ExtendedProperties.Value value = properties.getProperty("username");
+        ConfigurationProperties.Value value = properties.getProperty("username");
         assertNotNull(value);
         assertEquals("admin", value.value());
         assertEquals("root", value.defaultValue());
@@ -28,9 +28,9 @@ class ExtendedPropertiesTest {
 
     @Test
     void testSetPropertyWithoutDescriptionAndDefaultValue() {
-        properties.setProperty("language", new ExtendedProperties.Value("EN", null, null));
+        properties.setProperty("language", new ConfigurationProperties.Value("EN", null, null));
 
-        ExtendedProperties.Value value = properties.getProperty("language");
+        ConfigurationProperties.Value value = properties.getProperty("language");
         assertNotNull(value);
         assertEquals("EN", value.value());
         assertNull(value.defaultValue());
@@ -39,10 +39,10 @@ class ExtendedPropertiesTest {
 
     @Test
     void testOverridePropertyKeepsNewDescriptionAndDefaultValue() {
-        properties.setProperty("timeout", new ExtendedProperties.Value("30", "60", "Timeout in seconds"));
-        properties.setProperty("timeout", new ExtendedProperties.Value("45", "90", "Updated timeout description"));
+        properties.setProperty("timeout", new ConfigurationProperties.Value("30", "60", "Timeout in seconds"));
+        properties.setProperty("timeout", new ConfigurationProperties.Value("45", "90", "Updated timeout description"));
 
-        ExtendedProperties.Value value = properties.getProperty("timeout");
+        ConfigurationProperties.Value value = properties.getProperty("timeout");
         assertNotNull(value);
         assertEquals("45", value.value());
         assertEquals("90", value.defaultValue());
@@ -51,9 +51,9 @@ class ExtendedPropertiesTest {
 
     @Test
     void testNullDescriptionAndDefaultValueHandledProperly() {
-        properties.setProperty("color", new ExtendedProperties.Value("blue", null, null));
+        properties.setProperty("color", new ConfigurationProperties.Value("blue", null, null));
 
-        ExtendedProperties.Value value = properties.getProperty("color");
+        ConfigurationProperties.Value value = properties.getProperty("color");
         assertNotNull(value);
         assertEquals("blue", value.value());
         assertNull(value.defaultValue());
@@ -62,10 +62,10 @@ class ExtendedPropertiesTest {
 
     @Test
     void testOverrideWithNullValues() {
-        properties.setProperty("path", new ExtendedProperties.Value("/home/user", "File path", "/root"));
-        properties.setProperty("path", new ExtendedProperties.Value("/home/new_user", null, null));
+        properties.setProperty("path", new ConfigurationProperties.Value("/home/user", "File path", "/root"));
+        properties.setProperty("path", new ConfigurationProperties.Value("/home/new_user", null, null));
 
-        ExtendedProperties.Value value = properties.getProperty("path");
+        ConfigurationProperties.Value value = properties.getProperty("path");
         assertNotNull(value);
         assertEquals("/home/new_user", value.value());
         assertNull(value.defaultValue());

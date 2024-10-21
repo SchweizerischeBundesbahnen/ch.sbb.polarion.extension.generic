@@ -4,30 +4,30 @@ import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @EqualsAndHashCode
-public class ExtendedProperties {
+public class ConfigurationProperties {
 
     public record Value(@NotNull String value, @Nullable String defaultValue, @Nullable String description) {
     }
 
-    private final HashMap<String, Value> properties;
+    private final ConcurrentHashMap<String, Value> properties;
 
-    public ExtendedProperties() {
+    public ConfigurationProperties() {
         this(8);
     }
 
-    public ExtendedProperties(int size) {
-        properties = new HashMap<>(size);
+    public ConfigurationProperties(int size) {
+        properties = new ConcurrentHashMap<>(size);
     }
 
-    public void setProperty(@NotNull String key, @NotNull ExtendedProperties.Value value) {
+    public void setProperty(@NotNull String key, @NotNull ConfigurationProperties.Value value) {
         properties.put(key, value);
     }
 
-    public @NotNull ExtendedProperties.Value getProperty(@NotNull String key) {
+    public @NotNull ConfigurationProperties.Value getProperty(@NotNull String key) {
         return properties.get(key);
     }
 

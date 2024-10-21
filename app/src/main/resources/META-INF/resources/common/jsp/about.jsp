@@ -1,7 +1,7 @@
 <%@ page import="ch.sbb.polarion.extension.generic.configuration.ConfigurationStatus" %>
 <%@ page import="ch.sbb.polarion.extension.generic.configuration.ConfigurationStatusProvider" %>
 <%@ page import="ch.sbb.polarion.extension.generic.properties.CurrentExtensionConfiguration" %>
-<%@ page import="ch.sbb.polarion.extension.generic.properties.ExtendedProperties" %>
+<%@ page import="ch.sbb.polarion.extension.generic.properties.ConfigurationProperties" %>
 <%@ page import="ch.sbb.polarion.extension.generic.rest.model.Context" %>
 <%@ page import="ch.sbb.polarion.extension.generic.rest.model.Version" %>
 <%@ page import="ch.sbb.polarion.extension.generic.util.ExtensionInfo" %>
@@ -25,7 +25,7 @@
 
     Context context = ExtensionInfo.getInstance().getContext();
     Version version = ExtensionInfo.getInstance().getVersion();
-    ExtendedProperties extensionConfigurationProperties = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration().getProperties();
+    ConfigurationProperties extensionConfigurationProperties = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration().getProperties();
 %>
 
 <head>
@@ -83,10 +83,10 @@
                 Collections.sort(propertyKeys);
 
                 for (String key : propertyKeys) {
-                    ExtendedProperties.Value extendedPropertiesValue = extensionConfigurationProperties.getProperty(key);
-                    @NotNull String value = extendedPropertiesValue.value();
-                    @Nullable String defaultValue = extendedPropertiesValue.defaultValue();
-                    @Nullable String description = extendedPropertiesValue.description();
+                    ConfigurationProperties.Value configurationPropertiesValue = extensionConfigurationProperties.getProperty(key);
+                    @NotNull String value = configurationPropertiesValue.value();
+                    @Nullable String defaultValue = configurationPropertiesValue.defaultValue();
+                    @Nullable String description = configurationPropertiesValue.description();
                     String row = CONFIGURATION_PROPERTIES_TABLE_ROW.formatted(key, value, defaultValue == null ? "" : defaultValue, description == null ? "" : description);
                     out.println(row);
                 }
