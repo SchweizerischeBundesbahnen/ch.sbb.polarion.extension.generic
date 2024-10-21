@@ -29,8 +29,8 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
     }
 
     @SuppressWarnings("unused")
-    public Boolean getDebugDefault() {
-        return DEBUG_DEFAULT_VALUE;
+    public String getDebugDefaultValue() {
+        return String.valueOf(DEBUG_DEFAULT_VALUE);
     }
 
     protected ExtensionConfiguration() {
