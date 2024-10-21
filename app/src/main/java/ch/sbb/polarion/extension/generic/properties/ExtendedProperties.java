@@ -1,59 +1,42 @@
 package ch.sbb.polarion.extension.generic.properties;
 
+import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.Properties;
+import java.util.Set;
 
-public class ExtendedProperties extends Properties {
+@EqualsAndHashCode
+public class ExtendedProperties {
 
-    private final HashMap<Object, String> defaultValues = new HashMap<>();
-    private final HashMap<Object, String> descriptions = new HashMap<>();
+    public record Value(@NotNull String value, @Nullable String defaultValue, @Nullable String description) {
+    }
+
+    private final HashMap<String, Value> properties;
 
     public ExtendedProperties() {
-        super();
+        this(8);
     }
 
     public ExtendedProperties(int size) {
-        super(size);
+        properties = new HashMap<>(size);
     }
 
-    @Override
-    public synchronized Object setProperty(@NotNull String key, @NotNull String value) {
-        return this.setProperty(key, value, null, null);
+    public void setProperty(@NotNull String key, @NotNull ExtendedProperties.Value value) {
+        properties.put(key, value);
     }
 
-    public synchronized Object setProperty(@NotNull String key, @NotNull String value, @Nullable String defaultValue, @Nullable String description) {
-        return this.put(key, value, defaultValue, description);
+    public @NotNull ExtendedProperties.Value getProperty(@NotNull String key) {
+        return properties.get(key);
     }
 
-    public synchronized Object put(@NotNull Object key, @NotNull Object value, @Nullable String defaultValue, @Nullable String description) {
-        defaultValues.put(key, defaultValue);
-        descriptions.put(key, description);
-        return super.put(key, value);
+    public Set<String> keySet() {
+        return properties.keySet();
     }
 
-    public synchronized @Nullable String getDescription(@NotNull Object key) {
-        return descriptions.get(key);
+    public int size() {
+        return properties.size();
     }
 
-    public synchronized @Nullable String getDefaultValue(@NotNull Object key) {
-        return defaultValues.get(key);
-    }
-
-    @Override
-    public synchronized Object put(@NotNull Object key, @NotNull Object value) {
-        return this.put(key, value, null, null);
-    }
-
-    @Override
-    public synchronized boolean equals(Object o) {
-        return super.equals(o);
-    }
-
-    @Override
-    public synchronized int hashCode() {
-        return super.hashCode();
-    }
 }

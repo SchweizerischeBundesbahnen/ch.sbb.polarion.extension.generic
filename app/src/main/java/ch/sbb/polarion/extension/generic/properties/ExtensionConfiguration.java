@@ -49,7 +49,7 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
             @Nullable String defaultValue = GetterFinder.getDefaultValue(configuration, supportedProperty);
             @Nullable String description = GetterFinder.getDescription(configuration, supportedProperty);
             if (value != null) {
-                properties.setProperty(key, value, defaultValue, description);
+                properties.setProperty(key, new ExtendedProperties.Value(value, defaultValue, description));
             }
         }
 

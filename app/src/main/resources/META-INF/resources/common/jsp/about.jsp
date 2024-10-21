@@ -13,7 +13,7 @@
 <%@ page import="java.util.Collection" %>
 <%@ page import="java.util.Collections" %>
 <%@ page import="java.util.List" %>
-<%@ page import="java.util.Set" %>
+<%@ page import="org.jetbrains.annotations.NotNull" %>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -79,17 +79,14 @@
             </thead>
             <tbody>
             <%
-                Set<Object> keySet = extensionConfigurationProperties.keySet();
-                List<String> propertyNames = new ArrayList<>();
-                for (Object key : keySet) {
-                    propertyNames.add((String) key);
-                }
-                Collections.sort(propertyNames);
+                List<String> propertyKeys = new ArrayList<>(extensionConfigurationProperties.keySet());
+                Collections.sort(propertyKeys);
 
-                for (String key : propertyNames) {
-                    @Nullable String value = extensionConfigurationProperties.getProperty(key);
-                    @Nullable String defaultValue = extensionConfigurationProperties.getDefaultValue(key);
-                    @Nullable String description = extensionConfigurationProperties.getDescription(key);
+                for (String key : propertyKeys) {
+                    ExtendedProperties.Value extendedPropertiesValue = extensionConfigurationProperties.getProperty(key);
+                    @NotNull String value = extendedPropertiesValue.value();
+                    @Nullable String defaultValue = extendedPropertiesValue.defaultValue();
+                    @Nullable String description = extendedPropertiesValue.description();
                     String row = CONFIGURATION_PROPERTIES_TABLE_ROW.formatted(key, value, defaultValue == null ? "" : defaultValue, description == null ? "" : description);
                     out.println(row);
                 }
