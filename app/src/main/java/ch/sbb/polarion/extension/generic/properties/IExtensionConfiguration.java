@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface IExtensionConfiguration {
 
-    @NotNull ExtendedProperties getProperties();
+    @NotNull ConfigurationProperties getProperties();
 
     @NotNull List<String> getSupportedProperties();
 

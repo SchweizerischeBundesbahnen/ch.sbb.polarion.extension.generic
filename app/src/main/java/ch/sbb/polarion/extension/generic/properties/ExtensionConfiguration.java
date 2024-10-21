@@ -38,22 +38,22 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
     }
 
     @Override
-    public final @NotNull ExtendedProperties getProperties() {
+    public final @NotNull ConfigurationProperties getProperties() {
         List<String> supportedProperties = getSupportedProperties();
-        ExtendedProperties properties = new ExtendedProperties(supportedProperties.size());
-        ExtensionConfiguration configuration = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration();
+        ConfigurationProperties configurationProperties = new ConfigurationProperties(supportedProperties.size());
+        ExtensionConfiguration extensionConfiguration = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration();
 
         for (String supportedProperty : supportedProperties) {
             @NotNull String key = getPropertyPrefix() + supportedProperty;
-            @Nullable String value = GetterFinder.getValue(configuration, supportedProperty);
-            @Nullable String defaultValue = GetterFinder.getDefaultValue(configuration, supportedProperty);
-            @Nullable String description = GetterFinder.getDescription(configuration, supportedProperty);
+            @Nullable String value = GetterFinder.getValue(extensionConfiguration, supportedProperty);
+            @Nullable String defaultValue = GetterFinder.getDefaultValue(extensionConfiguration, supportedProperty);
+            @Nullable String description = GetterFinder.getDescription(extensionConfiguration, supportedProperty);
             if (value != null) {
-                properties.setProperty(key, value, defaultValue, description);
+                configurationProperties.setProperty(key, new ConfigurationProperties.Value(value, defaultValue, description));
             }
         }
 
-        return properties;
+        return configurationProperties;
     }
 
     @Override
