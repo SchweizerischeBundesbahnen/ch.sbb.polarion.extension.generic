@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 @Getter
 public class ExtensionConfiguration implements IExtensionConfiguration {
@@ -38,7 +40,7 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
     }
 
     @Override
-    public final @NotNull ConfigurationProperties getProperties() {
+    public final @NotNull ConfigurationProperties getConfigurationProperties() {
         List<String> supportedProperties = getSupportedProperties();
         ConfigurationProperties configurationProperties = new ConfigurationProperties(supportedProperties.size());
         ExtensionConfiguration extensionConfiguration = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration();
@@ -59,6 +61,40 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
     @Override
     public @NotNull List<String> getSupportedProperties() {
         return List.of(DEBUG);
+    }
+
+    @Override
+    public @NotNull List<String> getObsoleteProperties() {
+        List<String> configuredExtensionProperties = getConfiguredExtensionProperties();
+        List<String> supportedProperties = getSupportedProperties();
+
+        return configuredExtensionProperties.stream()
+                .filter(key -> !supportedProperties.contains(key))
+                .toList();
+    }
+
+    @Override
+    public @NotNull ConfigurationProperties getObsoleteConfigurationProperties() {
+        List<String> obsoleteProperties = getObsoleteProperties();
+        ConfigurationProperties configurationProperties = new ConfigurationProperties(obsoleteProperties.size());
+
+        for (String obsoleteProperty : obsoleteProperties) {
+            @NotNull String key = getPropertyPrefix() + obsoleteProperty;
+            @NotNull String value = Objects.requireNonNull(SystemValueReader.getInstance().readString(key, ""));
+            configurationProperties.setProperty(key, new ConfigurationProperties.Value(value, null, null));
+        }
+
+        return configurationProperties;
+    }
+
+    public @NotNull List<String> getConfiguredExtensionProperties() {
+        Properties systemProperties = SystemProperties.getProperties();
+
+        return systemProperties.keySet().stream()
+                .map(o -> (String) o)
+                .filter(key -> key.startsWith(propertyPrefix))
+                .map(key -> key.substring(propertyPrefix.length()))
+                .toList();
     }
 
 }
