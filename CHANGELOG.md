@@ -1,5 +1,20 @@
 # Changelog
 
+## [7.5.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.4.1...v7.5.0) (2024-10-22)
+
+
+### Features
+
+* "default" and "description" columns added to configuration properties table in About page ([#191](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/191)) ([94daaba](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/94daaba55689f3265037d7e21a5d8a15fc392240)), closes [#190](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/190)
+* default value for "debug" configuration option ([#194](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/194)) ([8de1d51](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/8de1d5164b9296655f2195d79ef612c5956d0ed1)), closes [#190](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/190)
+* getting configured but obsolete/non-valid options for extension ([#196](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/196)) ([79e1f9c](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/79e1f9c99a95d499e302414bd0be4b0aa26a7073)), closes [#190](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/190)
+* refactoring after adding "default" and "description" columns ([#193](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/193)) ([45a0ab1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/45a0ab1d55d66db05441d828edd9346abbb29815)), closes [#190](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/190)
+
+
+### Bug Fixes
+
+* regexp changed to catch all urls and u/e-numbers ([#189](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/189)) ([aff0166](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/aff0166487bc2c6b8519f92be92623f8feded347))
+
 ## [7.4.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.4.0...v7.4.1) (2024-10-15)
 
 
