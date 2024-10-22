@@ -124,8 +124,6 @@
         <markdown2html-maven-plugin.tokenEnvVarName>GITHUB_TOKEN</markdown2html-maven-plugin.tokenEnvVarName>
         <markdown2html-maven-plugin.failOnError>false</markdown2html-maven-plugin.failOnError>
         <markdown2html-maven-plugin.generateHeadingIds>true</markdown2html-maven-plugin.generateHeadingIds>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <profiles>
@@ -704,15 +702,6 @@
                     <groupId>org.sonarsource.scanner.maven</groupId>
                     <artifactId>sonar-maven-plugin</artifactId>
                     <version>${sonar-maven-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>sonar</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>sonar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
 
                 <plugin>
