@@ -88,7 +88,7 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
     }
 
     public @NotNull List<String> getConfiguredExtensionProperties() {
-        Properties systemProperties = System.getProperties();
+        Properties systemProperties = SystemProperties.getProperties();
 
         return systemProperties.keySet().stream()
                 .map(o -> (String) o)
