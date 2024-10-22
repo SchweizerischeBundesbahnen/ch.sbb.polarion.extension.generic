@@ -21,11 +21,13 @@
 <%!
     private static final String ABOUT_TABLE_ROW = "<tr><td>%s</td><td>%s</td></tr>";
     private static final String CONFIGURATION_PROPERTIES_TABLE_ROW = "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>";
+    private static final String OBSOLETE_CONFIGURATION_PROPERTIES_TABLE_ROW = "<tr><td>%s</td><td>%s</td></tr>";
     private static final String CHECK_CONFIGURATION_TABLE_ROW = "<tr><td>%s</td><td>%s</td><td>%s</td></tr>";
 
     Context context = ExtensionInfo.getInstance().getContext();
     Version version = ExtensionInfo.getInstance().getVersion();
-    ConfigurationProperties extensionConfigurationProperties = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration().getProperties();
+    ConfigurationProperties configurationProperties = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration().getConfigurationProperties();
+    ConfigurationProperties obsoleteConfigurationProperties = CurrentExtensionConfiguration.getInstance().getExtensionConfiguration().getObsoleteConfigurationProperties();
 %>
 
 <head>
@@ -79,11 +81,11 @@
             </thead>
             <tbody>
             <%
-                List<String> propertyKeys = new ArrayList<>(extensionConfigurationProperties.keySet());
+                List<String> propertyKeys = new ArrayList<>(configurationProperties.keySet());
                 Collections.sort(propertyKeys);
 
                 for (String key : propertyKeys) {
-                    ConfigurationProperties.Value configurationPropertiesValue = extensionConfigurationProperties.getProperty(key);
+                    ConfigurationProperties.Value configurationPropertiesValue = configurationProperties.getProperty(key);
                     @NotNull String value = configurationPropertiesValue.value();
                     @Nullable String defaultValue = configurationPropertiesValue.defaultValue();
                     @Nullable String description = configurationPropertiesValue.description();
@@ -93,6 +95,32 @@
             %>
             </tbody>
         </table>
+
+        <% if (!obsoleteConfigurationProperties.isEmpty()) { %>
+        <h3>Obsolete/non-valid configuration properties</h3>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Configuration property</th>
+                <th>Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            <%
+                List<String> obsoletePropertyKeys = new ArrayList<>(obsoleteConfigurationProperties.keySet());
+                Collections.sort(obsoletePropertyKeys);
+
+                for (String obsoleteKey : obsoletePropertyKeys) {
+                    ConfigurationProperties.Value obsoleteConfigurationPropertiesValue = obsoleteConfigurationProperties.getProperty(obsoleteKey);
+                    @NotNull String value = obsoleteConfigurationPropertiesValue.value();
+                    String row = OBSOLETE_CONFIGURATION_PROPERTIES_TABLE_ROW.formatted(obsoleteKey, value);
+                    out.println(row);
+                }
+            %>
+            </tbody>
+        </table>
+        <% } %>
 
         <% Collection<ConfigurationStatus> configurationStatuses = ConfigurationStatusProvider.getAllStatuses(request.getParameter("scope")); %>
         <% if (!configurationStatuses.isEmpty()) { %>

@@ -6,8 +6,11 @@ import java.util.List;
 
 public interface IExtensionConfiguration {
 
-    @NotNull ConfigurationProperties getProperties();
+    @NotNull ConfigurationProperties getConfigurationProperties();
 
     @NotNull List<String> getSupportedProperties();
 
+    @NotNull List<String> getObsoleteProperties();
+
+    @NotNull ConfigurationProperties getObsoleteConfigurationProperties();
 }

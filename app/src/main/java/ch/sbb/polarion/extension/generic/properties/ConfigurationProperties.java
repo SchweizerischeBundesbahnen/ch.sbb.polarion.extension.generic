@@ -39,4 +39,8 @@ public class ConfigurationProperties {
         return properties.size();
     }
 
+    public boolean isEmpty() {
+        return properties.isEmpty();
+    }
+
 }
