@@ -207,7 +207,6 @@
 
                 <slf4j-api.artifactId>slf4j-api-1.7.36</slf4j-api.artifactId>
                 <jaxb-api.artifactId>jaxb-api-2.4.0-b180830.0359-patched</jaxb-api.artifactId>
-                <velocity-engine-core.artifactId>velocity-engine-core-2.3</velocity-engine-core.artifactId>
             </properties>
         </profile>
 
@@ -230,7 +229,6 @@
 
                 <slf4j-api.artifactId>slf4j-api-1.7.36</slf4j-api.artifactId>
                 <jaxb-api.artifactId>jaxb-api-2.4.0-b180830.0359-patched</jaxb-api.artifactId>
-                <velocity-engine-core.artifactId>velocity-engine-core-2.3</velocity-engine-core.artifactId>
             </properties>
         </profile>
 
@@ -253,7 +251,6 @@
 
                 <slf4j-api.artifactId>slf4j.api_1.7.36</slf4j-api.artifactId>
                 <jaxb-api.artifactId>jaxb-api.patched_2.4.0.b1808300359</jaxb-api.artifactId>
-                <velocity-engine-core.artifactId>org.apache.velocity.engine-core_2.3.0</velocity-engine-core.artifactId>
             </properties>
         </profile>
 
@@ -408,13 +405,6 @@
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
             <artifactId>${jaxb-api.artifactId}</artifactId>
-            <version>${polarion.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>${velocity-engine-core.artifactId}</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
