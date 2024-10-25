@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.6.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.5.0...v7.6.0) (2024-10-25)
+
+
+### Features
+
+* polarion 2410 support ([#203](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/203)) ([64f8a06](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/64f8a064411d2f0aa824ee06052766e26e694409)), closes [#202](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/202)
+* removing sonarcloud badges from about page of extensions ([#200](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/200)) ([80f3f85](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/80f3f859c041c2859bafb225abebbf17975100ff)), closes [#199](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/199)
+
 ## [7.5.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.4.1...v7.5.0) (2024-10-22)
 
 
