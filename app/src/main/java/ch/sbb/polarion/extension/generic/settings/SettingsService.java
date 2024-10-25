@@ -57,7 +57,7 @@ public class SettingsService {
         save(location, content.getBytes(StandardCharsets.UTF_8));
     }
 
-    public void save(@NotNull ILocation location, @NotNull byte[] content) {
+    public void save(@NotNull ILocation location, byte @NotNull [] content) {
         Runnable runnable = () -> {
             IRepositoryConnection connection = repositoryService.getConnection(location);
             try (InputStream inputStream = new ByteArrayInputStream(content)) {
@@ -154,12 +154,11 @@ public class SettingsService {
         });
     }
 
-    @SuppressWarnings("unchecked")
     public Collection<String> getPersistedSettingFileNames(ILocation settingsFolderLocation) {
         final IRepositoryReadOnlyConnection readOnlyConnection = repositoryService.getReadOnlyConnection(settingsFolderLocation);
-        List<Location> subLocations = readOnlyConnection.getSubLocations(settingsFolderLocation, false);
+        List<ILocation> subLocations = readOnlyConnection.getSubLocations(settingsFolderLocation, false);
         return subLocations.stream()
-                .map(Location::getLastComponent)
+                .map(ILocation::getLastComponent)
                 .filter(name -> name.endsWith(GenericNamedSettings.SETTINGS_FILE_EXTENSION))
                 .map(name -> name.replace(GenericNamedSettings.SETTINGS_FILE_EXTENSION, ""))
                 .toList();

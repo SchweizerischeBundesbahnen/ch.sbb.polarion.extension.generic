@@ -186,11 +186,13 @@
             </build>
         </profile>
 
+        <!-- deprecated profile: polarion2310 -->
         <profile>
             <id>polarion2310</id>
             <activation>
                 <property>
                     <name>polarion2310active</name>
+                    <value>true</value>
                 </property>
             </activation>
             <properties>
@@ -202,6 +204,10 @@
                 <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
 
                 <commons-io.artifactId>org.apache.commons.io_2.11.0</commons-io.artifactId>
+
+                <slf4j-api.artifactId>slf4j-api-1.7.36</slf4j-api.artifactId>
+                <jaxb-api.artifactId>jaxb-api-2.4.0-b180830.0359-patched</jaxb-api.artifactId>
+                <velocity-engine-core.artifactId>velocity-engine-core-2.3</velocity-engine-core.artifactId>
             </properties>
         </profile>
 
@@ -209,7 +215,7 @@
             <id>polarion2404</id>
             <activation>
                 <property>
-                    <name>!polarion2310active</name>
+                    <name>!polarion2410active</name>
                 </property>
             </activation>
             <properties>
@@ -221,6 +227,33 @@
                 <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
 
                 <commons-io.artifactId>commons-io-2.15.1</commons-io.artifactId>
+
+                <slf4j-api.artifactId>slf4j-api-1.7.36</slf4j-api.artifactId>
+                <jaxb-api.artifactId>jaxb-api-2.4.0-b180830.0359-patched</jaxb-api.artifactId>
+                <velocity-engine-core.artifactId>velocity-engine-core-2.3</velocity-engine-core.artifactId>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>polarion2410</id>
+            <activation>
+                <property>
+                    <name>polarion2410active</name>
+                </property>
+            </activation>
+            <properties>
+                <maven.compiler.source>17</maven.compiler.source>
+                <maven.compiler.target>17</maven.compiler.target>
+                <polarion.version>2410</polarion.version>
+
+                <jersey.version>2.35</jersey.version>
+                <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
+
+                <commons-io.artifactId>org.apache.commons.commons-io_2.15.1</commons-io.artifactId>
+
+                <slf4j-api.artifactId>slf4j.api_1.7.36</slf4j-api.artifactId>
+                <jaxb-api.artifactId>jaxb-api.patched_2.4.0.b1808300359</jaxb-api.artifactId>
+                <velocity-engine-core.artifactId>org.apache.velocity.engine-core_2.3.0</velocity-engine-core.artifactId>
             </properties>
         </profile>
 
@@ -353,7 +386,7 @@
 
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>slf4j-api-1.7.36</artifactId>
+            <artifactId>${slf4j-api.artifactId}</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -374,7 +407,14 @@
 
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>jaxb-api-2.4.0-b180830.0359-patched</artifactId>
+            <artifactId>${jaxb-api.artifactId}</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>${velocity-engine-core.artifactId}</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
