@@ -18,6 +18,7 @@ repos:
       - id: check-yaml
       - id: no-commit-to-branch
       - id: mixed-line-ending
+      - id: end-of-file-fixer
   - repo: local
     hooks:
       - id: sensitive-data-leak-urls
@@ -40,6 +41,6 @@ repos:
       - id: check-git-config-user-email
         args: [--templates, ^\S+\.\S+@sbb\.ch$]
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.29.1
+    rev: v3.30.0
     hooks:
       - id: commitizen
