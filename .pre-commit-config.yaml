@@ -18,6 +18,7 @@ repos:
       - id: check-yaml
       - id: no-commit-to-branch
       - id: mixed-line-ending
+      - id: end-of-file-fixer
   - repo: local
     hooks:
       - id: sensitive-data-leak-urls
