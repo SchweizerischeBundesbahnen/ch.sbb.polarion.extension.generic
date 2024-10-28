@@ -186,6 +186,27 @@
             </build>
         </profile>
 
+        <!-- default profile: polarion2410 -->
+        <profile>
+            <id>polarion2410</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <maven.compiler.source>17</maven.compiler.source>
+                <maven.compiler.target>17</maven.compiler.target>
+                <polarion.version>2410</polarion.version>
+
+                <jersey.version>2.35</jersey.version>
+                <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
+
+                <commons-io.artifactId>org.apache.commons.commons-io_2.15.1</commons-io.artifactId>
+
+                <slf4j-api.artifactId>slf4j.api_1.7.36</slf4j-api.artifactId>
+                <jaxb-api.artifactId>jaxb-api.patched_2.4.0.b1808300359</jaxb-api.artifactId>
+            </properties>
+        </profile>
+
         <!-- deprecated profile: polarion2310 -->
         <profile>
             <id>polarion2310</id>
@@ -204,7 +225,6 @@
             </properties>
         </profile>
 
-        <!-- deprecated profile: polarion2404 -->
         <profile>
             <id>polarion2404</id>
             <properties>
@@ -219,26 +239,6 @@
 
                 <slf4j-api.artifactId>slf4j-api-1.7.36</slf4j-api.artifactId>
                 <jaxb-api.artifactId>jaxb-api-2.4.0-b180830.0359-patched</jaxb-api.artifactId>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>polarion2410</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <maven.compiler.source>17</maven.compiler.source>
-                <maven.compiler.target>17</maven.compiler.target>
-                <polarion.version>2410</polarion.version>
-
-                <jersey.version>2.35</jersey.version>
-                <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
-
-                <commons-io.artifactId>org.apache.commons.commons-io_2.15.1</commons-io.artifactId>
-
-                <slf4j-api.artifactId>slf4j.api_1.7.36</slf4j-api.artifactId>
-                <jaxb-api.artifactId>jaxb-api.patched_2.4.0.b1808300359</jaxb-api.artifactId>
             </properties>
         </profile>
 
