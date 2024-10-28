@@ -76,6 +76,7 @@
         <istack.version>4.2.0</istack.version>
         <log4j.version>2.24.1</log4j.version>
         <jackson.annotations.version>2.18.0</jackson.annotations.version>
+        <javax.transaction-api.version>1.3</javax.transaction-api.version>
 
         <!-- Sonar and JaCoCo -->
         <jacoco.version>0.8.12</jacoco.version>
@@ -488,6 +489,12 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
             <version>${jackson.annotations.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.transaction</groupId>
+            <artifactId>javax.transaction-api</artifactId>
+            <version>${javax.transaction-api.version}</version>
             <scope>test</scope>
         </dependency>
 
