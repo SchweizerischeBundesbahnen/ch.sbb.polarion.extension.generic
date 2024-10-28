@@ -186,24 +186,7 @@
             </build>
         </profile>
 
-        <!-- deprecated profile: polarion2310 -->
-        <profile>
-            <id>polarion2310</id>
-            <properties>
-                <maven.compiler.source>17</maven.compiler.source>
-                <maven.compiler.target>17</maven.compiler.target>
-                <polarion.version>2310</polarion.version>
-
-                <jersey.version>2.35</jersey.version>
-                <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
-
-                <commons-io.artifactId>org.apache.commons.io_2.11.0</commons-io.artifactId>
-
-                <slf4j-api.artifactId>slf4j-api-1.7.36</slf4j-api.artifactId>
-                <jaxb-api.artifactId>jaxb-api-2.4.0-b180830.0359-patched</jaxb-api.artifactId>
-            </properties>
-        </profile>
-
+        <!-- default profile: polarion2404 -->
         <profile>
             <id>polarion2404</id>
             <activation>
@@ -218,6 +201,24 @@
                 <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
 
                 <commons-io.artifactId>commons-io-2.15.1</commons-io.artifactId>
+
+                <slf4j-api.artifactId>slf4j-api-1.7.36</slf4j-api.artifactId>
+                <jaxb-api.artifactId>jaxb-api-2.4.0-b180830.0359-patched</jaxb-api.artifactId>
+            </properties>
+        </profile>
+
+        <!-- deprecated profile: polarion2310 -->
+        <profile>
+            <id>polarion2310</id>
+            <properties>
+                <maven.compiler.source>17</maven.compiler.source>
+                <maven.compiler.target>17</maven.compiler.target>
+                <polarion.version>2310</polarion.version>
+
+                <jersey.version>2.35</jersey.version>
+                <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
+
+                <commons-io.artifactId>org.apache.commons.io_2.11.0</commons-io.artifactId>
 
                 <slf4j-api.artifactId>slf4j-api-1.7.36</slf4j-api.artifactId>
                 <jaxb-api.artifactId>jaxb-api-2.4.0-b180830.0359-patched</jaxb-api.artifactId>
