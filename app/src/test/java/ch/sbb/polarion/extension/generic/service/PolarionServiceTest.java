@@ -324,14 +324,20 @@ public class PolarionServiceTest {
             List<String> listValue = List.of("value1", "value2");
 
             // primitive fields cannot receive lists
-            assertThrows(ClassCastException.class,
+            IllegalArgumentException multiValueException = assertThrows(IllegalArgumentException.class,
                     () -> polarionService.setFieldValue(workItem, "genericFieldId", listValue, enumsMapping));
+            assertEquals("Cannot set multi-value into field 'genericFieldId'", multiValueException.getMessage());
 
             // lists must be supported
             genericFieldMetadata.setType(new ListType("listTypeId", FieldType.STRING.getType()));
             polarionService.setFieldValue(workItem, "genericFieldId", listValue, enumsMapping);
             verify(workItem, times(3)).setValue(anyString(), any());
             verify(workItem, times(1)).setCustomField(anyString(), any());
+
+            // multi fields cannot receive single values
+            IllegalArgumentException singleValueException = assertThrows(IllegalArgumentException.class,
+                    () -> polarionService.setFieldValue(workItem, "genericFieldId", 42, enumsMapping));
+            assertEquals("Cannot set single value to the multi-value field 'genericFieldId'", singleValueException.getMessage());
 
             // nulls for list-typed fields must be converted to an empty list
             polarionService.setFieldValue(workItem, "genericFieldId", null, enumsMapping);
