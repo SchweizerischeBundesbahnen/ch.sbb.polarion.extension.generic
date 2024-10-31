@@ -215,15 +215,23 @@ public class PolarionService {
                 FieldMetadata.fromPrototype(ipObject.getPrototype(), fieldId) : FieldMetadata.fromCustomField(ipObject.getCustomFieldPrototype(fieldId));
         Object valueToSet = value == null ? null : Optional.ofNullable(IConverter.getSuitableConverter(value, fieldMetadata.getType()))
                 .map(converter -> converter.convert(value, ConverterContext.builder().contextId(ipObject.getContextId()).enumsMapping(enumsMapping).build(), fieldMetadata)).orElse(value);
+        boolean multiValueField = fieldMetadata.getType() instanceof IListType;
         if (valueToSet == null) {
             if (fieldMetadata.isRequired()) {
                 throw new IllegalArgumentException("Cannot set empty value to the required field");
-            } else if (fieldMetadata.getType() instanceof IListType) {
+            } else if (multiValueField) {
                 valueToSet = new ArrayList<>(); //Multi-value fields expect empty list in case of empty value
             }
         }
+
         if (valueToSet instanceof List<?> valuesList) {
-            valueToSet = new CustomTypedList(ipObject, (IListType) fieldMetadata.getType(), fieldMetadata.isRequired(), valuesList);
+            if (multiValueField) {
+                valueToSet = new CustomTypedList(ipObject, (IListType) fieldMetadata.getType(), fieldMetadata.isRequired(), valuesList);
+            } else {
+                throw new IllegalArgumentException("Cannot set multi-value into field '%s'".formatted(fieldId));
+            }
+        } else if (multiValueField) {
+            throw new IllegalArgumentException("Cannot set single value to the multi-value field '%s'".formatted(fieldId));
         }
         if (fieldMetadata.isCustom()) {
             ipObject.setCustomField(fieldId, valueToSet);
