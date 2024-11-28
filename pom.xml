@@ -66,6 +66,7 @@
         <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
         <swagger-maven-plugin.version>2.2.25</swagger-maven-plugin.version>
+        <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
 
         <!-- Test dependencies -->
         <junit.version>5.11.3</junit.version>
@@ -723,6 +724,12 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>${sonar-maven-plugin.version}</version>
                 </plugin>
 
                 <plugin>
