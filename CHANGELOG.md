@@ -1,5 +1,20 @@
 # Changelog
 
+## [7.7.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.6.0...v7.7.0) (2024-10-31)
+
+
+### Features
+
+* javax.transaction-api for test scope ([#213](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/213)) ([25930c2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/25930c22d32b02e089ddfea188a7969300f10bec))
+* polarion2404 profile as default using .mvn/maven.config ([#208](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/208)) ([3e99966](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/3e9996654cef68319478be0254b562dae7bf6560)), closes [#207](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/207)
+* polarion2404 profile as default using .mvn/maven.config ([#210](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/210)) ([5bc9f73](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/5bc9f732d91427cc94a17f9e14565369a898419d)), closes [#207](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/207)
+
+
+### Bug Fixes
+
+* proper error message on attempt to set single value into multi-v… ([#214](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/214)) ([e18543d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/e18543dadd27469775e3e16fed3da2b7a91bf796))
+* proper error message on attempt to set single value into multi-value field and vice-versa ([e18543d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/e18543dadd27469775e3e16fed3da2b7a91bf796))
+
 ## [7.6.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.5.0...v7.6.0) (2024-10-25)
 
 
