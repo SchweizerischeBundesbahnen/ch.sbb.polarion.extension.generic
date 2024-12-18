@@ -1,4 +1,4 @@
-package ch.sbb.polarion.extension.generic.rest.controller;
+package ch.sbb.polarion.extension.generic.rest.controller.swagger;
 
 import java.io.IOException;
 import java.io.InputStream;

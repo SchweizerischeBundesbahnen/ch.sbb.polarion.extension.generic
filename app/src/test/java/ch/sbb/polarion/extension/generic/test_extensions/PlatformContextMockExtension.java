@@ -1,4 +1,4 @@
-package ch.sbb.polarion.extension.generic.polarion;
+package ch.sbb.polarion.extension.generic.test_extensions;
 
 import com.polarion.alm.projects.IProjectService;
 import com.polarion.alm.tracker.ITestManagementService;

@@ -1,8 +1,8 @@
 package ch.sbb.polarion.extension.generic.settings;
 
-import ch.sbb.polarion.extension.generic.polarion.CustomExtensionMock;
-import ch.sbb.polarion.extension.generic.polarion.PlatformContextMockExtension;
-import ch.sbb.polarion.extension.generic.polarion.TransactionalExecutorExtension;
+import ch.sbb.polarion.extension.generic.test_extensions.CustomExtensionMock;
+import ch.sbb.polarion.extension.generic.test_extensions.PlatformContextMockExtension;
+import ch.sbb.polarion.extension.generic.test_extensions.TransactionalExecutorExtension;
 import com.polarion.alm.projects.IProjectService;
 import com.polarion.alm.projects.model.IUser;
 import com.polarion.alm.tracker.ITrackerService;

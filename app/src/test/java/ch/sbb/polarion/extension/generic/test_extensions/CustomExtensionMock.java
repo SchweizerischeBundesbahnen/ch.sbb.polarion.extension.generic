@@ -1,4 +1,4 @@
-package ch.sbb.polarion.extension.generic.polarion;
+package ch.sbb.polarion.extension.generic.test_extensions;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

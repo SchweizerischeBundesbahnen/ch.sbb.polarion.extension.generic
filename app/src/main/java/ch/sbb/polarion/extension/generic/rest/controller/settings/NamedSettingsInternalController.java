@@ -1,4 +1,4 @@
-package ch.sbb.polarion.extension.generic.rest.controller;
+package ch.sbb.polarion.extension.generic.rest.controller.settings;
 
 import ch.sbb.polarion.extension.generic.service.PolarionService;
 import ch.sbb.polarion.extension.generic.settings.GenericNamedSettings;

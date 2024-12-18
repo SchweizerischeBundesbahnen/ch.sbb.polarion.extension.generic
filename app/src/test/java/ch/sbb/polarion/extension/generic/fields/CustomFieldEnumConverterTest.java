@@ -2,8 +2,8 @@ package ch.sbb.polarion.extension.generic.fields;
 
 import ch.sbb.polarion.extension.generic.fields.converters.ChainConverter;
 import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
-import ch.sbb.polarion.extension.generic.polarion.CustomExtensionMock;
-import ch.sbb.polarion.extension.generic.polarion.PlatformContextMockExtension;
+import ch.sbb.polarion.extension.generic.test_extensions.CustomExtensionMock;
+import ch.sbb.polarion.extension.generic.test_extensions.PlatformContextMockExtension;
 import com.polarion.alm.shared.util.Pair;
 import com.polarion.alm.tracker.ITrackerService;
 import com.polarion.platform.persistence.IDataService;

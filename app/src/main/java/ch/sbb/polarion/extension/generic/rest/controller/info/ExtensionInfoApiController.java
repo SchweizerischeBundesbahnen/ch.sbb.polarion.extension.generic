@@ -1,4 +1,4 @@
-package ch.sbb.polarion.extension.generic.rest.controller;
+package ch.sbb.polarion.extension.generic.rest.controller.info;
 
 import javax.ws.rs.Path;
 

@@ -1,4 +1,4 @@
-package ch.sbb.polarion.extension.generic.rest.controller;
+package ch.sbb.polarion.extension.generic.rest.controller.settings;
 
 import ch.sbb.polarion.extension.generic.rest.filter.Secured;
 import ch.sbb.polarion.extension.generic.settings.Revision;
