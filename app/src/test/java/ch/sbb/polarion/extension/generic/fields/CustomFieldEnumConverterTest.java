@@ -2,23 +2,19 @@ package ch.sbb.polarion.extension.generic.fields;
 
 import ch.sbb.polarion.extension.generic.fields.converters.ChainConverter;
 import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
+import ch.sbb.polarion.extension.generic.polarion.CustomExtensionMock;
+import ch.sbb.polarion.extension.generic.polarion.PlatformContextMockExtension;
 import com.polarion.alm.shared.util.Pair;
 import com.polarion.alm.tracker.ITrackerService;
-import com.polarion.platform.core.IPlatform;
-import com.polarion.platform.core.PlatformContext;
 import com.polarion.platform.persistence.IDataService;
 import com.polarion.platform.persistence.IEnumOption;
 import com.polarion.platform.persistence.IEnumeration;
 import com.polarion.platform.persistence.spi.EnumOption;
 import com.polarion.subterra.base.data.model.internal.EnumType;
 import com.polarion.subterra.base.data.model.internal.ListType;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
@@ -32,31 +28,23 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, PlatformContextMockExtension.class})
 public class CustomFieldEnumConverterTest {
 
     public static final String YES_NO_ENUM_ID = "yes_no";
     public static final Pair<String, String> YES = Pair.of("yes", "Ja");
     public static final Pair<String, String> NO = Pair.of("no", "Nein");
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    MockedStatic<PlatformContext> mockPlatformContext;
+    @CustomExtensionMock
+    private IDataService dataService;
+    @CustomExtensionMock
+    private ITrackerService trackerService;
 
     private ArrayList<IEnumOption> allOptions;
 
     @BeforeEach
     @SuppressWarnings("unchecked")
     void setup() {
-        IPlatform platform = mock(IPlatform.class);
-        mockPlatformContext.when(PlatformContext::getPlatform).thenReturn(platform);
-
-        IDataService dataService = mock(IDataService.class);
-        lenient().when(platform.lookupService(IDataService.class)).thenReturn(dataService);
-
-        ITrackerService trackerService = mock(ITrackerService.class);
-        lenient().when(platform.lookupService(ITrackerService.class)).thenReturn(trackerService);
-        lenient().when(trackerService.getDataService()).thenReturn(dataService);
-
         IEnumeration<IEnumOption> enumeration = mock(IEnumeration.class);
         lenient().when(dataService.getEnumerationForEnumId(any(), any())).thenReturn(enumeration);
 
@@ -64,11 +52,6 @@ public class CustomFieldEnumConverterTest {
         allOptions.add(new EnumOption(YES_NO_ENUM_ID, YES.left(), YES.right(), 1, true));
         allOptions.add(new EnumOption(YES_NO_ENUM_ID, NO.left(), NO.right(), 2, false));
         lenient().when(enumeration.getAllOptions()).thenReturn(allOptions);
-    }
-
-    @AfterEach
-    void cleanup() {
-        mockPlatformContext.close();
     }
 
     @Test
