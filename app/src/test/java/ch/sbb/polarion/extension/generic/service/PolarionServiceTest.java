@@ -4,11 +4,15 @@ import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import ch.sbb.polarion.extension.generic.fields.FieldType;
 import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
 import ch.sbb.polarion.extension.generic.fields.model.Option;
+import ch.sbb.polarion.extension.generic.polarion.PlatformContextMockExtension;
+import ch.sbb.polarion.extension.generic.polarion.TransactionalExecutorExtension;
 import ch.sbb.polarion.extension.generic.util.AssigneeUtils;
 import ch.sbb.polarion.extension.generic.util.TestUtils;
 import com.polarion.alm.projects.IProjectService;
 import com.polarion.alm.projects.model.IProject;
-import com.polarion.alm.shared.api.transaction.TransactionalExecutor;
+import com.polarion.alm.shared.api.model.baselinecollection.BaselineCollection;
+import com.polarion.alm.shared.api.model.baselinecollection.BaselineCollectionReference;
+import com.polarion.alm.shared.api.transaction.ReadOnlyTransaction;
 import com.polarion.alm.tracker.IModuleManager;
 import com.polarion.alm.tracker.ITrackerService;
 import com.polarion.alm.tracker.model.IModule;
@@ -34,6 +38,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -48,7 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, PlatformContextMockExtension.class, TransactionalExecutorExtension.class})
 @SuppressWarnings({"rawtypes", "unchecked", "UnusedReturnValue"})
 public class PolarionServiceTest {
 
@@ -120,11 +125,14 @@ public class PolarionServiceTest {
 
     @Test
     void testGetNotExistentCollection() {
-        try (MockedStatic<TransactionalExecutor> transactionalExecutorMockedStatic = mockStatic(TransactionalExecutor.class)) {
-            mockProject(Boolean.TRUE);
-            IBaselineCollection collection = mockCollection(Boolean.FALSE);
-            transactionalExecutorMockedStatic.when(() -> TransactionalExecutor.executeSafelyInReadOnlyTransaction(any())).thenReturn(collection);
+        mockProject(Boolean.TRUE);
+        IBaselineCollection collection = mockCollection(Boolean.FALSE);
 
+        try (MockedConstruction<BaselineCollectionReference> baselineCollectionReferenceMockedConstruction = mockConstruction(BaselineCollectionReference.class, (mock, context) -> {
+            BaselineCollection baselineCollection = mock(BaselineCollection.class);
+            when(baselineCollection.getOldApi()).thenReturn(collection);
+            when(mock.get(any(ReadOnlyTransaction.class))).thenReturn(baselineCollection);
+        })) {
             ObjectNotFoundException exception = assertThrows(ObjectNotFoundException.class, () -> polarionService.getCollection(PROJECT_ID, COLLECTION_ID));
             assertEquals("Collection with id '1' not found in project 'project_id'", exception.getMessage());
 
@@ -217,22 +225,28 @@ public class PolarionServiceTest {
 
     @Test
     void testGetCollection() {
-        try (MockedStatic<TransactionalExecutor> transactionalExecutorMockedStatic = mockStatic(TransactionalExecutor.class)) {
-            mockProject(Boolean.TRUE);
-            IBaselineCollection collection = mockCollection(Boolean.TRUE);
-            transactionalExecutorMockedStatic.when(() -> TransactionalExecutor.executeSafelyInReadOnlyTransaction(any())).thenReturn(collection);
+        mockProject(Boolean.TRUE);
+        IBaselineCollection collection = mockCollection(Boolean.TRUE);
 
+        try (MockedConstruction<BaselineCollectionReference> baselineCollectionReferenceMockedConstruction = mockConstruction(BaselineCollectionReference.class, (mock, context) -> {
+            BaselineCollection baselineCollection = mock(BaselineCollection.class);
+            when(baselineCollection.getOldApi()).thenReturn(collection);
+            when(mock.get(any(ReadOnlyTransaction.class))).thenReturn(baselineCollection);
+        })) {
             assertNotNull(polarionService.getCollection(PROJECT_ID, COLLECTION_ID));
         }
     }
 
     @Test
     void testGetCollectionWithRevision() {
-        try (MockedStatic<TransactionalExecutor> transactionalExecutorMockedStatic = mockStatic(TransactionalExecutor.class)) {
-            mockProject(Boolean.TRUE);
-            IBaselineCollection collection = mockCollection(Boolean.TRUE);
-            transactionalExecutorMockedStatic.when(() -> TransactionalExecutor.executeSafelyInReadOnlyTransaction(any())).thenReturn(collection);
+        mockProject(Boolean.TRUE);
+        IBaselineCollection collection = mockCollection(Boolean.TRUE);
 
+        try (MockedConstruction<BaselineCollectionReference> baselineCollectionReferenceMockedConstruction = mockConstruction(BaselineCollectionReference.class, (mock, context) -> {
+            BaselineCollection baselineCollection = mock(BaselineCollection.class);
+            when(baselineCollection.getOldApi()).thenReturn(collection);
+            when(mock.get(any(ReadOnlyTransaction.class))).thenReturn(baselineCollection);
+        })) {
             assertNotNull(polarionService.getCollection(PROJECT_ID, COLLECTION_ID, REVISION));
 
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
