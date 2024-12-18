@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 Polarion AG
  */
-package ch.sbb.polarion.extension.generic.rest.controller;
+package ch.sbb.polarion.extension.generic.rest.controller.swagger;
 
 import java.util.List;
 import java.util.Set;

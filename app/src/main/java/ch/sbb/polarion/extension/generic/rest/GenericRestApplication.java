@@ -8,9 +8,9 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.core.Application;
 
-import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsApiController;
-import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsApiScopeAgnosticController;
-import ch.sbb.polarion.extension.generic.rest.controller.NamedSettingsInternalController;
+import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiController;
+import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiScopeAgnosticController;
+import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsInternalController;
 import ch.sbb.polarion.extension.generic.rest.exception.ForbiddenExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.IllegalStateExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.ObjectNotFoundExceptionMapper;
@@ -19,10 +19,10 @@ import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.jetbrains.annotations.NotNull;
 
-import ch.sbb.polarion.extension.generic.rest.controller.ExtensionInfoApiController;
-import ch.sbb.polarion.extension.generic.rest.controller.ExtensionInfoInternalController;
-import ch.sbb.polarion.extension.generic.rest.controller.SwaggerController;
-import ch.sbb.polarion.extension.generic.rest.controller.SwaggerDefinitionController;
+import ch.sbb.polarion.extension.generic.rest.controller.info.ExtensionInfoApiController;
+import ch.sbb.polarion.extension.generic.rest.controller.info.ExtensionInfoInternalController;
+import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerController;
+import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerDefinitionController;
 import ch.sbb.polarion.extension.generic.rest.exception.BadRequestExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.IllegalArgumentExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.InternalServerErrorExceptionMapper;

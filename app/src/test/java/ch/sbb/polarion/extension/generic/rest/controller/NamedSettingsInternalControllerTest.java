@@ -1,6 +1,7 @@
 package ch.sbb.polarion.extension.generic.rest.controller;
 
 import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
+import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsInternalController;
 import ch.sbb.polarion.extension.generic.service.PolarionService;
 import ch.sbb.polarion.extension.generic.settings.GenericNamedSettings;
 import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;

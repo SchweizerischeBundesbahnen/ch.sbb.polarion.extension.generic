@@ -103,10 +103,11 @@ Maven's `pom.xml` should contain following content:
             <configuration>
                 <outputFormat>YAML</outputFormat>
                 <resourcePackages>
-                    <package>ch.sbb.polarion.extension.generic.rest.controller</package>
+                    <package>ch.sbb.polarion.extension.generic.rest.controller.info</package>
+                    <package>ch.sbb.polarion.extension.generic.rest.controller.settings</package>
                     <package>ch.sbb.polarion.extension.generic.rest.model</package>
-                    <package>ch.sbb.polarion.extension.pdf.exporter.rest.controller</package>
-                    <package>ch.sbb.polarion.extension.pdf.exporter.rest.model</package>
+                    <package>ch.sbb.polarion.extension.pdf_exporter.rest.controller</package>
+                    <package>ch.sbb.polarion.extension.pdf_exporter.rest.model</package>
                 </resourcePackages>
             </configuration>
         </plugin>

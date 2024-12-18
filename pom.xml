@@ -125,6 +125,9 @@
         <markdown2html-maven-plugin.tokenEnvVarName>GITHUB_TOKEN</markdown2html-maven-plugin.tokenEnvVarName>
         <markdown2html-maven-plugin.failOnError>false</markdown2html-maven-plugin.failOnError>
         <markdown2html-maven-plugin.generateHeadingIds>true</markdown2html-maven-plugin.generateHeadingIds>
+
+        <!-- exclude rest controllers from coverage report -->
+        <sonar.coverage.exclusions>**/rest/controller/**</sonar.coverage.exclusions>
     </properties>
 
     <profiles>

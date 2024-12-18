@@ -1,12 +1,10 @@
-package ch.sbb.polarion.extension.generic.rest.controller;
+package ch.sbb.polarion.extension.generic.rest.controller.info;
 
 import ch.sbb.polarion.extension.generic.rest.model.Context;
 import ch.sbb.polarion.extension.generic.rest.model.Version;
 import ch.sbb.polarion.extension.generic.util.ExtensionInfo;
 import io.swagger.v3.oas.annotations.Hidden;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
