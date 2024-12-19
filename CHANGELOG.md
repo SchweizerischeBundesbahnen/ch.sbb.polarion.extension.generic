@@ -1,5 +1,20 @@
 # Changelog
 
+## [8.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.7.0...v8.0.0) (2024-12-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* polarion2410 support ([#211](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/211))
+
+### Features
+
+* extensions for unit tests ([#231](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/231)) ([66cbed7](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/66cbed71e8fec42abf65734399bf14d2d0303138)), closes [#220](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/220)
+* polarion2410 support ([#211](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/211)) ([e3d2617](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/e3d2617f23f1b23cd59e3a5cad02bee19636cc15)), closes [#206](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/206)
+* README.md updated ([#234](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/234)) ([6dea086](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6dea0861dc15c41c6ab541ec1107aae41173fca6)), closes [#232](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/232)
+* splitting REST API controllers to different packages ([91591af](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/91591af0570ed318a1260d8b7e892e5f99f1787c))
+* splitting REST API controllers to different packages ([#233](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/233)) ([91591af](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/91591af0570ed318a1260d8b7e892e5f99f1787c)), closes [#232](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/232)
+
 ## [7.7.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.6.0...v7.7.0) (2024-10-31)
 
 
