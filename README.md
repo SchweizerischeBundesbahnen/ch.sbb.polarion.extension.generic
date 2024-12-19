@@ -20,6 +20,12 @@ An extension which inherits from this generic extension will automatically get f
 * API to serialize/deserialize XML data (`JAXBUtils`)
 * REST application and end points giving access to settings functionality described above as well as access to extension information and version
 * Swagger UI page listing information about REST API provided
+* Some utility classes and methods to simplify development of new extensions
+* Some test classes to simplify testing of new extensions using JUnit and Mockito
+
+> [!IMPORTANT]
+> Starting from version 8.0.0 only latest version of Polarion is supported.
+> Right now it is Polarion 2410.
 
 ## How to use
 
