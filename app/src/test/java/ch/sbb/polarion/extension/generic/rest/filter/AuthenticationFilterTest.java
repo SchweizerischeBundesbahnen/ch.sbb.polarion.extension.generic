@@ -5,14 +5,13 @@ import ch.sbb.polarion.extension.generic.auth.ValidatorFactory;
 import ch.sbb.polarion.extension.generic.auth.ValidatorType;
 import com.polarion.core.config.Configuration;
 import com.polarion.core.config.IConfiguration;
-import com.polarion.core.config.IRestConfiguration;
 import com.polarion.platform.security.AuthenticationFailedException;
 import com.polarion.platform.security.ISecurityService;
-import com.polarion.platform.security.login.AccessToken;
 import com.polarion.platform.security.login.ILogin;
 import com.polarion.platform.security.login.IToken;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,22 +33,14 @@ class AuthenticationFilterTest {
 
     @Mock
     private ContainerRequestContext requestContext;
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ISecurityService securityService;
     @Mock
-    private ILogin login;
-    @Mock
-    private ILogin.IBase base;
-    @Mock
-    private ILogin.IUsingAuthenticator authenticator;
-    @Mock
     private ILogin.IFinal loginFinal;
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private HttpServletRequest httpServletRequest;
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private IConfiguration configuration;
-    @Mock
-    private IRestConfiguration restConfiguration;
 
     @Test
     void filterRequestWithoutAuthorizationHeaderAndXsrfHeader() {
@@ -76,14 +67,15 @@ class AuthenticationFilterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void filterRequestWithValidBearerToken() throws IOException, AuthenticationFailedException {
         when(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer token");
         when(requestContext.getHeaderString(AuthenticationFilter.X_POLARION_REST_TOKEN_HEADER)).thenReturn(null);
 
-        when(securityService.login()).thenReturn(login);
-        when(login.from("REST")).thenReturn(base);
-        when(base.authenticator(any())).thenReturn(authenticator);
-        when(authenticator.with((IToken<AccessToken>) any())).thenReturn(loginFinal);
+        when(securityService.login()
+                .from("REST")
+                .authenticator(any())
+                .with(any(IToken.class))).thenReturn(loginFinal);
 
         Subject subject = new Subject();
         when(loginFinal.perform()).thenReturn(subject);
@@ -95,14 +87,15 @@ class AuthenticationFilterTest {
 
 
     @Test
+    @SuppressWarnings("unchecked")
     void filterRequestWithFailedAuthentication() throws AuthenticationFailedException {
         when(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer failed_token");
         when(requestContext.getHeaderString(AuthenticationFilter.X_POLARION_REST_TOKEN_HEADER)).thenReturn(null);
 
-        when(securityService.login()).thenReturn(login);
-        when(login.from("REST")).thenReturn(base);
-        when(base.authenticator(any())).thenReturn(authenticator);
-        when(authenticator.with((IToken<AccessToken>) any())).thenReturn(loginFinal);
+        when(securityService.login()
+                .from("REST")
+                .authenticator(any())
+                .with(any(IToken.class))).thenReturn(loginFinal);
 
         when(loginFinal.perform()).thenThrow(new AuthenticationFailedException("Something went wrong"));
 
@@ -114,6 +107,7 @@ class AuthenticationFilterTest {
     }
 
     @Test
+    @SuppressWarnings("unused")
     void filterRequestWithValidXsrfToken() throws IOException, AuthenticationFailedException {
         when(requestContext.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn(null);
         when(requestContext.getHeaderString(AuthenticationFilter.X_POLARION_REST_TOKEN_HEADER)).thenReturn("validXsrfToken");
@@ -144,12 +138,13 @@ class AuthenticationFilterTest {
 
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class)) {
             configurationMockedStatic.when(Configuration::getInstance).thenReturn(configuration);
-            when(configuration.rest()).thenReturn(restConfiguration);
-            when(restConfiguration.restApiTokenEnabled()).thenReturn(true);
+            when(configuration
+                    .rest()
+                    .restApiTokenEnabled()).thenReturn(true);
 
-            Principal userPrincipal = mock(Principal.class);
-            when(httpServletRequest.getUserPrincipal()).thenReturn(userPrincipal);
-            when(userPrincipal.getName()).thenReturn("user");
+            when(httpServletRequest
+                    .getUserPrincipal()
+                    .getName()).thenReturn("user");
 
             AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
 
@@ -165,12 +160,13 @@ class AuthenticationFilterTest {
         when(requestContext.getHeaderString(AuthenticationFilter.X_POLARION_REST_TOKEN_HEADER)).thenReturn("xsrf_token");
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class)) {
             configurationMockedStatic.when(Configuration::getInstance).thenReturn(configuration);
-            when(configuration.rest()).thenReturn(restConfiguration);
-            when(restConfiguration.restApiTokenEnabled()).thenReturn(false);
+            when(configuration
+                    .rest()
+                    .restApiTokenEnabled()).thenReturn(false);
 
-            Principal userPrincipal = mock(Principal.class);
-            when(httpServletRequest.getUserPrincipal()).thenReturn(userPrincipal);
-            when(userPrincipal.getName()).thenReturn("user");
+            when(httpServletRequest
+                    .getUserPrincipal()
+                    .getName()).thenReturn("user");
 
             AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
 
@@ -186,12 +182,13 @@ class AuthenticationFilterTest {
         when(requestContext.getHeaderString(AuthenticationFilter.X_POLARION_REST_TOKEN_HEADER)).thenReturn("xsrf_token_for_different_user");
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class)) {
             configurationMockedStatic.when(Configuration::getInstance).thenReturn(configuration);
-            when(configuration.rest()).thenReturn(restConfiguration);
-            when(restConfiguration.restApiTokenEnabled()).thenReturn(true);
+            when(configuration
+                    .rest()
+                    .restApiTokenEnabled()).thenReturn(true);
 
-            Principal userPrincipal = mock(Principal.class);
-            when(httpServletRequest.getUserPrincipal()).thenReturn(userPrincipal);
-            when(userPrincipal.getName()).thenReturn("different_user");
+            when(httpServletRequest
+                    .getUserPrincipal()
+                    .getName()).thenReturn("different_user");
 
             AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
 

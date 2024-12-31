@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -45,16 +44,14 @@ class CorsFilterTest {
     private ContainerRequestContext requestContext;
     @Mock
     private ContainerResponseContext responseContext;
-
-    @Mock
-    private IConfiguration configuration;
     @Mock
     private IRestConfiguration restConfiguration;
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    @Mock
     MockedStatic<Configuration> configurationMockedStatic;
 
     @BeforeEach
     void setUp() throws MalformedURLException {
+        IConfiguration configuration = mock(IConfiguration.class);
         configurationMockedStatic.when(Configuration::getInstance).thenReturn(configuration);
         lenient().when(configuration.rest()).thenReturn(restConfiguration);
         lenient().when(configuration.getBaseURL()).thenReturn(URI.create(LOCALHOST_8080).toURL());
@@ -99,8 +96,7 @@ class CorsFilterTest {
         when(requestContext.getMethod()).thenReturn(HttpMethod.GET);
 
         // no CORS enabled
-        HashSet<String> corsAllowedOrigins = new HashSet<>();
-        Arrays.stream(input.split( "," )).forEach(o -> corsAllowedOrigins.add(o));
+        HashSet<String> corsAllowedOrigins = new HashSet<>(Arrays.asList(input.split(",")));
         when(restConfiguration.corsAllowedOrigins()).thenReturn(corsAllowedOrigins);
 
         CorsFilter corsFilter = new CorsFilter();
@@ -122,8 +118,7 @@ class CorsFilterTest {
         when(requestContext.getHeaderString(CorsFilter.ORIGIN)).thenReturn(LOCALHOST_1111);
         when(requestContext.getMethod()).thenReturn(HttpMethod.GET);
 
-        HashSet<String> corsAllowedOrigins = new HashSet<>();
-        Arrays.stream(input.split( "," )).forEach(o -> corsAllowedOrigins.add(o));
+        HashSet<String> corsAllowedOrigins = new HashSet<>(Arrays.asList(input.split(",")));
         when(restConfiguration.corsAllowedOrigins()).thenReturn(corsAllowedOrigins);
 
         CorsFilter corsFilter = new CorsFilter();
@@ -139,8 +134,7 @@ class CorsFilterTest {
         when(uriInfo.getRequestUri()).thenReturn(new URI(LOCALHOST_8080 + "/some-extension"));
         when(requestContext.getHeaderString(CorsFilter.ORIGIN)).thenReturn(LOCALHOST_1111);
 
-        HashSet<String> corsAllowedOrigins = new HashSet<>();
-        Arrays.stream(input.split( "," )).forEach(o -> corsAllowedOrigins.add(o));
+        HashSet<String> corsAllowedOrigins = new HashSet<>(Arrays.asList(input.split(",")));
         when(restConfiguration.corsAllowedOrigins()).thenReturn(corsAllowedOrigins);
 
         MultivaluedMap<String, Object> responseHeaders = new MultivaluedHashMap<>();
