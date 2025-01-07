@@ -1,11 +1,11 @@
 package ch.sbb.polarion.extension.generic.util;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Answers;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.security.auth.Subject;
-import javax.servlet.http.HttpServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,11 +17,11 @@ class RequestContextUtilTest {
     @Test
     void shouldReturnUserSubject() {
         // Arrange
-        ServletRequestAttributes requestAttributes = mock(ServletRequestAttributes.class);
-        HttpServletRequest request = mock(HttpServletRequest.class);
+        ServletRequestAttributes requestAttributes = mock(ServletRequestAttributes.class, Answers.RETURNS_DEEP_STUBS);
         Subject subject = mock(Subject.class);
-        when(requestAttributes.getRequest()).thenReturn(request);
-        when(request.getAttribute("user_subject")).thenReturn(subject);
+        when(requestAttributes
+                .getRequest()
+                .getAttribute("user_subject")).thenReturn(subject);
         RequestContextHolder.setRequestAttributes(requestAttributes);
 
         // Act
