@@ -136,7 +136,7 @@ jobs:
   deploy-github-packages:
     needs: build
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ !endsWith(needs.build.outputs.project_version, '-SNAPSHOT') && github.ref == 'refs/heads/main' }}
     permissions:
       contents: write
       packages: write
