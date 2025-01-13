@@ -132,7 +132,7 @@ jobs:
       - name: 📦 Deploy artifacts to Maven Central
         run: mvn --batch-mode deploy -P gpg-sign -P nexus-staging
 
-  # Deploy releases and snapshots for main branch to GitHub Packages
+  # Deploy releases for main branch to GitHub Packages
   deploy-github-packages:
     needs: build
     runs-on: ubuntu-latest
