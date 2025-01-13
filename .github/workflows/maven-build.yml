@@ -161,7 +161,6 @@ jobs:
       - name: 📦 Deploy artifacts to GitHub Packages
         run: mvn --batch-mode -Dmaven.javadoc.skip=true -Dmaven.source.skip=true deploy -P deploy-github-packages
       - name: 📦 Upload assets to GitHub Release
-        if: ${{ !endsWith(needs.build.outputs.project_version, '-SNAPSHOT') }}
         run: |-
           gh release upload v${{ needs.build.outputs.project_version }} **/target/*-${{ needs.build.outputs.project_version }}.jar
           gh release upload v${{ needs.build.outputs.project_version }} **/target/*-${{ needs.build.outputs.project_version }}-tests.jar
