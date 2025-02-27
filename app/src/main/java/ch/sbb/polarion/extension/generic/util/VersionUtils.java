@@ -48,14 +48,14 @@ public class VersionUtils {
     }
 
     public static @Nullable String getCurrentCompatiblePolarionVersion() {
-        return getVersionFromProperties("polarion.version");
+        return getValueFromProperties("polarion.version");
     }
 
-    public static @Nullable String getVersionFromProperties(String key) {
-        return getVersionFromProperties(GENERIC_PROPERTIES_FILE, key);
+    public static @Nullable String getValueFromProperties(String key) {
+        return getValueFromProperties(GENERIC_PROPERTIES_FILE, key);
     }
 
-    public static @Nullable String getVersionFromProperties(String propertiesFileName, String key) {
+    public static @Nullable String getValueFromProperties(String propertiesFileName, String key) {
         try (InputStream input = VersionUtils.class.getClassLoader().getResourceAsStream(propertiesFileName)) {
             if (input == null) {
                 return null;
