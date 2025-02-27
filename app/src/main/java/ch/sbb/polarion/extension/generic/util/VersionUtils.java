@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 @UtilityClass
 public class VersionUtils {
 
-    private static final String GENERIC_PROPERTIES_FILE = "src/main/resources-filtered/generic.properties";
+    private static final String GENERIC_PROPERTIES_FILE = "generic.properties";
 
     public static final String BUNDLE_NAME = "Bundle-Name";
     public static final String BUNDLE_VENDOR = "Bundle-Vendor";
