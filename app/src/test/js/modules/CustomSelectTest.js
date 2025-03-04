@@ -1,16 +1,16 @@
-import SbbCustomSelect from "../../main/resources/js/modules/CustomSelect.js";
+import CustomSelect from "../../../main/resources/js/modules/CustomSelect.js";
 import { expect } from 'chai';
 import { JSDOM } from 'jsdom';
 
-describe('SbbCustomSelect', () => {
+describe('CustomSelect', () => {
     let dom, window, document;
 
     beforeEach(() => {
-        dom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`);
+        dom = new JSDOM(`<!DOCTYPE html><html lang="en"><body></body></html>`);
         window = dom.window;
         document = window.document;
 
-        // Make sure SbbCustomSelect uses the correct window and document
+        // Make sure CustomSelect uses the correct window and document
         global.window = window;
         global.document = document;
     });
@@ -24,7 +24,7 @@ describe('SbbCustomSelect', () => {
         const selectContainer = document.createElement('div');
         document.body.appendChild(selectContainer);
 
-        const select = new SbbCustomSelect({ selectContainer });
+        const select = new CustomSelect({ selectContainer });
         expect(select.selectContainer).to.exist;
         expect(select.selectContainer.classList.contains('sbb-custom-select')).to.be.true;
     });
@@ -33,7 +33,7 @@ describe('SbbCustomSelect', () => {
         const selectContainer = document.createElement('div');
         document.body.appendChild(selectContainer);
 
-        const select = new SbbCustomSelect({ selectContainer });
+        const select = new CustomSelect({ selectContainer });
         expect(select.checkboxContainer.style.display).to.equal('none');
         select.toggleCheckboxContainer();
         expect(select.checkboxContainer.style.display).to.equal('block');
@@ -45,7 +45,7 @@ describe('SbbCustomSelect', () => {
         const selectContainer = document.createElement('div');
         document.body.appendChild(selectContainer);
 
-        const select = new SbbCustomSelect({ selectContainer });
+        const select = new CustomSelect({ selectContainer });
         const { checkbox, label } = select.addOption('1', 'Option 1');
         expect(select.containsOption('1')).to.be.true;
         expect(label.textContent).to.include('Option 1');
@@ -56,7 +56,7 @@ describe('SbbCustomSelect', () => {
         const selectContainer = document.createElement('div');
         document.body.appendChild(selectContainer);
 
-        const select = new SbbCustomSelect({ selectContainer });
+        const select = new CustomSelect({ selectContainer });
         select.addOption('1', 'Option 1');
         select.addOption('2', 'Option 2');
 
@@ -69,7 +69,7 @@ describe('SbbCustomSelect', () => {
         const selectContainer = document.createElement('div');
         document.body.appendChild(selectContainer);
 
-        const select = new SbbCustomSelect({ selectContainer, multiselect: true });
+        const select = new CustomSelect({ selectContainer, multiselect: true });
         select.addOption('1', 'Option 1');
         select.addOption('2', 'Option 2');
         select.selectMultipleValues(['1', '2']);
