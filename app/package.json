@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0",
+    "sinon": "^19.0.2",
+    "chai": "^4.3.4",
+    "mocha": "10.1.0"
+  },
+  "name": "maven-js-project",
+  "scripts": {
+    "test": "mocha src/test/js/**/*.js"
+  },
+  "type": "module",
+  "version": "1.0.0"
+}

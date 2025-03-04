@@ -7,13 +7,13 @@
         <label id="configurations-label"><span class="configuration-label-capitalized">Configuration</span>:</label>
         <div id="configurations-select"></div>
         <div class="action-buttons">
-            <button class="toolbar-button" onclick="Configurations.editConfiguration()">
+            <button id="configurations-button-edit" class="toolbar-button" onclick="Configurations.editConfiguration()">
                 <img class="button-image" src="/polarion/ria/images/actions/edit.gif?bundle=<%= bundleTimestamp %>">Rename
             </button>
-            <button class="toolbar-button" onclick="Configurations.deleteConfiguration()">
+            <button id="configurations-button-delete" class="toolbar-button" onclick="Configurations.deleteConfiguration()">
                 <img class="button-image" src="/polarion/ria/images/actions/delete.gif?bundle=<%= bundleTimestamp %>">Delete
             </button>
-            <button class="new-configuration toolbar-button" style="display: inline-block" onclick="Configurations.newConfiguration()">
+            <button id="configurations-button-create" class="new-configuration toolbar-button" style="display: inline-block" onclick="Configurations.newConfiguration()">
                 <img class="button-image" src="/polarion/ria/images/control/tablePlus.png?bundle=<%= bundleTimestamp %>">Add new
             </button>
         </div>
@@ -29,13 +29,13 @@
         <label for="edit-configuration-input" class="edit-configuration">Edit <span class="configuration-label-capitalized">Configuration</span>:</label>
         <input type="text" id="edit-configuration-input" class="edit-configuration" maxlength="40" />
         <div class="action-buttons">
-            <button class="toolbar-button" onclick="Configurations.cancelEditConfiguration()">
+            <button id="configurations-button-cancel-edit" class="toolbar-button" onclick="Configurations.cancelEditConfiguration()">
                 <img class="button-image" src="/polarion/ria/images/actions/cancel.gif?bundle=<%= bundleTimestamp %>">Cancel
             </button>
-            <button class="new-configuration toolbar-button" onclick="Configurations.saveConfiguration()">
+            <button id="configurations-button-save" class="new-configuration toolbar-button" onclick="Configurations.saveConfiguration()">
                 <img class="button-image" src="/polarion/ria/images/actions/save.gif?bundle=<%= bundleTimestamp %>">Save
             </button>
-            <button class="edit-configuration toolbar-button" onclick="Configurations.updateConfiguration()">
+            <button id="configurations-button-update" class="edit-configuration toolbar-button" onclick="Configurations.updateConfiguration()">
                 <img class="button-image" src="/polarion/ria/images/actions/save.gif?bundle=<%= bundleTimestamp %>">Update
             </button>
         </div>

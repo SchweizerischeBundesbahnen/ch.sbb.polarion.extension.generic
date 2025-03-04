@@ -35,3 +35,7 @@ replay_pid*
 target/
 *.iml
 dependency-reduced-pom.xml
+
+app/node/
+app/node_modules/
+app/package-lock.json
