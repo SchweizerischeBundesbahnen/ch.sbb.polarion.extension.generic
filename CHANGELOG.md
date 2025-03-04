@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v8.0.0...v8.1.0) (2025-03-04)
+
+
+### Features
+
+* Add Polarion status provider and maven resource filtering  ([#241](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/241)) ([17808c2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/17808c28e1e1f8f1e5e23cc6d1d3c0e1474bdaa7))
+* JS modules alternatives for currently existing JS entities ([#245](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/245)) ([6f7a17b](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6f7a17b51c29916cbdb65cfd562ef494bdcccf7a))
+
 ## [8.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v7.7.0...v8.0.0) (2024-12-19)
 
 
