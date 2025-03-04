@@ -253,7 +253,6 @@ const Configurations = {
             });
         }
         document.querySelectorAll('.html-input textarea').forEach(textarea => {
-            textarea.placeholder = enabled ? "Enter configuration content here" : "";
             textarea.disabled = !enabled;
         });
         document.querySelectorAll('.content-area select').forEach(select => {
