@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.1.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v8.1.0...v8.1.1) (2025-03-05)
+
+
+### Bug Fixes
+
+* Link color to simulate Polarion style ([#247](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/247)) ([3eb9155](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/3eb9155403c09ef2661283368859d52fb86c3666))
+
 ## [8.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v8.0.0...v8.1.0) (2025-03-04)
 
 
