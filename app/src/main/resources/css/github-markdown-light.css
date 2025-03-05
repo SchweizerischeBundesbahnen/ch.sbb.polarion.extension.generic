@@ -53,7 +53,7 @@
 
 .markdown-body a {
     background-color: transparent;
-    color: #0969da;
+    color: #197FA2;
     text-decoration: none;
 }
 
@@ -226,7 +226,7 @@
 .markdown-body [role=button]:focus,
 .markdown-body input[type=radio]:focus,
 .markdown-body input[type=checkbox]:focus {
-    outline: 2px solid #0969da;
+    outline: 2px solid #197FA2;
     outline-offset: -2px;
     box-shadow: none;
 }
@@ -242,7 +242,7 @@
 .markdown-body [role=button]:focus-visible,
 .markdown-body input[type=radio]:focus-visible,
 .markdown-body input[type=checkbox]:focus-visible {
-    outline: 2px solid #0969da;
+    outline: 2px solid #197FA2;
     outline-offset: -2px;
     box-shadow: none;
 }
