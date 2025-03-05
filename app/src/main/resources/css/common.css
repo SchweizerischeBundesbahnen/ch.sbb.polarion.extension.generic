@@ -37,6 +37,15 @@ a, td, div, li, ul, input, button, option {
     font-family: "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif;
 }
 
+a {
+    color: #197FA2;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #E3700F;
+}
+
 body, input, select {
     font-size: 13px;
 }
