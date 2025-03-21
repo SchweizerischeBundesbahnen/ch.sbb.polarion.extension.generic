@@ -97,7 +97,7 @@
         <google.guice.version>7.0.0</google.guice.version>
         <gwt-servlet.version>2.9.0</gwt-servlet.version>
         <jsp-api.version>2.2</jsp-api.version>
-        <re2j.version>1.7</re2j.version>
+        <re2j.version>1.8</re2j.version>
         <reflections.version>0.10.2</reflections.version>
 
         <!-- Manifest entries -->
