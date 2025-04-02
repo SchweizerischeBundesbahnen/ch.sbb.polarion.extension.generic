@@ -3,7 +3,6 @@ package ch.sbb.polarion.extension.generic.fields.converters;
 import ch.sbb.polarion.extension.generic.fields.ConverterContext;
 import ch.sbb.polarion.extension.generic.fields.IConverter;
 import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
-import com.google.common.base.Joiner;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -28,6 +27,6 @@ public class StringCSVToListConverter implements IConverter<String, List<Object>
 
     @Override
     public String convertBack(@NotNull List<Object> value, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-        return Joiner.on(SEPARATOR).join(value);
+        return value.stream().map(Object::toString).collect(Collectors.joining(SEPARATOR));
     }
 }

@@ -3,7 +3,6 @@ package ch.sbb.polarion.extension.generic.fields.converters;
 import ch.sbb.polarion.extension.generic.fields.ConverterContext;
 import ch.sbb.polarion.extension.generic.fields.IConverter;
 import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
-import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -28,8 +27,8 @@ public class ChainConverter implements IConverter<Object, Object> {
 
     @Override
     public Object convertBack(@NotNull Object value, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-        for (IConverter converter : Lists.reverse(converterChain)) {
-            value = converter.convertBack(value, context, fieldMetadata);
+        for (int i = converterChain.size() - 1; i >= 0; i--) {
+            value = converterChain.get(i).convertBack(value, context, fieldMetadata);
         }
         return value;
     }
