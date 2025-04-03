@@ -79,7 +79,7 @@
         <javax.transaction-api.version>1.3</javax.transaction-api.version>
 
         <!-- Sonar and JaCoCo -->
-        <jacoco.version>0.8.12</jacoco.version>
+        <jacoco.version>0.8.13</jacoco.version>
         <sonar.projectKey>SchweizerischeBundesbahnen_${project.artifactId}</sonar.projectKey>
         <sonar.organization>schweizerischebundesbahnen</sonar.organization>
         <sonar.projectName>${project.artifactId}</sonar.projectName>
