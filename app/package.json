@@ -2,9 +2,9 @@
   "dependencies": {
   },
   "devDependencies": {
-    "jsdom": "^24.0.0",
-    "sinon": "^19.0.2",
-    "chai": "^4.3.4",
+    "jsdom": "24.1.3",
+    "sinon": "19.0.5",
+    "chai": "4.5.0",
     "mocha": "10.1.0"
   },
   "name": "maven-js-project",
