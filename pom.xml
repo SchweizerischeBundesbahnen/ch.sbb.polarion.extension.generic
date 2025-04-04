@@ -69,7 +69,7 @@
         <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
 
         <!-- Test dependencies -->
-        <junit.version>5.11.4</junit.version>
+        <junit.version>5.12.1</junit.version>
         <mockito.version>5.17.0</mockito.version>
         <assertj-core.version>3.27.3</assertj-core.version>
         <jaxb.impl.version>2.4.0-b180830.0438</jaxb.impl.version>
