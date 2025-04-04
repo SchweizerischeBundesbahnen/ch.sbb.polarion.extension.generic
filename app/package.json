@@ -2,7 +2,7 @@
   "dependencies": {
   },
   "devDependencies": {
-    "jsdom": "24.1.3",
+    "jsdom": "26.0.0",
     "sinon": "19.0.5",
     "chai": "5.2.0",
     "mocha": "10.8.2"
