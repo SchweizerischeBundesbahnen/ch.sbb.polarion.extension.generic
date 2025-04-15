@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.1.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v8.1.0...v8.1.1) (2025-04-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.re2j:re2j to v1.8 ([#250](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/250)) ([1656844](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/1656844a01b82e019e8f7abd0a1066c45bf104ad))
+* Link color to simulate Polarion style ([#247](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/247)) ([3eb9155](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/3eb9155403c09ef2661283368859d52fb86c3666))
+
 ## [8.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v8.0.0...v8.1.0) (2025-03-04)
 
 
