@@ -148,10 +148,13 @@ Require-Bundle: com.polarion.portal.tomcat,
  org.springframework.spring-web
 ```
 
-* If Polarion's form extension is implemented, property `Guice-Modules` should specify a class which does this, eg.
+* If the bundle has a form extension, it must contain `ExtensionBundleActivator` in the root package containing an implementation
+of `org.osgi.framework.BundleActivator` (or `ch.sbb.polarion.extension.generic.GenericBundleActivator` for convenience)
+which registers `IFormExtension` using `FormExtensionsRegistry`.
+Also in this case the manifest must contain `org.osgi.framework` entry in the `Import-Package` property:
 
 ```properties
-Guice-Modules: ch.sbb.polarion.extension.pdf.exporter.PdfExporterModule
+Import-Package: org.osgi.framework
 ```
 
 ### Setting classes
