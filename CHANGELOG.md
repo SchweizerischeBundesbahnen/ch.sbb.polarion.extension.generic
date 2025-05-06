@@ -1,5 +1,16 @@
 # Changelog
 
+## [9.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v8.1.1...v9.0.0) (2025-05-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* change the way of form-extensions registering ([#262](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/262))
+
+### Features
+
+* change the way of form-extensions registering ([#262](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/262)) ([d6b4345](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d6b4345ea00bdc11a0bf2e205c88a8803297a878)), closes [#261](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/261)
+
 ## [8.1.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v8.1.0...v8.1.1) (2025-04-15)
 
 
