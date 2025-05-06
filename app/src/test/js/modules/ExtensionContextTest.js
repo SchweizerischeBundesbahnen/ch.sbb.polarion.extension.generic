@@ -1,6 +1,7 @@
 import ExtensionContext from '../../../main/resources/js/modules/ExtensionContext.js';
 import { expect } from 'chai';
 import sinon from 'sinon';
+import nise from 'nise';
 import {JSDOM} from "jsdom";
 
 describe('ExtensionContext', function () {
@@ -62,7 +63,7 @@ describe('ExtensionContext', function () {
     });
 
     it('should call async request and handle success', function (done) {
-        global.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
+        global.XMLHttpRequest = nise.fakeXhr.useFakeXMLHttpRequest();
         let requests = [];
         global.XMLHttpRequest.onCreate = (xhr) => requests.push(xhr);
 
