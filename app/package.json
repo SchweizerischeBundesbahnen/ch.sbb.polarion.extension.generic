@@ -6,7 +6,7 @@
     "jsdom": "26.1.0",
     "mocha": "11.2.2",
     "sinon": "20.0.0",
-    "nise": "^6.1.1"
+    "nise": "6.1.1"
   },
   "name": "maven-js-project",
   "scripts": {
