@@ -4,7 +4,7 @@
 
     <groupId>ch.sbb.polarion.extensions</groupId>
     <artifactId>ch.sbb.polarion.extension.generic</artifactId>
-    <version>9.0.0</version>
+    <version>9.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Versatile extension for developing additional extensions within Polarion ALM: parent POM</name>
