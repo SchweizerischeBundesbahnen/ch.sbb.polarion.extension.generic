@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.0.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v9.0.0...v9.0.1) (2025-05-08)
+
+
+### Bug Fixes
+
+* unable to initialize extension without declared ExtensionBundleA… ([#268](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/268)) ([791c0d3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/791c0d3304399c4acf2917775872352267618645))
+* unable to initialize extension without declared ExtensionBundleActivator ([791c0d3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/791c0d3304399c4acf2917775872352267618645)), closes [#267](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/267)
+
 ## [9.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v8.1.1...v9.0.0) (2025-05-06)
 
 
