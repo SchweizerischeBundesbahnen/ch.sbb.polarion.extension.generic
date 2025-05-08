@@ -111,11 +111,8 @@
         <maven-jar-plugin.Bundle-Version>${project.artifact.selectedVersion.majorVersion}.${project.artifact.selectedVersion.minorVersion}.${project.artifact.selectedVersion.incrementalVersion}</maven-jar-plugin.Bundle-Version>
         <maven-jar-plugin.Extension-Context/>
         <maven-jar-plugin.Discover-Base-Package>${project.artifactId}</maven-jar-plugin.Discover-Base-Package>
-        <maven-jar-plugin.BundleActivatorClass>${maven-jar-plugin.Automatic-Module-Name}.ExtensionBundleActivator</maven-jar-plugin.BundleActivatorClass>
-        <maven-jar-plugin.BundleActivationPolicy>lazy</maven-jar-plugin.BundleActivationPolicy>
         <maven-jar-plugin.Configuration-Properties-Prefix/>
         <maven-jar-plugin.Project-URL>${project.scm.url}</maven-jar-plugin.Project-URL>
-        <maven-jar-plugin.ImportPackage>org.osgi.framework</maven-jar-plugin.ImportPackage>
 
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
         <nexus-staging-maven-plugin.autoReleaseAfterClose>true</nexus-staging-maven-plugin.autoReleaseAfterClose>
@@ -661,8 +658,6 @@
                             <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
                             <manifestEntries>
                                 <Manifest-Version>${maven-jar-plugin.Manifest-Version}</Manifest-Version>
-                                <Bundle-Activator>${maven-jar-plugin.BundleActivatorClass}</Bundle-Activator>
-                                <Bundle-ActivationPolicy>${maven-jar-plugin.BundleActivationPolicy}</Bundle-ActivationPolicy>
                                 <Bundle-ManifestVersion>${maven-jar-plugin.Bundle-ManifestVersion}</Bundle-ManifestVersion>
                                 <Bundle-Vendor>${maven-jar-plugin.Bundle-Vendor}</Bundle-Vendor>
                                 <Automatic-Module-Name>${maven-jar-plugin.Automatic-Module-Name}</Automatic-Module-Name>
@@ -674,7 +669,6 @@
                                 <Discover-Base-Package>${maven-jar-plugin.Discover-Base-Package}</Discover-Base-Package>
                                 <Configuration-Properties-Prefix>${maven-jar-plugin.Configuration-Properties-Prefix}</Configuration-Properties-Prefix>
                                 <Project-URL>${maven-jar-plugin.Project-URL}</Project-URL>
-                                <Import-Package>${maven-jar-plugin.ImportPackage}</Import-Package>
                             </manifestEntries>
                         </archive>
                     </configuration>

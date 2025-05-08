@@ -148,14 +148,10 @@ Require-Bundle: com.polarion.portal.tomcat,
  org.springframework.spring-web
 ```
 
-* If the bundle has a form extension, it must contain `ExtensionBundleActivator` in the root package containing an implementation
-of `org.osgi.framework.BundleActivator` (or `ch.sbb.polarion.extension.generic.GenericBundleActivator` for convenience)
-which registers `IFormExtension` using `FormExtensionsRegistry`.
-Also in this case the manifest must contain `org.osgi.framework` entry in the `Import-Package` property:
-
-```properties
-Import-Package: org.osgi.framework
-```
+* If the bundle has a form extension, it can be registered either using custom `org.osgi.framework.BundleActivator` or implement `ch.sbb.polarion.extension.generic.GenericBundleActivator`.
+In both cases the manifest must contain:
+  - activator class in the `Bundle-Activator` entry
+  - `Import-Package: org.osgi.framework` + `Bundle-ActivationPolicy: lazy` entries
 
 ### Setting classes
 
