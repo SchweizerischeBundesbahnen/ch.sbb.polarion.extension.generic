@@ -5,7 +5,7 @@
     <parent>
         <groupId>ch.sbb.polarion.extensions</groupId>
         <artifactId>ch.sbb.polarion.extension.generic</artifactId>
-        <version>9.0.0</version>
+        <version>9.0.1-SNAPSHOT</version>
     </parent>
 
     <name>Versatile extension for developing additional extensions within Polarion ALM: common code and resources</name>
