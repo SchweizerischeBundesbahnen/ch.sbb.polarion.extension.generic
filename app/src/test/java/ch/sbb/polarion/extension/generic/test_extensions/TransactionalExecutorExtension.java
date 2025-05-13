@@ -1,8 +1,10 @@
 package ch.sbb.polarion.extension.generic.test_extensions;
 
 import com.polarion.alm.shared.api.transaction.RunnableInReadOnlyTransaction;
+import com.polarion.alm.shared.api.transaction.RunnableInWriteTransaction;
 import com.polarion.alm.shared.api.transaction.TransactionalExecutor;
 import com.polarion.alm.shared.api.transaction.internal.InternalReadOnlyTransaction;
+import com.polarion.alm.shared.api.transaction.internal.InternalWriteTransaction;
 import com.polarion.alm.shared.api.utils.RunnableWithResult;
 import com.polarion.alm.shared.api.utils.internal.InternalPolarionUtils;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -30,6 +32,18 @@ public class TransactionalExecutorExtension implements BeforeEachCallback, After
             return runnable.run(internalReadOnlyTransactionMock);
         });
         transactionalExecutorMockedStatic.when(TransactionalExecutor::currentTransaction).thenReturn(internalReadOnlyTransactionMock);
+        transactionalExecutorMockedStatic.when(() -> TransactionalExecutor.executeInReadOnlyTransaction(any())).thenAnswer(invocation -> {
+            RunnableInReadOnlyTransaction<?> runnable = invocation.getArgument(0);
+            return runnable.run(internalReadOnlyTransactionMock);
+        });
+        transactionalExecutorMockedStatic.when(TransactionalExecutor::currentTransaction).thenReturn(internalReadOnlyTransactionMock);
+
+        InternalWriteTransaction internalWriteTransactionMock = mock(InternalWriteTransaction.class);
+        transactionalExecutorMockedStatic.when(() -> TransactionalExecutor.executeInWriteTransaction(any())).thenAnswer(invocation -> {
+            RunnableInWriteTransaction<?> runnable = invocation.getArgument(0);
+            return runnable.run(internalWriteTransactionMock);
+        });
+        transactionalExecutorMockedStatic.when(TransactionalExecutor::currentTransaction).thenReturn(internalWriteTransactionMock);
 
         InternalPolarionUtils internalPolarionUtils = mock(InternalPolarionUtils.class);
         lenient().when(internalPolarionUtils.executeInBaseline(any(), any())).thenAnswer(invocation -> {
@@ -40,6 +54,7 @@ public class TransactionalExecutorExtension implements BeforeEachCallback, After
 
         CustomExtensionMockInjector.inject(context, internalPolarionUtils);
         CustomExtensionMockInjector.inject(context, internalReadOnlyTransactionMock);
+        CustomExtensionMockInjector.inject(context, internalWriteTransactionMock);
     }
 
     @Override
