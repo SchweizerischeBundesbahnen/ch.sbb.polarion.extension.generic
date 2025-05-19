@@ -49,7 +49,8 @@ const Configurations = {
                 const previouslySelectedValue = SbbCommon.getCookie(SELECTED_CONFIGURATION_COOKIE + SbbCommon.setting);
                 let preselectDefault = true;
                 let defaultValue = null;
-                for (let name of JSON.parse(responseText)) {
+                let names = JSON.parse(responseText);
+                for (let name of names) {
                     defaultValue = defaultValue || name.name; // Take first element from list as default
                     if (name.name === previouslySelectedValue) {
                         preselectDefault = false;
@@ -61,8 +62,13 @@ const Configurations = {
                     }
                 }
 
-                this.configurationsSelect.selectValue(previouslySelectedValue && !preselectDefault ? previouslySelectedValue : defaultValue);
-                this.setContentAreaEnabled(true);
+                const hasNames = names.length > 0
+                document.getElementById('configurations-button-edit').disabled = !hasNames;
+                document.getElementById('configurations-button-delete').disabled = !hasNames;
+                if (hasNames) {
+                    this.configurationsSelect.selectValue(previouslySelectedValue && !preselectDefault ? previouslySelectedValue : defaultValue);
+                    this.setContentAreaEnabled(true);
+                }
             },
             onError: () => document.getElementById("configurations-load-error").style.display = "block"
         });
