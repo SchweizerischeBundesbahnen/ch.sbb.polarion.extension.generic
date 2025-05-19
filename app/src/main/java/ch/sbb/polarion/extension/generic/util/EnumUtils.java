@@ -19,6 +19,6 @@ public class EnumUtils {
     }
 
     public String getIconUrl(@NotNull IEnumOption option) {
-        return option.getProperties() != null ? option.getProperties().getProperty("iconURL") : null;
+        return option.getProperties() != null ? option.getProperties().getProperty(IEnumOption.PROPERTY_KEY_ICON_URL) : null;
     }
 }
