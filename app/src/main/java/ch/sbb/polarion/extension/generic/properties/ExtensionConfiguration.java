@@ -1,5 +1,8 @@
 package ch.sbb.polarion.extension.generic.properties;
 
+import ch.sbb.polarion.extension.generic.properties.mappings.PropertyMapping;
+import ch.sbb.polarion.extension.generic.properties.mappings.PropertyMappingDefaultValue;
+import ch.sbb.polarion.extension.generic.properties.mappings.PropertyMappingDescription;
 import ch.sbb.polarion.extension.generic.util.ContextUtils;
 import com.polarion.core.config.impl.SystemValueReader;
 import lombok.Getter;
@@ -21,16 +24,19 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
     protected final String propertyPrefix;
 
     @SuppressWarnings("unused")
+    @PropertyMapping(DEBUG)
     public boolean isDebug() {
         return SystemValueReader.getInstance().readBoolean(propertyPrefix + DEBUG, DEBUG_DEFAULT_VALUE);
     }
 
     @SuppressWarnings("unused")
+    @PropertyMappingDescription(DEBUG)
     public String getDebugDescription() {
         return DEBUG_DESCRIPTION;
     }
 
     @SuppressWarnings("unused")
+    @PropertyMappingDefaultValue(DEBUG)
     public String getDebugDefaultValue() {
         return String.valueOf(DEBUG_DEFAULT_VALUE);
     }
@@ -47,9 +53,10 @@ public class ExtensionConfiguration implements IExtensionConfiguration {
 
         for (String supportedProperty : supportedProperties) {
             @NotNull String key = getPropertyPrefix() + supportedProperty;
-            @Nullable String value = GetterFinder.getValue(extensionConfiguration, supportedProperty);
-            @Nullable String defaultValue = GetterFinder.getDefaultValue(extensionConfiguration, supportedProperty);
-            @Nullable String description = GetterFinder.getDescription(extensionConfiguration, supportedProperty);
+            PropertyMappingScanner<?> propertyMappingScanner = new PropertyMappingScanner<>(extensionConfiguration);
+            @Nullable String value = propertyMappingScanner.getValue(supportedProperty);
+            @Nullable String defaultValue = propertyMappingScanner.getDefaultValue(supportedProperty);
+            @Nullable String description = propertyMappingScanner.getDescription(supportedProperty);
             if (value != null) {
                 configurationProperties.setProperty(key, new ConfigurationProperties.Value(value, defaultValue, description));
             }
