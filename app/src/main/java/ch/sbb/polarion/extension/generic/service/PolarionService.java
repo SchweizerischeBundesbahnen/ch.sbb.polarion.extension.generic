@@ -267,7 +267,7 @@ public class PolarionService {
             fieldType = enumType;
         }
         return fieldType instanceof EnumType enumType ? getEnumeration(enumType, contextId).getAllOptions().stream()
-                .map(o -> new Option(EnumUtils.getEnumId(o), o.getName())).collect(Collectors.toSet()) : null;
+                .map(o -> new Option(EnumUtils.getEnumId(o), o.getName(), EnumUtils.getIconUrl(o))).collect(Collectors.toSet()) : null;
     }
 
     @SneakyThrows
