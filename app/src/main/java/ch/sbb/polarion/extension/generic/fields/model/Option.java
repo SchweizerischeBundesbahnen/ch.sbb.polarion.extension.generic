@@ -12,4 +12,5 @@ public class Option {
     @EqualsAndHashCode.Include
     String key;
     String name;
+    String iconUrl;
 }
