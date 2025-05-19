@@ -99,6 +99,8 @@ export default class ConfigurationsPane {
                 if (hasNames) {
                     this.configurationsSelect.selectValue(previouslySelectedValue && !preselectDefault ? previouslySelectedValue : defaultValue);
                     this.setContentAreaEnabled(true);
+                } else {
+                    this.configurationsSelect.setSelectedOptionValue('');
                 }
             },
             onError: () => document.getElementById("configurations-load-error").style.display = "block"
