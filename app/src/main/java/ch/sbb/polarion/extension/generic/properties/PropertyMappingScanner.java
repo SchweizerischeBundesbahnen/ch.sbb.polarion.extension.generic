@@ -54,15 +54,15 @@ public class PropertyMappingScanner<T extends ExtensionConfiguration>  {
         }
     }
 
-    private <AType extends Annotation> void processAnnotation(
+    private <A extends Annotation> void processAnnotation(
             Method method,
             Object instance,
-            Class<AType> annotationClass,
+            Class<A> annotationClass,
             BiFunction<PropertyInfo, String, PropertyInfo> propertyInfoBuilder
     ) {
         if (method.isAnnotationPresent(annotationClass)) {
             try {
-                AType annotation = method.getAnnotation(annotationClass);
+                A annotation = method.getAnnotation(annotationClass);
                 String propertyKey = (String) annotationClass.getMethod("value").invoke(annotation);
                 if (isEmpty(propertyKey)) {
                     throw new IllegalArgumentException("Property key cannot be empty");

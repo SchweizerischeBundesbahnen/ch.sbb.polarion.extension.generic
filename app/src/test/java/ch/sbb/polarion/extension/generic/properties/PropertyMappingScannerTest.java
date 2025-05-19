@@ -66,7 +66,8 @@ class PropertyMappingScannerTest {
 
     @Test
     void shouldHandleBlankKey() {
-        assertThatThrownBy(() -> new PropertyMappingScanner<>(new TestConfigBlankKey()))
+        TestConfigBlankKey testConfigBlankKey = new TestConfigBlankKey();
+        assertThatThrownBy(() -> new PropertyMappingScanner<>(testConfigBlankKey))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Property key cannot be empty");
     }
