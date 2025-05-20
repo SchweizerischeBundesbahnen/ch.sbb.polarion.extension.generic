@@ -1,5 +1,14 @@
 # Changelog
 
+## [9.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v9.0.1...v9.1.0) (2025-05-19)
+
+
+### Features
+
+* Introduced new annotation based property mapping scanner ([#273](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/273)) ([8ca0cf3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/8ca0cf3718a7f43f26e7cc90cd12da881c6eca10))
+* Introduced new annotation based property mapping scanner that uses annotations to detect value, defaultValue, and description getter methods in extensions. The old method naming convention is still supported, but now treated with lower priority. ([8ca0cf3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/8ca0cf3718a7f43f26e7cc90cd12da881c6eca10)), closes [#266](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/266)
+* Provide icon URLs for enum options ([#275](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/275)) ([bf7eb72](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/bf7eb72b00aab6ff1a2cf8b81958b9ac05735a15))
+
 ## [9.0.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v9.0.0...v9.0.1) (2025-05-08)
 
 
