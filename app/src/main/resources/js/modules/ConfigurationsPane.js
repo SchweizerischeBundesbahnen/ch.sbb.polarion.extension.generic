@@ -80,7 +80,8 @@ export default class ConfigurationsPane {
                 const previouslySelectedValue = this.ctx.getCookie(ConfigurationsPane.SELECTED_CONFIGURATION_COOKIE + this.ctx.setting);
                 let preselectDefault = true;
                 let defaultValue = null;
-                for (let name of JSON.parse(responseText)) {
+                let names = JSON.parse(responseText);
+                for (let name of names) {
                     defaultValue = defaultValue || name.name; // Take first element from list as default
                     if (name.name === previouslySelectedValue) {
                         preselectDefault = false;
@@ -92,8 +93,15 @@ export default class ConfigurationsPane {
                     }
                 }
 
-                this.configurationsSelect.selectValue(previouslySelectedValue && !preselectDefault ? previouslySelectedValue : defaultValue);
-                this.setContentAreaEnabled(true);
+                const hasNames = names.length > 0
+                this.ctx.disableIf('configurations-button-edit', !hasNames);
+                this.ctx.disableIf('configurations-button-delete', !hasNames);
+                if (hasNames) {
+                    this.configurationsSelect.selectValue(previouslySelectedValue && !preselectDefault ? previouslySelectedValue : defaultValue);
+                    this.setContentAreaEnabled(true);
+                } else {
+                    this.configurationsSelect.setSelectedOptionValue('');
+                }
             },
             onError: () => document.getElementById("configurations-load-error").style.display = "block"
         });

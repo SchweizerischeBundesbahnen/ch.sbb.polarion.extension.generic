@@ -1,7 +1,7 @@
 <%! String bundleTimestamp = ch.sbb.polarion.extension.generic.util.VersionUtils.getVersion().getBundleBuildTimestampDigitsOnly(); %>
 
-<p>There can be multiple named <span class="configuration-label">configuration</span>s. Please, chose one you would like to modify in dropdown below.
-    Be aware that "Default" <span class="configuration-label">configuration</span> on global scope can't be deleted or renamed.</p>
+<p>There can be multiple named <span class="configuration-label">configuration</span>s. Please, choose one you would like to modify in dropdown below.
+    <span id="default-cannot-be-deleted-note">Be aware that "Default" <span class="configuration-label">configuration</span> on global scope can't be deleted or renamed.</span></p>
 <div class="input-group common-configuration-panel">
     <div id="configurations-pane">
         <label id="configurations-label"><span class="configuration-label-capitalized">Configuration</span>:</label>

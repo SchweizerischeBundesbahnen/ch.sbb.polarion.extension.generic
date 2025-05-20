@@ -87,6 +87,10 @@ export default class ExtensionContext {
         this.getElementById(elementId).style.visibility = condition ? "visible" : "hidden";
     }
 
+    disableIf(elementId, condition) {
+        this.getElementById(elementId).disabled = condition;
+    }
+
     containsOption(selectElement, option) {
         return [...selectElement.options].map(o => o.value).includes(option);
     }
