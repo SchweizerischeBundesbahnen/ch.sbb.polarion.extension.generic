@@ -3,7 +3,6 @@ package ch.sbb.polarion.extension.generic.test_extensions;
 import com.polarion.alm.shared.api.transaction.RunnableInReadOnlyTransaction;
 import com.polarion.alm.shared.api.transaction.RunnableInWriteTransaction;
 import com.polarion.alm.shared.api.transaction.TransactionalExecutor;
-import com.polarion.alm.shared.api.transaction.internal.InternalReadOnlyTransaction;
 import com.polarion.alm.shared.api.transaction.internal.InternalWriteTransaction;
 import com.polarion.alm.shared.api.utils.RunnableWithResult;
 import com.polarion.alm.shared.api.utils.internal.InternalPolarionUtils;
@@ -26,19 +25,19 @@ public class TransactionalExecutorExtension implements BeforeEachCallback, After
     public void beforeEach(ExtensionContext context) throws Exception {
         transactionalExecutorMockedStatic = mockStatic(TransactionalExecutor.class);
 
-        InternalReadOnlyTransaction internalReadOnlyTransactionMock = mock(InternalReadOnlyTransaction.class);
+        InternalWriteTransaction internalWriteTransactionMock = mock(InternalWriteTransaction.class);
         transactionalExecutorMockedStatic.when(() -> TransactionalExecutor.executeSafelyInReadOnlyTransaction(any())).thenAnswer(invocation -> {
             RunnableInReadOnlyTransaction<?> runnable = invocation.getArgument(0);
-            return runnable.run(internalReadOnlyTransactionMock);
+            return runnable.run(internalWriteTransactionMock);
         });
-        transactionalExecutorMockedStatic.when(TransactionalExecutor::currentTransaction).thenReturn(internalReadOnlyTransactionMock);
+
+        transactionalExecutorMockedStatic.when(TransactionalExecutor::currentTransaction).thenReturn(internalWriteTransactionMock);
+
         transactionalExecutorMockedStatic.when(() -> TransactionalExecutor.executeInReadOnlyTransaction(any())).thenAnswer(invocation -> {
             RunnableInReadOnlyTransaction<?> runnable = invocation.getArgument(0);
-            return runnable.run(internalReadOnlyTransactionMock);
+            return runnable.run(internalWriteTransactionMock);
         });
-        transactionalExecutorMockedStatic.when(TransactionalExecutor::currentTransaction).thenReturn(internalReadOnlyTransactionMock);
 
-        InternalWriteTransaction internalWriteTransactionMock = mock(InternalWriteTransaction.class);
         transactionalExecutorMockedStatic.when(() -> TransactionalExecutor.executeInWriteTransaction(any())).thenAnswer(invocation -> {
             RunnableInWriteTransaction<?> runnable = invocation.getArgument(0);
             return runnable.run(internalWriteTransactionMock);
@@ -50,10 +49,9 @@ public class TransactionalExecutorExtension implements BeforeEachCallback, After
             RunnableWithResult<?> runnableWithResult = invocation.getArgument(1);
             return runnableWithResult.run();
         });
-        lenient().when(internalReadOnlyTransactionMock.utils()).thenReturn(internalPolarionUtils);
+        lenient().when(internalWriteTransactionMock.utils()).thenReturn(internalPolarionUtils);
 
         CustomExtensionMockInjector.inject(context, internalPolarionUtils);
-        CustomExtensionMockInjector.inject(context, internalReadOnlyTransactionMock);
         CustomExtensionMockInjector.inject(context, internalWriteTransactionMock);
     }
 
