@@ -277,7 +277,11 @@ export default class ExtensionContext {
     // initiate file download
     downloadBlob(blob, fileName) {
         const objectURL = (window.URL ? window.URL : window.webkitURL).createObjectURL(blob);
-        const link = document.createElement("a");
+
+        const isInIframe = window.self !== window.top;
+        const targetWindow = isInIframe ? window.top : window;
+
+        const link = targetWindow.document.createElement("a");
         link.href = objectURL;
         link.download = fileName
         link.target = "_blank";
