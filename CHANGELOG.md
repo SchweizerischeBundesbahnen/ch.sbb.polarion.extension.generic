@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.1.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v9.1.0...v9.1.1) (2025-05-22)
+
+
+### Bug Fixes
+
+* fix transaction mocks for TransactionalExecutor ([#282](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/282)) ([fb40581](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/fb40581234b07498dff98b7efb97cee3e1147cd7))
+* fixed downloading blob file inside iframe ([#284](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/284)) ([e5ba3e5](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/e5ba3e53d7a2f86d79c23d274f90d8eee9655ead)), closes [#281](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/281)
+
 ## [9.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v9.0.1...v9.1.0) (2025-05-19)
 
 
