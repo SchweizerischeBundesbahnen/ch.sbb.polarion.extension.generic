@@ -5,6 +5,7 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
+import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
 import java.util.Optional;
@@ -21,7 +22,16 @@ public class ContextUtils {
     public static final String DISCOVER_BASE_PACKAGE = "Discover-Base-Package";
     public static final String CONFIGURATION_PROPERTIES_PREFIX = "Configuration-Properties-Prefix";
 
-    private static final Reflections REFLECTIONS_INSTANCE = new Reflections(new ConfigurationBuilder().forPackage(getBasePackage()));
+    private static final String BASE_PACKAGE = getBasePackage();
+    private static final Reflections REFLECTIONS_INSTANCE = new Reflections(
+            new ConfigurationBuilder()
+                    .setUrls(
+                            ClasspathHelper.forPackage(BASE_PACKAGE).stream()
+                                    .filter(url -> "file".equals(url.getProtocol()))
+                                    .toList()
+                    )
+                    .forPackage(BASE_PACKAGE)
+    );
 
     @NotNull
     public static Context getContext() {
