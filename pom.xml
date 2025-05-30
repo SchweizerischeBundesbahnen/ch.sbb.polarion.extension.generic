@@ -192,14 +192,14 @@
 
         <!-- default profile: polarion2410 -->
         <profile>
-            <id>polarion2410</id>
+            <id>polarion2506</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <maven.compiler.source>17</maven.compiler.source>
                 <maven.compiler.target>17</maven.compiler.target>
-                <polarion.version>2410</polarion.version>
+                <polarion.version>2506</polarion.version>
 
                 <jersey.version>2.35</jersey.version>
                 <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
