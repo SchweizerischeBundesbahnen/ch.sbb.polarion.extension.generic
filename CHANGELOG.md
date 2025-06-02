@@ -1,5 +1,16 @@
 # Changelog
 
+## [10.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v9.1.1...v10.0.0) (2025-06-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** update Maven distribution management to use central repository ([#288](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/288))
+
+### Miscellaneous Chores
+
+* **deps:** update Maven distribution management to use central repository ([#288](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/288)) ([d33ec18](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d33ec1857183dd449965aa9f134bfada6167dc27))
+
 ## [9.1.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v9.1.0...v9.1.1) (2025-05-22)
 
 
