@@ -40,11 +40,11 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>central</id>
+            <id>sonatype-central</id>
             <url>https://central.sonatype.com/</url>
         </snapshotRepository>
         <repository>
-            <id>central</id>
+            <id>sonatype-central</id>
             <url>https://central.sonatype.com/</url>
         </repository>
     </distributionManagement>
@@ -779,7 +779,7 @@
                     <version>${central-publishing-maven-plugin.version}</version>
                     <extensions>true</extensions>
                     <configuration>
-                        <publishingServerId>central</publishingServerId>
+                        <publishingServerId>sonatype-central</publishingServerId>
                         <autoPublish>${central-publishing-maven-plugin.autoPublish}</autoPublish>
                         <waitUntil>published</waitUntil>
                     </configuration>
