@@ -80,7 +80,7 @@ jobs:
                 "password": "${env.GITHUB_TOKEN}"
               },
               {
-                "id": "central",
+                "id": "sonatype-central",
                 "username": "${env.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME}",
                 "password": "${env.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN}"
               },
