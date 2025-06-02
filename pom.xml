@@ -747,6 +747,7 @@
                     </executions>
                     <configuration>
                         <sourcepath>${basedir}/src/main/java</sourcepath>
+                        <doclint>none</doclint>
                     </configuration>
                 </plugin>
 
