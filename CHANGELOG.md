@@ -1,5 +1,17 @@
 # Changelog
 
+## [10.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v10.0.0...v10.1.0) (2025-06-02)
+
+
+### Features
+
+* pull read-only attribute of a field ([#291](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/291)) ([19ffa8f](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/19ffa8fc575c6d95da305fc013d3beb49fccb5ff))
+
+
+### Bug Fixes
+
+* ContextUtils search only for files skipping bundleresource:// paths ([#293](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/293)) ([29004a0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/29004a0adf70c1f89aadeecda3052ef2f49c6627)), closes [#286](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/286)
+
 ## [10.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v9.1.1...v10.0.0) (2025-06-02)
 
 
