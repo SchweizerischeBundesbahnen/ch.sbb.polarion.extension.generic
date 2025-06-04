@@ -27,6 +27,7 @@ public class FieldMetadata implements Comparable<FieldMetadata>{
     private IType type;
     private boolean custom;
     private boolean required;
+    private boolean readOnly;
     private boolean multi;
 
     private Set<Option> options;
@@ -42,6 +43,7 @@ public class FieldMetadata implements Comparable<FieldMetadata>{
                 .type(prototype.getKeyType(fieldId))
                 .custom(!prototype.isKeyDefined(fieldId))
                 .required(prototype.isKeyRequired(fieldId))
+                .readOnly(prototype.isKeyReadOnly(fieldId))
                 .multi(false)
                 .build();
     }

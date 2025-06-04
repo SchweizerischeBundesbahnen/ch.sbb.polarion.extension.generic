@@ -242,15 +242,15 @@ class GenericNamedSettingsTest {
 
             TestSettings testSettings = new TestSettings(settingsService);
             when(settingsService.read(eq(mockProjectTest1Location), any())).thenReturn(getModelContent("project_list_revisions1"));
-            when(settingsService.listRevisions(eq(mockProjectTest1Location), eq("list_revisions_project"))).thenReturn(
+            when(settingsService.listRevisions(mockProjectTest1Location, "list_revisions_project")).thenReturn(
                     List.of(
                             Revision.builder().name("3").build(),
                             Revision.builder().name("2").build(),
                             Revision.builder().name("1").build()
                     )
             );
-            when(settingsService.listRevisions(eq(mockProjectDefault1Location), eq("list_revisions_project"))).thenReturn(Collections.emptyList());
-            when(settingsService.listRevisions(eq(mockDefaultTest1Location), eq(null))).thenReturn(
+            when(settingsService.listRevisions(mockProjectDefault1Location, "list_revisions_project")).thenReturn(Collections.emptyList());
+            when(settingsService.listRevisions(mockDefaultTest1Location, null)).thenReturn(
                     List.of(
                             Revision.builder().name("5").build(),
                             Revision.builder().name("4").build()
