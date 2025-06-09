@@ -4,7 +4,7 @@
   "devDependencies": {
     "chai": "5.2.0",
     "jsdom": "26.1.0",
-    "mocha": "11.5.0",
+    "mocha": "11.6.0",
     "sinon": "20.0.0",
     "nise": "6.1.1"
   },
