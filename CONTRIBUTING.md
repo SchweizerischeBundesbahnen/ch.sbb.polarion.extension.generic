@@ -14,7 +14,7 @@ These are mostly guidelines, not rules. Use your best judgment, and feel free to
 [How Can I Contribute?](#how-can-i-contribute)
 * [Reporting Bugs](#reporting-bugs)
 * [Suggesting Enhancements](#suggesting-enhancements)
-* [Submitting Changes](#submitting-changes)
+* [Submitting Changes](#submit-changes)
 * [Commit Message Guidelines](#commit-message-guidelines)
 * [Coding Rules](#coding-rules)
 
@@ -31,6 +31,8 @@ Do not know how something in this project works? Curious if this project can ach
 ### <a id="tools-and-packages"></a>Tools and Packages
 All extensions provided by SBB Polarion Team can be built, tested and packaged using Maven.
 It is only possible when the dependencies are extract from Polarion installer. The process must be performed by each contributor. Please consider to use https://github.com/SchweizerischeBundesbahnen/polarion-artifacts-deployer to extract the dependencies for your own Polarion installer version.
+
+For detailed information about setting up your development environment, please refer to the [Development Guide](./DEVELOPMENT.md).
 
 ### <a id="design-decisions"></a>Design Decisions
 The generic implementation for extensions provided by SBB Polarion Team is located in [ch.sbb.polarion.extension.generic](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic)

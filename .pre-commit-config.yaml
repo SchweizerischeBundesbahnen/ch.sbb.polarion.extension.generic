@@ -37,7 +37,7 @@ repos:
         language: pygrep
         types: [text]
   - repo: https://github.com/zricethezav/gitleaks
-    rev: v8.27.0
+    rev: v8.27.2
     hooks:
       - id: gitleaks
   - repo: https://github.com/grigoriev/pre-commit-check-git-user
@@ -46,7 +46,7 @@ repos:
       - id: check-git-config-user-email
         args: [--templates, ^\S+\.\S+@sbb\.ch$]
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.8.2
+    rev: v4.8.3
     hooks:
       - id: commitizen
   - repo: https://github.com/woodruffw/zizmor-pre-commit
