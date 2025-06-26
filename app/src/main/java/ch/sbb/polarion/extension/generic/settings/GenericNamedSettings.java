@@ -5,7 +5,6 @@ import ch.sbb.polarion.extension.generic.util.ContextUtils;
 import ch.sbb.polarion.extension.generic.util.ScopeUtils;
 import com.polarion.alm.shared.util.Pair;
 import com.polarion.core.util.StringUtils;
-import com.polarion.core.util.logging.Logger;
 import com.polarion.subterra.base.location.ILocation;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +26,6 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
     public static final String SETTINGS_FILE_EXTENSION = ".settings";
     public static final String DEFAULT_SCOPE = "";
     private static final Map<ILocation, Pair<String, Set<SettingName>>> SETTING_NAMES_CACHE = new HashMap<>();
-    private static final Logger logger = Logger.getLogger(GenericNamedSettings.class);
     private static final String LOCATION_MASK = "%s/%s%s";
 
     private final Comparator<SettingName> namesComparator = (o1, o2) -> {
