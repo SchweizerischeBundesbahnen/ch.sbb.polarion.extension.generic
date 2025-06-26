@@ -105,7 +105,6 @@ public class SettingsService {
         return TransactionalExecutor.executeSafelyInReadOnlyTransaction(transaction -> {
             IRepositoryReadOnlyConnection readOnlyConnection = repositoryService.getReadOnlyConnection(location);
             if (!readOnlyConnection.exists(location)) {
-                logNotExistingLocation(location);
                 return null;
             }
 
@@ -131,7 +130,6 @@ public class SettingsService {
         return TransactionalExecutor.executeSafelyInReadOnlyTransaction(transaction -> {
             IRepositoryReadOnlyConnection readOnlyConnection = repositoryService.getReadOnlyConnection(location);
             if (!readOnlyConnection.exists(location)) {
-                logNotExistingLocation(location);
                 return new ArrayList<>();
             }
 
@@ -171,15 +169,10 @@ public class SettingsService {
         return TransactionalExecutor.executeSafelyInReadOnlyTransaction(transaction -> {
             IRepositoryReadOnlyConnection readOnlyConnection = repositoryService.getReadOnlyConnection(location);
             if (!readOnlyConnection.exists(location)) {
-                logNotExistingLocation(location);
                 return null;
             }
             return readOnlyConnection.getLastRevision(location);
         });
-    }
-
-    private void logNotExistingLocation(ILocation location) {
-        logger.warn("Location does not exist: " + location.getLocationPath());
     }
 
     @Nullable

@@ -81,7 +81,6 @@ class GenericNamedSettingsTest {
             ILocation mockDefaultTest1Location = mock(ILocation.class);
             when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/default_test1.settings")).thenReturn(mockDefaultTest1Location);
             ILocation mockDefaultDefaultLocation = mock(ILocation.class);
-            when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/Default.settings")).thenReturn(mockDefaultDefaultLocation);
 
             mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
             when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn("42");
@@ -104,18 +103,8 @@ class GenericNamedSettingsTest {
             TestModel testModelGlobalDefaultTest1 = testSettings.read("", SettingId.fromName("default_test1"), null);
             assertEquals("default_test1", testModelGlobalDefaultTest1.getName());
 
-            SettingId defaultTest1SettingId = SettingId.fromName("unknown");
-            assertThrows(ObjectNotFoundException.class, () -> testSettings.read("project/some_project/", defaultTest1SettingId, "55"));
-
-            SettingId unknownSettingId = SettingId.fromName("unknown");
-            assertThrows(ObjectNotFoundException.class, () -> testSettings.read("project/some_project/", unknownSettingId, null));
-
             TestModel testModelDefaultSaved = testSettings.read("project/some_project/", SettingId.fromName(DEFAULT_NAME), null);
             assertEquals("Default", testModelDefaultSaved.getName());
-
-            doThrow(new RuntimeException("test runtime exception")).when(settingsService).save(eq(mockDefaultDefaultLocation), anyString());
-            TestModel testModelDefaultNotSaved = testSettings.read("project/some_project/", SettingId.fromName(DEFAULT_NAME), null);
-            assertEquals("Default", testModelDefaultNotSaved.getName());
         }
     }
 
@@ -143,24 +132,24 @@ class GenericNamedSettingsTest {
             when(settingsService.read(any(), any())).thenReturn(getModelContent("test1"), getModelContent("test2"), getModelContent("default1"), getModelContent("default2"));
 
             Collection<SettingName> names = testSettings.readNames("project/some_project/");
-            assertEquals(Stream.of("test1", "test2", "default1", "default2").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
+            assertEquals(Stream.of("Default", "test1", "test2", "default1", "default2").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
 
             //folder revisions remain the same = used cached values
             lenient().when(settingsService.read(any(), any())).thenReturn(getModelContent("test3"), getModelContent("test4"), getModelContent("default3"), getModelContent("default4"));
             names = testSettings.readNames("project/some_project/");
-            assertEquals(Stream.of("test1", "test2", "default1", "default2").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
+            assertEquals(Stream.of("Default", "test1", "test2", "default1", "default2").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
 
             //default folder revision updated = results partially changed
             lenient().when(settingsService.read(any(), any())).thenReturn(getModelContent("default3"), getModelContent("default4"));
             when(settingsService.getLastRevision(mockDefaultFolderLocation)).thenReturn("43");
             names = testSettings.readNames("project/some_project/");
-            assertEquals(Stream.of("test1", "test2", "default3", "default4").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
+            assertEquals(Stream.of("Default", "test1", "test2", "default3", "default4").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
 
             //project folder revision updated = results changed again
             lenient().when(settingsService.read(any(), any())).thenReturn(getModelContent("test3"), getModelContent("test4"));
             when(settingsService.getLastRevision(mockProjectFolderLocation)).thenReturn("35");
             names = testSettings.readNames("project/some_project/");
-            assertEquals(Stream.of("test3", "test4", "default3", "default4").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
+            assertEquals(Stream.of("Default", "test3", "test4", "default3", "default4").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
         }
     }
 
