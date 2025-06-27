@@ -113,7 +113,6 @@ class GenericNamedSettingsTest {
             TestModel testModelDefaultSaved = testSettings.read("project/some_project/", SettingId.fromName(DEFAULT_NAME), null);
             assertEquals("Default", testModelDefaultSaved.getName());
 
-            doThrow(new RuntimeException("test runtime exception")).when(settingsService).save(eq(mockDefaultDefaultLocation), anyString());
             TestModel testModelDefaultNotSaved = testSettings.read("project/some_project/", SettingId.fromName(DEFAULT_NAME), null);
             assertEquals("Default", testModelDefaultNotSaved.getName());
         }
@@ -143,24 +142,24 @@ class GenericNamedSettingsTest {
             when(settingsService.read(any(), any())).thenReturn(getModelContent("test1"), getModelContent("test2"), getModelContent("default1"), getModelContent("default2"));
 
             Collection<SettingName> names = testSettings.readNames("project/some_project/");
-            assertEquals(Stream.of("test1", "test2", "default1", "default2").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
+            assertEquals(Stream.of("Default", "test1", "test2", "default1", "default2").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
 
             //folder revisions remain the same = used cached values
             lenient().when(settingsService.read(any(), any())).thenReturn(getModelContent("test3"), getModelContent("test4"), getModelContent("default3"), getModelContent("default4"));
             names = testSettings.readNames("project/some_project/");
-            assertEquals(Stream.of("test1", "test2", "default1", "default2").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
+            assertEquals(Stream.of("Default", "test1", "test2", "default1", "default2").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
 
             //default folder revision updated = results partially changed
             lenient().when(settingsService.read(any(), any())).thenReturn(getModelContent("default3"), getModelContent("default4"));
             when(settingsService.getLastRevision(mockDefaultFolderLocation)).thenReturn("43");
             names = testSettings.readNames("project/some_project/");
-            assertEquals(Stream.of("test1", "test2", "default3", "default4").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
+            assertEquals(Stream.of("Default", "test1", "test2", "default3", "default4").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
 
             //project folder revision updated = results changed again
             lenient().when(settingsService.read(any(), any())).thenReturn(getModelContent("test3"), getModelContent("test4"));
             when(settingsService.getLastRevision(mockProjectFolderLocation)).thenReturn("35");
             names = testSettings.readNames("project/some_project/");
-            assertEquals(Stream.of("test3", "test4", "default3", "default4").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
+            assertEquals(Stream.of("Default", "test3", "test4", "default3", "default4").sorted().toList(), names.stream().map(SettingName::getName).sorted().toList());
         }
     }
 
