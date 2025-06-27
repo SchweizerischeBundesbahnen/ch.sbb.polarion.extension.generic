@@ -89,7 +89,7 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
             value = readFileContent(DEFAULT_SCOPE, fileName, null);
         }
 
-        return value == null ? defaultValues() : fromString(value);
+        return value == null ? handleMissingValue(id) : fromString(value);
     }
 
     private @Nullable String readFileContent(@NotNull String scope, @Nullable String fileName, @Nullable String revisionName) {
@@ -99,6 +99,14 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
         String settingPath = String.format(LOCATION_MASK, settingsFolder, fileName, SETTINGS_FILE_EXTENSION);
         ILocation location = ScopeUtils.getContextLocation(scope).append(settingPath);
         return settingsService.read(location, revisionName);
+    }
+
+    private @NotNull T handleMissingValue(@NotNull SettingId id) {
+        if (DEFAULT_NAME.equals(id.getIdentifier())) {
+            return defaultValues();
+        } else {
+            throw new ObjectNotFoundException("Setting '%s' not found".formatted(id.getIdentifier()));
+        }
     }
 
     @Override

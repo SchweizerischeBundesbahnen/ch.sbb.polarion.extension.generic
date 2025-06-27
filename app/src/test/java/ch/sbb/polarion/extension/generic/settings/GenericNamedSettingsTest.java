@@ -81,6 +81,7 @@ class GenericNamedSettingsTest {
             ILocation mockDefaultTest1Location = mock(ILocation.class);
             when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/default_test1.settings")).thenReturn(mockDefaultTest1Location);
             ILocation mockDefaultDefaultLocation = mock(ILocation.class);
+            when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/Default.settings")).thenReturn(mockDefaultDefaultLocation);
 
             mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
             when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn("42");
@@ -103,8 +104,17 @@ class GenericNamedSettingsTest {
             TestModel testModelGlobalDefaultTest1 = testSettings.read("", SettingId.fromName("default_test1"), null);
             assertEquals("default_test1", testModelGlobalDefaultTest1.getName());
 
+            SettingId defaultTest1SettingId = SettingId.fromName("unknown");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.read("project/some_project/", defaultTest1SettingId, "55"));
+
+            SettingId unknownSettingId = SettingId.fromName("unknown");
+            assertThrows(ObjectNotFoundException.class, () -> testSettings.read("project/some_project/", unknownSettingId, null));
+
             TestModel testModelDefaultSaved = testSettings.read("project/some_project/", SettingId.fromName(DEFAULT_NAME), null);
             assertEquals("Default", testModelDefaultSaved.getName());
+
+            TestModel testModelDefaultNotSaved = testSettings.read("project/some_project/", SettingId.fromName(DEFAULT_NAME), null);
+            assertEquals("Default", testModelDefaultNotSaved.getName());
         }
     }
 
