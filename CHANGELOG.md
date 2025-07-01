@@ -1,5 +1,23 @@
 # Changelog
 
+## [11.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v10.1.0...v11.0.0) (2025-07-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* polarion 2506 support ([#298](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/298))
+
+### Features
+
+* do not implicitly persist Default settings during read operations ([#303](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/303)) ([15d7f8d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/15d7f8d553cfa2cf13c1875b8c0b361711cd0581)), closes [#302](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/302)
+* enhance Maven build workflow with caching and artefact management ([#301](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/301)) ([90257f9](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/90257f9639632ab0f8804bf40e14bd4f3bf9c500))
+* polarion 2506 support ([#298](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/298)) ([1df9eb8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/1df9eb8ed42bcf9f0177f3a3d5c3409cacf55dd3))
+
+
+### Bug Fixes
+
+* sonarcloud quality gate ([#296](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/296)) ([380aaf9](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/380aaf97a3f112076cbe1ad0201c6473134736aa))
+
 ## [10.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v10.0.0...v10.1.0) (2025-06-02)
 
 
