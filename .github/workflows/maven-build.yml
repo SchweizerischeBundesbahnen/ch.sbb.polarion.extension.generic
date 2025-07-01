@@ -119,11 +119,7 @@ jobs:
             -Dmaven.test.skip=true \
             -P gpg-sign \
             -P central-publishing \
-            -Dcentral.timeout=3600 \
-            -Dcentral-publishing-maven-plugin.autoPublish=false
-          # In case of problems with the connection to Sonatype Central, you can uncomment and try the following lines
-          # -Dmaven.wagon.http.connectionTimeout=3600000 \
-          # -Dmaven.wagon.http.readTimeout=3600000 \
+            -Dcentral.timeout=3600
   deploy-github-packages:
     needs: build
     if: ${{ github.ref == 'refs/heads/main' }}
