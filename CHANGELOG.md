@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.0.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.0.0...v11.0.1) (2025-07-01)
+
+
+### Bug Fixes
+
+* remove test skipping from Maven deploy command ([#307](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/307)) ([127ba93](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/127ba9312e61706a59e1327cdd0dd31e682e9972)), closes [#306](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/306)
+
 ## [11.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v10.1.0...v11.0.0) (2025-07-01)
 
 
