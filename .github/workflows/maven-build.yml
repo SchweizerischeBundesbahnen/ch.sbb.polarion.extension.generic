@@ -116,7 +116,6 @@ jobs:
           # it cannot be implemented using deploy:deploy-file
           # central-publishing-maven-plugin needs to be used instead due to a specific deployment
           mvn --batch-mode -s "${SETTINGS_XML}" clean deploy \
-            -Dmaven.test.skip=true \
             -P gpg-sign \
             -P central-publishing \
             -Dcentral.timeout=3600
