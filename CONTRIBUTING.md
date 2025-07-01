@@ -40,7 +40,7 @@ The generic implementation for extensions provided by SBB Polarion Team is locat
 ## <a id="how-can-i-contribute"></a>How Can I Contribute?
 
 ### <a id="reporting-bugs"></a>Reporting Bugs
-To report a bug, [submit an issue](../../issues/new) with the label `bug`. Please ensure the bug has not already been reported. **If the bug is a potential security vulnerability, please report it using our [security policy](https://github.com/SchweizerischeBundesbahnen/.github/blob/main/SECURITY.md).**
+To report a bug, [submit an issue](../../issues/new) with the label `bug`. Please ensure the bug has not already been reported. **If the bug is a potential security vulnerability, please report it using our [security policy](https://github.com/SchweizerischeBundesbahnen/.github/blob/main/SECURITY.md).**
 
 Providing the following information will increase the chances of your issue being dealt with quickly:
 
@@ -56,7 +56,7 @@ Providing the following information will increase the chances of your issue bein
 You can help the team even more by [submitting changes](#submitting-changes) with a fix.
 
 ### <a id="suggesting-enhancements"></a>Suggesting Enhancements
-To suggest a feature or enhancement, please [submit an issue](../../issues/new) with the label `enhancement`. Please ensure the feature or enhancement has not already been suggested.
+To suggest a feature or enhancement, please [submit an issue](../../issues/new) with the label `enhancement`. Please ensure the feature or enhancement has not already been suggested.
 
 Please consider what kind of change it is:
 
