@@ -83,8 +83,8 @@ jobs:
         with:
           name: maven-artifacts
           path: |
-            target/*.jar
-            target/*.pom
+            app/target/*.jar
+            app/target/*.pom
           retention-days: 1
           if-no-files-found: error
   deploy-maven-central:
@@ -151,5 +151,5 @@ jobs:
       - name: 📦 Upload assets to GitHub Release
         if: ${{ needs.build.outputs.is_release == 'true' }}
         run: |-
-          gh release upload "v${PROJECT_VERSION}" "**/target/*-${PROJECT_VERSION}.jar" --clobber
-          gh release upload "v${PROJECT_VERSION}" "**/target/*-${PROJECT_VERSION}-tests.jar" --clobber
+          gh release upload "v${PROJECT_VERSION}" "app/target/*-${PROJECT_VERSION}.jar" --clobber
+          gh release upload "v${PROJECT_VERSION}" "app/target/*-${PROJECT_VERSION}-tests.jar" --clobber
