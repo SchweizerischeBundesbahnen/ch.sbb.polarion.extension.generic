@@ -23,15 +23,7 @@ public class ContextUtils {
     public static final String CONFIGURATION_PROPERTIES_PREFIX = "Configuration-Properties-Prefix";
 
     private static final String BASE_PACKAGE = getBasePackage();
-    private static final Reflections REFLECTIONS_INSTANCE = new Reflections(
-            new ConfigurationBuilder()
-                    .setUrls(
-                            ClasspathHelper.forPackage(BASE_PACKAGE).stream()
-                                    .filter(url -> "file".equals(url.getProtocol()))
-                                    .toList()
-                    )
-                    .forPackage(BASE_PACKAGE)
-    );
+    private static Reflections REFLECTIONS_INSTANCE;
 
     @NotNull
     public static Context getContext() {
@@ -44,7 +36,22 @@ public class ContextUtils {
     }
 
     public <T> Set<Class<? extends T>> findSubTypes(Class<T> type) {
-        return REFLECTIONS_INSTANCE.getSubTypesOf(type).stream().filter(c -> c.isAnnotationPresent(Discoverable.class)).collect(Collectors.toSet());
+        return getReflections().getSubTypesOf(type).stream().filter(c -> c.isAnnotationPresent(Discoverable.class)).collect(Collectors.toSet());
+    }
+
+    private static Reflections getReflections() {
+        if (REFLECTIONS_INSTANCE == null) {
+            REFLECTIONS_INSTANCE = new Reflections(
+                    new ConfigurationBuilder()
+                            .setUrls(
+                                    ClasspathHelper.forPackage(BASE_PACKAGE).stream()
+                                            .filter(url -> "file".equals(url.getProtocol()))
+                                            .toList()
+                            )
+                            .forPackage(BASE_PACKAGE)
+            );
+        }
+        return REFLECTIONS_INSTANCE;
     }
 
     private static String getBasePackage() {
