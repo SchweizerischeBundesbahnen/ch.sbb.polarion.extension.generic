@@ -23,7 +23,7 @@ public class ContextUtils {
     public static final String CONFIGURATION_PROPERTIES_PREFIX = "Configuration-Properties-Prefix";
 
     private static final String BASE_PACKAGE = getBasePackage();
-    private static Reflections REFLECTIONS_INSTANCE;
+    private static Reflections reflections;
 
     @NotNull
     public static Context getContext() {
@@ -40,8 +40,8 @@ public class ContextUtils {
     }
 
     private static Reflections getReflections() {
-        if (REFLECTIONS_INSTANCE == null) {
-            REFLECTIONS_INSTANCE = new Reflections(
+        if (reflections == null) {
+            reflections = new Reflections(
                     new ConfigurationBuilder()
                             .setUrls(
                                     ClasspathHelper.forPackage(BASE_PACKAGE).stream()
@@ -51,7 +51,7 @@ public class ContextUtils {
                             .forPackage(BASE_PACKAGE)
             );
         }
-        return REFLECTIONS_INSTANCE;
+        return reflections;
     }
 
     private static String getBasePackage() {
