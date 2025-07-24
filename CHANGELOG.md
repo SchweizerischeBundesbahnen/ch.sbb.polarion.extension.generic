@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.0.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.0.1...v11.0.2) (2025-07-24)
+
+
+### Bug Fixes
+
+* cannot find subclasses using ContextUtils.findSubTypes ([#312](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/312)) ([8089692](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/8089692dcbf210438ac27c2b5a4911da00d74285)), closes [#311](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/311)
+
 ## [11.0.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.0.0...v11.0.1) (2025-07-01)
 
 
