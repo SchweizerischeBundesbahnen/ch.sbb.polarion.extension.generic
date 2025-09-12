@@ -140,7 +140,12 @@ const SbbCommon = {
                     onOk(SbbCommon.getStringIfTextResponse(xhr), xhr);
                 } else {
                     const responseText = SbbCommon.getStringIfTextResponse(xhr);
-                    const error = responseText && JSON.parse(responseText);
+                    let error;
+                    try {
+                        error = responseText && JSON.parse(responseText);
+                    } catch (e) {
+                        error = responseText; // fallback to raw response if JSON is invalid
+                    }
                     const errorMessage = error && (error.message ? error.message : responseText);
                     if (onError === undefined) {
                         try {

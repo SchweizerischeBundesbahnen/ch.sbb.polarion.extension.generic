@@ -1,4 +1,4 @@
-package ch.sbb.polarion.extension.generic.rest.exception;
+package ch.sbb.polarion.extension.generic.rest.exception.mapper;
 
 import ch.sbb.polarion.extension.generic.rest.model.ErrorEntity;
 import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
