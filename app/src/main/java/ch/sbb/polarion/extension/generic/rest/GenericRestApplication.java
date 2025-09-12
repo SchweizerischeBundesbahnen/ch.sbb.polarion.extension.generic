@@ -1,35 +1,34 @@
 package ch.sbb.polarion.extension.generic.rest;
 
+import ch.sbb.polarion.extension.generic.rest.controller.info.ExtensionInfoApiController;
+import ch.sbb.polarion.extension.generic.rest.controller.info.ExtensionInfoInternalController;
+import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiController;
+import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiScopeAgnosticController;
+import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsInternalController;
+import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerController;
+import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerDefinitionController;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.BadRequestExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.ForbiddenExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.IllegalArgumentExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.IllegalStateExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.InternalServerErrorExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotFoundExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.ObjectNotFoundExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.UnauthorizedExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.UncaughtExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.filter.AuthenticationFilter;
+import ch.sbb.polarion.extension.generic.rest.filter.CorsFilter;
+import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
+import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.jetbrains.annotations.NotNull;
+
+import javax.ws.rs.core.Application;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.ws.rs.core.Application;
-
-import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiController;
-import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiScopeAgnosticController;
-import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsInternalController;
-import ch.sbb.polarion.extension.generic.rest.exception.ForbiddenExceptionMapper;
-import ch.sbb.polarion.extension.generic.rest.exception.IllegalStateExceptionMapper;
-import ch.sbb.polarion.extension.generic.rest.exception.ObjectNotFoundExceptionMapper;
-import ch.sbb.polarion.extension.generic.rest.filter.CorsFilter;
-import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
-import org.glassfish.jersey.jackson.JacksonFeature;
-import org.jetbrains.annotations.NotNull;
-
-import ch.sbb.polarion.extension.generic.rest.controller.info.ExtensionInfoApiController;
-import ch.sbb.polarion.extension.generic.rest.controller.info.ExtensionInfoInternalController;
-import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerController;
-import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerDefinitionController;
-import ch.sbb.polarion.extension.generic.rest.exception.BadRequestExceptionMapper;
-import ch.sbb.polarion.extension.generic.rest.exception.IllegalArgumentExceptionMapper;
-import ch.sbb.polarion.extension.generic.rest.exception.InternalServerErrorExceptionMapper;
-import ch.sbb.polarion.extension.generic.rest.exception.NotFoundExceptionMapper;
-import ch.sbb.polarion.extension.generic.rest.exception.UncaughtExceptionMapper;
-import ch.sbb.polarion.extension.generic.rest.filter.AuthenticationFilter;
-import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
 
 public class GenericRestApplication extends Application {
 
@@ -87,6 +86,7 @@ public class GenericRestApplication extends Application {
                 new InternalServerErrorExceptionMapper(),
                 new NotFoundExceptionMapper(),
                 new ObjectNotFoundExceptionMapper(),
+                new UnauthorizedExceptionMapper(),
                 new UncaughtExceptionMapper()
         );
     }
