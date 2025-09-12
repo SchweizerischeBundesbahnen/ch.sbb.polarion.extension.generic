@@ -1,19 +1,19 @@
-package ch.sbb.polarion.extension.generic.rest.exception;
+package ch.sbb.polarion.extension.generic.rest.exception.mapper;
 
-import ch.sbb.polarion.extension.generic.rest.exception.mapper.UnauthorizedExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.model.ErrorEntity;
 import org.junit.jupiter.api.Test;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UnauthorizedExceptionMapperTest {
+class NotFoundExceptionMapperTest {
 
     @Test
     void testResponse() {
-        try (Response response = new UnauthorizedExceptionMapper().toResponse(new UnauthorizedException("test message"))) {
-            assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        try (Response response = new NotFoundExceptionMapper().toResponse(new NotFoundException("test message"))) {
+            assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
             ErrorEntity entity = (ErrorEntity) response.getEntity();
             assertNotNull(entity);
             assertEquals("test message", entity.getMessage());
