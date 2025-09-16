@@ -65,7 +65,7 @@
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
-        <swagger-maven-plugin.version>2.2.36</swagger-maven-plugin.version>
+        <swagger-maven-plugin.version>2.2.37</swagger-maven-plugin.version>
         <sonar-maven-plugin.version>5.2.0.4988</sonar-maven-plugin.version>
 
         <!-- Test dependencies -->
