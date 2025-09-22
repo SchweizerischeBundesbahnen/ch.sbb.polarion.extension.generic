@@ -59,7 +59,7 @@
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
         <maven-install-plugin.version>3.1.4</maven-install-plugin.version>
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
-        <maven-javadoc-plugin.version>3.11.3</maven-javadoc-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
@@ -70,8 +70,8 @@
 
         <!-- Test dependencies -->
         <junit.version>5.13.4</junit.version>
-        <mockito.version>5.19.0</mockito.version>
-        <assertj-core.version>3.27.4</assertj-core.version>
+        <mockito.version>5.20.0</mockito.version>
+        <assertj-core.version>3.27.5</assertj-core.version>
         <jaxb.impl.version>2.4.0-b180830.0438</jaxb.impl.version>
         <istack.version>4.2.0</istack.version>
         <log4j.version>2.25.1</log4j.version>
