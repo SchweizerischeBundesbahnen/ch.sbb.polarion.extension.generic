@@ -101,7 +101,7 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
         return settingsService.read(location, revisionName);
     }
 
-    private @NotNull T handleMissingValue(@NotNull SettingId id) {
+    protected @NotNull T handleMissingValue(@NotNull SettingId id) {
         if (DEFAULT_NAME.equals(id.getIdentifier())) {
             return defaultValues();
         } else {
