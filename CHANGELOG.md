@@ -1,5 +1,13 @@
 # Changelog
 
+## [11.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.0.2...v11.1.0) (2025-09-23)
+
+
+### Features
+
+* add PolarionBaselineExecutor with baseline execution handling and tests ([#322](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/322)) ([9e083e3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/9e083e3052bf4b64f2a6793c1ff1602a810c6724))
+* allow GenericNamedSettings to overwrite handleMissingValue ([#320](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/320)) ([2a5d217](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2a5d21742f247dfd8dcfc9790e222175113f15c7))
+
 ## [11.0.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.0.1...v11.0.2) (2025-07-24)
 
 
