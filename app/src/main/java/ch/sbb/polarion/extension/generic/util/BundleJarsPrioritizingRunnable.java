@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  * Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(MyRunnableImpl.class, params);
  * </pre>
  */
-@SuppressWarnings({"unused", "unchecked"})
+@SuppressWarnings({"unused", "unchecked", "java:S1905"})
 public interface BundleJarsPrioritizingRunnable {
 
     String ERROR_KEY = "BundleJarsPrioritizingRunnableError";

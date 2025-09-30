@@ -397,10 +397,34 @@ class BundleJarsPrioritizingRunnableTest {
     }
 
     @Test
-    void execute_withNonSerializableParams_shouldPassParamsAsIs() {
+    void execute_withSerializableParams_shouldSerializeAndExecute() throws Exception {
         // Arrange
-        Map<String, Object> nonSerializableParams = Map.of("key", "value");
-        Map<String, Object> expectedResult = Map.of("result", "non-serializable success");
+        Map<String, Object> params = Map.of("testKey", "testValue");
+        Map<String, Object> expectedResult = Map.of("result", "success");
+        byte[] serializedParams = ObjectUtils.serialize(params);
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+
+            // Setup manifest mocking
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act - This will actually execute with the test class loader
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(TestRunnableImpl.class, params);
+
+            // Assert
+            assertNotNull(result);
+            // We expect the default result since TestRunnableImpl returns Map.of("default", "result")
+            assertEquals("result", result.get("default"));
+        }
+    }
+
+    @Test
+    void execute_withNonSerializableParams_shouldPassParamsDirectly() {
+        // Arrange
+        // Create a map with a non-serializable object
+        Map<String, Object> params = Map.of("key", "value");
 
         try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class);
              MockedStatic<ObjectUtils> objectUtils = mockStatic(ObjectUtils.class)) {
@@ -410,19 +434,55 @@ class BundleJarsPrioritizingRunnableTest {
             manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
             when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
 
-            // Mock ObjectUtils.serialize to throw NotSerializableException
-            objectUtils.when(() -> ObjectUtils.serialize(nonSerializableParams))
-                .thenThrow(new NotSerializableException("Test object not serializable"));
+            // Mock ObjectUtils.serialize to throw NotSerializableException to simulate non-serializable params
+            objectUtils.when(() -> ObjectUtils.serialize(any())).thenThrow(new NotSerializableException("Not serializable"));
 
-            // We need to mock the class loading and method invocation since we can't actually
-            // create the custom class loader in this test environment
-            // For now, we'll test the serialization attempt and exception handling
+            // Act - This should handle the exception and pass params as-is
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(TestRunnableImpl.class, params);
 
-            // Act & Assert - This will test the exception handling path
-            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(TestRunnableImpl.class, nonSerializableParams);
-
-            // The execution should complete but may return an error due to class loading issues in test environment
+            // Assert
             assertNotNull(result);
+            assertEquals("result", result.get("default"));
+        }
+    }
+
+    @Test
+    void execute_successfulExecution_shouldInvokeRunMethod() {
+        // Arrange
+        Map<String, Object> params = Map.of("input", "test");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            // Setup manifest mocking
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(TestRunnableImpl.class, params);
+
+            // Assert
+            assertNotNull(result);
+            assertFalse(result.containsKey(BundleJarsPrioritizingRunnable.ERROR_KEY));
+        }
+    }
+
+    @Test
+    void execute_shouldRestoreContextClassLoader() {
+        // Arrange
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            // Setup manifest mocking
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act
+            BundleJarsPrioritizingRunnable.execute(TestRunnableImpl.class, params);
+
+            // Assert - class loader should be restored
+            assertEquals(originalClassLoader, Thread.currentThread().getContextClassLoader());
         }
     }
 
