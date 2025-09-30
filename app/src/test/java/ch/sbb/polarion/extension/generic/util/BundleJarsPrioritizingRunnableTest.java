@@ -397,7 +397,7 @@ class BundleJarsPrioritizingRunnableTest {
     }
 
     @Test
-    void execute_withSerializableParams_shouldSerializeAndExecute() throws Exception {
+    void execute_withSerializableParams_shouldSerializeAndExecute() {
         // Arrange
         Map<String, Object> params = Map.of("testKey", "testValue");
 
