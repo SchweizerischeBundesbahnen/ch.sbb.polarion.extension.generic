@@ -52,9 +52,10 @@ public class ObjectUtils {
      * @return the byte array representing the serialized object
      */
     public static byte[] serialize(@NotNull Object object) throws IOException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        new ObjectOutputStream(byteArrayOutputStream).writeObject(object);
-        return byteArrayOutputStream.toByteArray();
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            new ObjectOutputStream(byteArrayOutputStream).writeObject(object);
+            return byteArrayOutputStream.toByteArray();
+        }
     }
 
     /**
@@ -64,7 +65,9 @@ public class ObjectUtils {
      * @return the deserialized object
      */
     public static Object deserialize(byte[] serializedObject) throws IOException, ClassNotFoundException {
-        return new ObjectInputStream(new ByteArrayInputStream(serializedObject)).readObject();
+        try (ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(serializedObject))) {
+            return objectInputStream.readObject();
+        }
     }
 
 }

@@ -178,20 +178,24 @@ class BundleJarsPrioritizingRunnableTest {
 
     @Test
     @SneakyThrows
-    void bundleJarsPrioritizingClassLoader_findClass_shouldUseParentFirst() {
-        // Arrange
-        URL[] urls = new URL[0];
-        ClassLoader parent = getClass().getClassLoader();
+    void bundleJarsPrioritizingClassLoader_findClass_shouldLoadFromBundleJars() {
+        // Arrange - Create a JAR with a test class to load from bundle's own JARs
+        // We'll use the test class itself which is available on the classpath
+        URL testClassUrl = BundleJarsPrioritizingRunnableTest.class.getProtectionDomain().getCodeSource().getLocation();
+        URL[] urls = new URL[]{testClassUrl};
+        ClassLoader parent = mock(ClassLoader.class);
         ClassLoader secondary = mock(ClassLoader.class);
 
-        Class<?> result;
-        try (BundleJarsPrioritizingRunnable.BundleJarsPrioritizingClassLoader classLoader = new BundleJarsPrioritizingRunnable.BundleJarsPrioritizingClassLoader(urls, parent, secondary)) {
+        try (BundleJarsPrioritizingRunnable.BundleJarsPrioritizingClassLoader classLoader =
+                     new BundleJarsPrioritizingRunnable.BundleJarsPrioritizingClassLoader(urls, parent, secondary)) {
 
-            // Act
-            result = classLoader.findClass("java.lang.String");
+            // Act - Load a class that exists in the bundle's JARs (test classes location)
+            Class<?> result = classLoader.findClass(BundleJarsPrioritizingRunnableTest.class.getName());
 
             // Assert
-            assertEquals(String.class, result);
+            assertNotNull(result);
+            assertEquals(BundleJarsPrioritizingRunnableTest.class.getName(), result.getName());
+            // Secondary class loaders should not be consulted since the class was found in bundle JARs
             verifyNoInteractions(secondary);
         }
     }
@@ -288,6 +292,35 @@ class BundleJarsPrioritizingRunnableTest {
 
             // Act & Assert
             assertThrows(ClassNotFoundException.class, () -> classLoader.findClass("com.test.NonExistentClass"));
+        }
+    }
+
+    @Test
+    void bundleJarsPrioritizingClassLoader_findClass_withClassNameWithoutPackage_shouldSkipBundleSearch() throws ClassNotFoundException {
+        // Arrange - Test with a class name that doesn't contain a dot (no package)
+        URL[] urls = new URL[0];
+        URLClassLoader parent = new URLClassLoader(urls);
+        ClassLoader secondary = mock(ClassLoader.class);
+
+        Bundle bundle = mock(Bundle.class);
+        Bundle[] bundles = {bundle};
+
+        doThrow(new ClassNotFoundException()).when(secondary).loadClass("ClassWithoutPackage");
+
+        BundleContext bundleContext = mock(BundleContext.class);
+        when(bundleContext.getBundles()).thenReturn(bundles);
+
+        try (MockedStatic<GuiceActivator> guiceActivator = mockStatic(GuiceActivator.class)) {
+            GuiceActivator.bundleContext = bundleContext;
+
+            BundleJarsPrioritizingRunnable.BundleJarsPrioritizingClassLoader classLoader =
+                new BundleJarsPrioritizingRunnable.BundleJarsPrioritizingClassLoader(urls, parent, secondary);
+
+            // Act & Assert
+            assertThrows(ClassNotFoundException.class, () -> classLoader.findClass("ClassWithoutPackage"));
+
+            // Verify bundle.getHeaders was never called since the class name doesn't contain a dot
+            verify(bundle, never()).getHeaders();
         }
     }
 
@@ -479,7 +512,7 @@ class BundleJarsPrioritizingRunnableTest {
         }
     }
 
-    public static abstract class AbstractRunnableImpl implements BundleJarsPrioritizingRunnable {
+    public abstract static class AbstractRunnableImpl implements BundleJarsPrioritizingRunnable {
         @Override
         public Map<String, Object> run(Map<String, Object> params) {
             return Map.of("result", "abstract");

@@ -41,32 +41,31 @@ public interface BundleJarsPrioritizingRunnable {
     static @NotNull Map<String, Object> execute(@NotNull Class<? extends BundleJarsPrioritizingRunnable> runnableImplClass, @NotNull Map<String, Object> params, boolean rethrowException) {
         ClassLoader originalThreadClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-
             List<URL> bundleJarURLs = new ArrayList<>(Arrays.asList(getBundleJarURLs(runnableImplClass)));
 
             // add the bundle URL itself to handle classes/resources located directly in the bundle
             bundleJarURLs.add(new URL(Objects.requireNonNull(runnableImplClass.getResource("/plugin.xml")).toString().replace("plugin.xml", "")));
 
-            // note that the order of second priority class loaders matters
-            BundleJarsPrioritizingClassLoader classLoader = new BundleJarsPrioritizingClassLoader(bundleJarURLs.toArray(new URL[0]), runnableImplClass.getClassLoader(), originalThreadClassLoader);
+            try (BundleJarsPrioritizingClassLoader classLoader = new BundleJarsPrioritizingClassLoader(bundleJarURLs.toArray(new URL[0]), runnableImplClass.getClassLoader(), originalThreadClassLoader)) {
 
-            Thread.currentThread().setContextClassLoader(classLoader);
+                Thread.currentThread().setContextClassLoader(classLoader);
 
-            // we attempt to use serialization for the params where it's possible because now classes inside will be loaded via
-            // the new class loader so sometimes this can lead to ClassCastExceptions
-            byte[] paramsSerialized = null;
-            try {
-                paramsSerialized = ObjectUtils.serialize(params);
-            } catch (NotSerializableException e) {
-                Logger.getLogger(BundleJarsPrioritizingRunnable.class).debug("Parameters are not serializable; passing them as-is...");
-            }
+                // we attempt to use serialization for the params where it's possible because now classes inside will be loaded via
+                // the new class loader so sometimes this can lead to ClassCastExceptions
+                byte[] paramsSerialized = null;
+                try {
+                    paramsSerialized = ObjectUtils.serialize(params);
+                } catch (NotSerializableException e) {
+                    Logger.getLogger(BundleJarsPrioritizingRunnable.class).debug("Parameters are not serializable; passing them as-is...");
+                }
 
-            Class<?> runnableClass = classLoader.loadClass(runnableImplClass.getName());
-            Object runnable = runnableClass.getDeclaredConstructor().newInstance();
-            if (paramsSerialized == null) {
-                return (Map<String, Object>) runnableClass.getMethod("run", Map.class).invoke(runnable, params);
-            } else {
-                return (Map<String, Object>) runnableClass.getMethod("runInternal", byte[].class).invoke(runnable, new Object[]{paramsSerialized});
+                Class<?> runnableClass = classLoader.loadClass(runnableImplClass.getName());
+                Object runnable = runnableClass.getDeclaredConstructor().newInstance();
+                if (paramsSerialized == null) {
+                    return (Map<String, Object>) runnableClass.getMethod("run", Map.class).invoke(runnable, params);
+                } else {
+                    return (Map<String, Object>) runnableClass.getMethod("runInternal", byte[].class).invoke(runnable, (Object) paramsSerialized);
+                }
             }
         } catch (Exception e) {
             Logger.getLogger(BundleJarsPrioritizingRunnable.class).error("Error while running impl", e);
