@@ -400,8 +400,6 @@ class BundleJarsPrioritizingRunnableTest {
     void execute_withSerializableParams_shouldSerializeAndExecute() throws Exception {
         // Arrange
         Map<String, Object> params = Map.of("testKey", "testValue");
-        Map<String, Object> expectedResult = Map.of("result", "success");
-        byte[] serializedParams = ObjectUtils.serialize(params);
 
         try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
 
@@ -423,7 +421,6 @@ class BundleJarsPrioritizingRunnableTest {
     @Test
     void execute_withNonSerializableParams_shouldPassParamsDirectly() {
         // Arrange
-        // Create a map with a non-serializable object
         Map<String, Object> params = Map.of("key", "value");
 
         try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class);
@@ -483,6 +480,26 @@ class BundleJarsPrioritizingRunnableTest {
 
             // Assert - class loader should be restored
             assertEquals(originalClassLoader, Thread.currentThread().getContextClassLoader());
+        }
+    }
+
+    @Test
+    void execute_withoutPluginXml_shouldExecuteSuccessfully() {
+        // Arrange - Use a class that doesn't have plugin.xml in its resources
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            // Setup manifest mocking
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act - This should succeed even without plugin.xml
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(RunnableWithoutPluginXml.class, params);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals("no plugin xml", result.get("result"));
         }
     }
 

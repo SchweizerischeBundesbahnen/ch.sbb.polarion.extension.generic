@@ -44,7 +44,10 @@ public interface BundleJarsPrioritizingRunnable {
             List<URL> bundleJarURLs = new ArrayList<>(Arrays.asList(getBundleJarURLs(runnableImplClass)));
 
             // add the bundle URL itself to handle classes/resources located directly in the bundle
-            bundleJarURLs.add(new URL(Objects.requireNonNull(runnableImplClass.getResource("/plugin.xml")).toString().replace("plugin.xml", "")));
+            URL pluginXmlUrl = runnableImplClass.getResource("/plugin.xml");
+            if (pluginXmlUrl != null) {
+                bundleJarURLs.add(new URL(pluginXmlUrl.toString().replace("plugin.xml", "")));
+            }
 
             try (BundleJarsPrioritizingClassLoader classLoader = new BundleJarsPrioritizingClassLoader(bundleJarURLs.toArray(new URL[0]), runnableImplClass.getClassLoader(), originalThreadClassLoader)) {
 
