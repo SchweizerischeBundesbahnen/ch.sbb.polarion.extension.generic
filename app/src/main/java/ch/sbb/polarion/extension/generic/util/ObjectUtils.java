@@ -4,6 +4,11 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Objects;
 
 @UtilityClass
@@ -38,6 +43,28 @@ public class ObjectUtils {
         } else {
             return Objects.requireNonNull(object);
         }
+    }
+
+    /**
+     * Serializes an object to a byte array.
+     *
+     * @param object the object to serialize
+     * @return the byte array representing the serialized object
+     */
+    public static byte[] serialize(@NotNull Object object) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        new ObjectOutputStream(byteArrayOutputStream).writeObject(object);
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    /**
+     * Deserializes a byte array back to an object.
+     *
+     * @param serializedObject the byte array representing the serialized object
+     * @return the deserialized object
+     */
+    public static Object deserialize(byte[] serializedObject) throws IOException, ClassNotFoundException {
+        return new ObjectInputStream(new ByteArrayInputStream(serializedObject)).readObject();
     }
 
 }
