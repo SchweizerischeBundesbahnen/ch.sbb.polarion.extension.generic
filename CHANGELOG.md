@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.1.0...v11.2.0) (2025-09-30)
+
+
+### Features
+
+* utility for isolated libraries execution ([#325](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/325)) ([5cf5d6b](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/5cf5d6b7d67c13c5c517a03c6b62d676066a4585)), closes [#324](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/324)
+
 ## [11.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.0.2...v11.1.0) (2025-09-23)
 
 
