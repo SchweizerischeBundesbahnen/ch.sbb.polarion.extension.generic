@@ -1,6 +1,3 @@
-/*
- * Copyright 2020 Polarion AG
- */
 package ch.sbb.polarion.extension.generic.rest.controller.swagger;
 
 import java.util.List;
@@ -40,9 +37,9 @@ public class SwaggerDefinitionController extends BaseOpenApiResource {
     public static final String BEARER_AUTH = "bearerAuth";
 
     @Context
-    private ServletConfig config;
+    protected ServletConfig config;
     @Context
-    private Application application;
+    protected Application application;
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
