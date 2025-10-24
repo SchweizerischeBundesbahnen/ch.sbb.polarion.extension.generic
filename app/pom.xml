@@ -13,8 +13,8 @@
 
     <properties>
         <frontend-maven-plugin.version>1.15.4</frontend-maven-plugin.version>
-        <frontend-maven-plugin.nodeVersion>v20.17.0</frontend-maven-plugin.nodeVersion>
-        <frontend-maven-plugin.npmVersion>10.8.3</frontend-maven-plugin.npmVersion>
+        <frontend-maven-plugin.nodeVersion>v20.19.5</frontend-maven-plugin.nodeVersion>
+        <frontend-maven-plugin.npmVersion>10.9.4</frontend-maven-plugin.npmVersion>
     </properties>
 
     <profiles>
