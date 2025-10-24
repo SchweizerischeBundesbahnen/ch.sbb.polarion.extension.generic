@@ -19,7 +19,7 @@ An extension which inherits from this generic extension will automatically get f
 * API to manipulate settings of this extension - to read, save settings and reverting them to default values as well as getting list of settings history revisions
 * API to serialize/deserialize XML data (`JAXBUtils`)
 * REST application and end points giving access to settings functionality described above as well as access to extension information and version
-* OpenAPI specification endpoint at `/api/openapi.json` providing machine-readable API documentation
+* OpenAPI specification endpoint at `/rest/api/openapi.json` providing machine-readable API documentation
 * Swagger UI page listing information about REST API provided
 * Some utility classes and methods to simplify development of new extensions
 * Some test classes to simplify testing of new extensions using JUnit and Mockito
