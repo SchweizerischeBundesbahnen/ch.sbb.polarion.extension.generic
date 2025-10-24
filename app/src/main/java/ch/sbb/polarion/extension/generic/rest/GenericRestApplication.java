@@ -2,6 +2,7 @@ package ch.sbb.polarion.extension.generic.rest;
 
 import ch.sbb.polarion.extension.generic.rest.controller.info.ExtensionInfoApiController;
 import ch.sbb.polarion.extension.generic.rest.controller.info.ExtensionInfoInternalController;
+import ch.sbb.polarion.extension.generic.rest.controller.openapi.OpenApiController;
 import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiController;
 import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiScopeAgnosticController;
 import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsInternalController;
@@ -58,6 +59,7 @@ public class GenericRestApplication extends Application {
         HashSet<Object> genericControllerSingletons = new HashSet<>(Arrays.asList(
                 new ExtensionInfoApiController(),
                 new ExtensionInfoInternalController(),
+                new OpenApiController(),
                 new SwaggerController(),
                 new SwaggerDefinitionController()
         ));
