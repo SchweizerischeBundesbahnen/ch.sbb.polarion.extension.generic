@@ -11,12 +11,6 @@
     <name>Versatile extension for developing additional extensions within Polarion ALM: common code and resources</name>
     <artifactId>ch.sbb.polarion.extension.generic.app</artifactId>
 
-    <properties>
-        <frontend-maven-plugin.version>1.15.4</frontend-maven-plugin.version>
-        <frontend-maven-plugin.nodeVersion>v20.19.5</frontend-maven-plugin.nodeVersion>
-        <frontend-maven-plugin.npmVersion>10.9.4</frontend-maven-plugin.npmVersion>
-    </properties>
-
     <profiles>
         <profile>
             <id>gpg-sign</id>
