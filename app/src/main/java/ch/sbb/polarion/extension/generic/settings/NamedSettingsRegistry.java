@@ -1,7 +1,6 @@
 package ch.sbb.polarion.extension.generic.settings;
 
 import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
-import lombok.Getter;
 
 import java.util.HashSet;
 import java.util.List;
@@ -12,9 +11,6 @@ public enum NamedSettingsRegistry {
     INSTANCE;
 
     private final Set<GenericNamedSettings> settingsSet = new HashSet<>();
-
-    @Getter
-    private boolean scopeAgnostic;
 
     /**
      * Register a new setting. It's a good idea to call it before REST application initialization,
@@ -34,10 +30,5 @@ public enum NamedSettingsRegistry {
                 .filter(s -> s.getFeatureName().equals(featureName))
                 .findFirst()
                 .orElseThrow(() -> new ObjectNotFoundException("No settings found by featureName: " + featureName));
-    }
-
-    public NamedSettingsRegistry setScopeAgnostic(boolean scopeAgnostic) {
-        this.scopeAgnostic = scopeAgnostic;
-        return this;
     }
 }
