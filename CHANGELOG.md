@@ -1,5 +1,16 @@
 # Changelog
 
+## [12.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.3.0...v12.0.0) (2025-11-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove scope-agnostic settings and related controller ([#337](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/337))
+
+### Code Refactoring
+
+* remove scope-agnostic settings and related controller ([#337](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/337)) ([b9fce9b](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/b9fce9b03f553d43c352c009a0db88fcd9cb2581)), closes [#336](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/336)
+
 ## [11.3.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.2.0...v11.3.0) (2025-10-24)
 
 
