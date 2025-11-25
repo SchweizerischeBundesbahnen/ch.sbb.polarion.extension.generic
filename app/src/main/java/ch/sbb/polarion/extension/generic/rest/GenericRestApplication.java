@@ -4,7 +4,6 @@ import ch.sbb.polarion.extension.generic.rest.controller.info.ExtensionInfoApiCo
 import ch.sbb.polarion.extension.generic.rest.controller.info.ExtensionInfoInternalController;
 import ch.sbb.polarion.extension.generic.rest.controller.openapi.OpenApiController;
 import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiController;
-import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiScopeAgnosticController;
 import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsInternalController;
 import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerController;
 import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerDefinitionController;
@@ -64,7 +63,7 @@ public class GenericRestApplication extends Application {
                 new SwaggerDefinitionController()
         ));
         if (!NamedSettingsRegistry.INSTANCE.getAll().isEmpty()) {
-            genericControllerSingletons.add(NamedSettingsRegistry.INSTANCE.isScopeAgnostic() ? new NamedSettingsApiScopeAgnosticController() : new NamedSettingsApiController());
+            genericControllerSingletons.add(new NamedSettingsApiController());
             genericControllerSingletons.add(new NamedSettingsInternalController());
         }
         return genericControllerSingletons;
