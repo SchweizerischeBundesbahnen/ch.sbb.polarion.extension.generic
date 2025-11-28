@@ -134,11 +134,14 @@ Maven's `pom.xml` should contain following content:
 </build>
 ```
 
-The `format-openapi-json` execution automatically formats `docs/openapi.json` using the `pretty-format-json` pre-commit hook if:
-- `.pre-commit-config.yaml` exists in the project root
-- `pre-commit` is installed and available in PATH
-- The hook `pretty-format-json` is configured in `.pre-commit-config.yaml`
+The `format-openapi-json` execution automatically formats `docs/openapi.json` using the `pretty-format-json` pre-commit hook.
+The script performs the following checks before execution:
+1. `.pre-commit-config.yaml` exists in the project root
+2. The hook `pretty-format-json` is configured in `.pre-commit-config.yaml` (checks for `id: pretty-format-json`)
+3. `docs/openapi.json` file exists
+4. `pre-commit` is installed and available in PATH
 
+If any of these conditions is not met, the script skips formatting gracefully without failing the build.
 This ensures consistent JSON formatting with proper key ordering (openapi, info, servers, paths, components) across all extensions.
 
 ### MANIFEST.MF

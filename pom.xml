@@ -614,9 +614,18 @@
                             </goals>
                             <configuration>
                                 <source>
+                                    def hookId = 'pretty-format-json'
+
                                     def preCommitConfig = new File(project.basedir, '.pre-commit-config.yaml')
                                     if (!preCommitConfig.exists()) {
                                         log.info('No .pre-commit-config.yaml found, skipping openapi.json formatting')
+                                        return
+                                    }
+
+                                    // Check if hook is configured in .pre-commit-config.yaml
+                                    def configContent = preCommitConfig.text
+                                    if (!configContent.contains("id: ${hookId}")) {
+                                        log.info("Hook '${hookId}' not found in .pre-commit-config.yaml, skipping openapi.json formatting")
                                         return
                                     }
 
@@ -635,14 +644,14 @@
                                             log.warn('pre-commit is not installed or not in PATH, skipping openapi.json formatting')
                                             return
                                         }
-                                    } catch (Exception e) {
+                                    } catch (Exception ignored) {
                                         log.warn('pre-commit is not installed or not in PATH, skipping openapi.json formatting')
                                         return
                                     }
 
-                                    log.info("Formatting docs/openapi.json using pre-commit hook 'pretty-format-json'")
+                                    log.info("Formatting docs/openapi.json using pre-commit hook '${hookId}'")
 
-                                    def command = [preCommitCmd, 'run', 'pretty-format-json', '--files', openApiFile.absolutePath]
+                                    def command = [preCommitCmd, 'run', hookId, '--files', openApiFile.absolutePath]
                                     def processBuilder = new ProcessBuilder(command)
                                     processBuilder.directory(project.basedir)
                                     processBuilder.redirectErrorStream(true)
@@ -653,7 +662,7 @@
 
                                     // Exit code 1 means hook modified files (which is expected for --autofix)
                                     if (exitCode != 0 &amp;&amp; exitCode != 1) {
-                                        log.warn("pre-commit hook 'pretty-format-json' exited with code ${exitCode}")
+                                        log.warn("pre-commit hook '${hookId}' exited with code ${exitCode}")
                                     }
                                 </source>
                             </configuration>
