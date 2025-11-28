@@ -118,9 +118,31 @@ Maven's `pom.xml` should contain following content:
                 </resourcePackages>
             </configuration>
         </plugin>
+
+        <!-- Optional: format openapi.json using pre-commit hook (requires pre-commit with pretty-format-json hook) -->
+        <plugin>
+            <groupId>org.codehaus.gmaven</groupId>
+            <artifactId>groovy-maven-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>format-openapi-json</id>
+                    <phase>compile</phase>
+                </execution>
+            </executions>
+        </plugin>
     </plugins>
 </build>
 ```
+
+The `format-openapi-json` execution automatically formats `docs/openapi.json` using the `pretty-format-json` pre-commit hook.
+The script performs the following checks before execution:
+1. `.pre-commit-config.yaml` exists in the project root
+2. The hook `pretty-format-json` is configured in `.pre-commit-config.yaml` (checks for `id: pretty-format-json`)
+3. `docs/openapi.json` file exists
+4. `pre-commit` is installed and available in PATH
+
+If any of these conditions is not met, the script skips formatting gracefully without failing the build.
+This ensures consistent JSON formatting with proper key ordering (openapi, info, servers, paths, components) across all extensions.
 
 ### MANIFEST.MF
 
