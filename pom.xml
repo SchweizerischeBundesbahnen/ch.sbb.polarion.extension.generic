@@ -65,6 +65,7 @@
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <maven-dependency-plugin.version>3.9.0</maven-dependency-plugin.version>
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
+        <groovy-maven-plugin.version>2.1.1</groovy-maven-plugin.version>
         <swagger-maven-plugin.version>2.2.41</swagger-maven-plugin.version>
         <sonar-maven-plugin.version>5.3.0.6276</sonar-maven-plugin.version>
 
@@ -598,6 +599,66 @@
                             <scope>runtime</scope>
                         </dependency>
                     </dependencies>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.gmaven</groupId>
+                    <artifactId>groovy-maven-plugin</artifactId>
+                    <version>${groovy-maven-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>format-openapi-json</id>
+                            <phase>none</phase>
+                            <goals>
+                                <goal>execute</goal>
+                            </goals>
+                            <configuration>
+                                <source>
+                                    def preCommitConfig = new File(project.basedir, '.pre-commit-config.yaml')
+                                    if (!preCommitConfig.exists()) {
+                                        log.info('No .pre-commit-config.yaml found, skipping openapi.json formatting')
+                                        return
+                                    }
+
+                                    def openApiFile = new File(project.basedir, 'docs/openapi.json')
+                                    if (!openApiFile.exists()) {
+                                        log.info('docs/openapi.json not found, skipping formatting')
+                                        return
+                                    }
+
+                                    // Check if pre-commit is available
+                                    def preCommitCmd = System.getProperty('os.name').toLowerCase().contains('win') ? 'pre-commit.exe' : 'pre-commit'
+                                    try {
+                                        def checkProcess = [preCommitCmd, '--version'].execute()
+                                        checkProcess.waitFor()
+                                        if (checkProcess.exitValue() != 0) {
+                                            log.warn('pre-commit is not installed or not in PATH, skipping openapi.json formatting')
+                                            return
+                                        }
+                                    } catch (Exception e) {
+                                        log.warn('pre-commit is not installed or not in PATH, skipping openapi.json formatting')
+                                        return
+                                    }
+
+                                    log.info("Formatting docs/openapi.json using pre-commit hook 'pretty-format-json'")
+
+                                    def command = [preCommitCmd, 'run', 'pretty-format-json', '--files', openApiFile.absolutePath]
+                                    def processBuilder = new ProcessBuilder(command)
+                                    processBuilder.directory(project.basedir)
+                                    processBuilder.redirectErrorStream(true)
+
+                                    def process = processBuilder.start()
+                                    process.inputStream.eachLine { line -> log.info(line) }
+                                    def exitCode = process.waitFor()
+
+                                    // Exit code 1 means hook modified files (which is expected for --autofix)
+                                    if (exitCode != 0 &amp;&amp; exitCode != 1) {
+                                        log.warn("pre-commit hook 'pretty-format-json' exited with code ${exitCode}")
+                                    }
+                                </source>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <plugin>
