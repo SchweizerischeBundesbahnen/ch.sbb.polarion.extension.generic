@@ -638,7 +638,7 @@
                                     }
 
                                     // Check if pre-commit is available
-                                    def preCommitCmd = System.getProperty('os.name').toLowerCase().contains('win') ? 'pre-commit.exe' : 'pre-commit'
+                                    def preCommitCmd = 'pre-commit'
                                     try {
                                         def checkProcess = [preCommitCmd, '--version'].execute()
                                         checkProcess.waitFor()
