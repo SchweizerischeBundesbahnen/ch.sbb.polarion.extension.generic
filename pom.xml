@@ -666,8 +666,11 @@
                                     process.inputStream.eachLine { line -> log.info(line) }
                                     def exitCode = process.waitFor()
 
-                                    // Exit code 1 means hook modified files (which is expected for --autofix)
-                                    if (exitCode != 0 &amp;&amp; exitCode != 1) {
+                                    if (exitCode == 0) {
+                                        log.info('docs/openapi.json is already properly formatted')
+                                    } else if (exitCode == 1) {
+                                        log.info('docs/openapi.json has been formatted')
+                                    } else {
                                         log.warn("pre-commit hook '${hookId}' exited with code ${exitCode}")
                                     }
                                 </source>
