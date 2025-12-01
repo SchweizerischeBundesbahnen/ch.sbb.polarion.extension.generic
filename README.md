@@ -141,7 +141,7 @@ The script performs the following checks before execution:
 3. `docs/openapi.json` file exists
 4. `pre-commit` is installed and available in PATH
 
-If any of these conditions is not met, the script skips formatting gracefully without failing the build.
+If any of these conditions are not met, the script skips formatting gracefully without failing the build.
 This ensures consistent JSON formatting with proper key ordering (openapi, info, servers, paths, components) across all extensions.
 
 ### MANIFEST.MF
