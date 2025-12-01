@@ -119,7 +119,7 @@ Maven's `pom.xml` should contain following content:
             </configuration>
         </plugin>
 
-        <!-- Optional: format openapi.json using pre-commit hook (requires pre-commit with pretty-format-json hook) -->
+        <!-- Optional: format docs/openapi.json using pre-commit hook (requires pre-commit with pretty-format-json hook) -->
         <plugin>
             <groupId>org.codehaus.gmaven</groupId>
             <artifactId>groovy-maven-plugin</artifactId>
