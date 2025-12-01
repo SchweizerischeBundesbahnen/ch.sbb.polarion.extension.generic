@@ -614,6 +614,8 @@
                             </goals>
                             <configuration>
                                 <source>
+                                    import org.yaml.snakeyaml.Yaml
+
                                     def hookId = 'pretty-format-json'
 
                                     def preCommitConfig = new File(project.basedir, '.pre-commit-config.yaml')
@@ -622,11 +624,13 @@
                                         return
                                     }
 
-                                    // Check if hook is configured in .pre-commit-config.yaml
-                                    def configContent = preCommitConfig.text
-                                    // Match '- id: hook-name' with proper YAML indentation (spaces, dash, space, id:)
-                                    def hookPattern = /(?m)^\s*-\s*id:\s*${hookId}\s*$/
-                                    if (!(configContent =~ hookPattern)) {
+                                    // Parse YAML and check if hook is configured
+                                    def yaml = new Yaml()
+                                    def config = yaml.load(preCommitConfig.text)
+                                    def hookFound = config?.repos?.any { repo ->
+                                        repo?.hooks?.any { hook -> hook?.id == hookId }
+                                    }
+                                    if (!hookFound) {
                                         log.info("Hook '${hookId}' not found in .pre-commit-config.yaml, skipping openapi.json formatting")
                                         return
                                     }
@@ -670,6 +674,13 @@
                             </configuration>
                         </execution>
                     </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.yaml</groupId>
+                            <artifactId>snakeyaml</artifactId>
+                            <version>2.3</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
 
                 <plugin>
