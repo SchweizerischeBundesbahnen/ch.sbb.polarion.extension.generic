@@ -645,6 +645,9 @@
                                     def preCommitCmd = 'pre-commit'
                                     try {
                                         def checkProcess = [preCommitCmd, '--version'].execute()
+                                        // Consume output and error streams to prevent potential deadlock
+                                        checkProcess.inputStream.text
+                                        checkProcess.errorStream.text
                                         checkProcess.waitFor()
                                         if (checkProcess.exitValue() != 0) {
                                             log.warn('pre-commit is not installed or not in PATH, skipping docs/openapi.json formatting')
