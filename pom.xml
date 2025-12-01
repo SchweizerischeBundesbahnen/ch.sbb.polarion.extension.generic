@@ -618,6 +618,8 @@
                             <configuration>
                                 <source>
                                     import org.yaml.snakeyaml.Yaml
+                                    import org.yaml.snakeyaml.LoaderOptions
+                                    import org.yaml.snakeyaml.constructor.SafeConstructor
 
                                     def hookId = 'pretty-format-json'
 
@@ -627,8 +629,8 @@
                                         return
                                     }
 
-                                    // Parse YAML and check if hook is configured
-                                    def yaml = new Yaml()
+                                    // Parse YAML safely and check if hook is configured
+                                    def yaml = new Yaml(new SafeConstructor(new LoaderOptions()))
                                     def config = yaml.load(preCommitConfig.text)
                                     def hookFound = config?.repos?.any { repo ->
                                         repo?.hooks?.any { hook -> hook?.id == hookId }
