@@ -620,7 +620,7 @@
 
                                     def preCommitConfig = new File(project.basedir, '.pre-commit-config.yaml')
                                     if (!preCommitConfig.exists()) {
-                                        log.info('No .pre-commit-config.yaml found, skipping openapi.json formatting')
+                                        log.info('No .pre-commit-config.yaml found, skipping docs/openapi.json formatting')
                                         return
                                     }
 
@@ -631,7 +631,7 @@
                                         repo?.hooks?.any { hook -> hook?.id == hookId }
                                     }
                                     if (!hookFound) {
-                                        log.info("Hook '${hookId}' not found in .pre-commit-config.yaml, skipping openapi.json formatting")
+                                        log.info("Hook '${hookId}' not found in .pre-commit-config.yaml, skipping docs/openapi.json formatting")
                                         return
                                     }
 
@@ -647,11 +647,11 @@
                                         def checkProcess = [preCommitCmd, '--version'].execute()
                                         checkProcess.waitFor()
                                         if (checkProcess.exitValue() != 0) {
-                                            log.warn('pre-commit is not installed or not in PATH, skipping openapi.json formatting')
+                                            log.warn('pre-commit is not installed or not in PATH, skipping docs/openapi.json formatting')
                                             return
                                         }
-                                    } catch (Exception ignored) {
-                                        log.warn('pre-commit is not installed or not in PATH, skipping openapi.json formatting')
+                                    } catch (IOException e) {
+                                        log.warn("pre-commit is not installed or not in PATH: ${e.message}")
                                         return
                                     }
 
@@ -681,7 +681,7 @@
                         <dependency>
                             <groupId>org.yaml</groupId>
                             <artifactId>snakeyaml</artifactId>
-                            <version>2.3</version>
+                            <version>2.9</version>
                         </dependency>
                     </dependencies>
                 </plugin>
