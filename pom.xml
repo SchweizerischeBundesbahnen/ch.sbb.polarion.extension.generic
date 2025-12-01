@@ -666,8 +666,11 @@
                                     processBuilder.redirectErrorStream(true)
 
                                     def process = processBuilder.start()
-                                    process.inputStream.eachLine { line -> log.info(line) }
+                                    def outputThread = Thread.start {
+                                        process.inputStream.eachLine { line -> log.info(line) }
+                                    }
                                     def exitCode = process.waitFor()
+                                    outputThread.join()
 
                                     if (exitCode == 0) {
                                         log.info('docs/openapi.json is already properly formatted')
