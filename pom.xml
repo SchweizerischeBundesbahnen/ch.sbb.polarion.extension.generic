@@ -624,7 +624,9 @@
 
                                     // Check if hook is configured in .pre-commit-config.yaml
                                     def configContent = preCommitConfig.text
-                                    if (!configContent.contains("id: ${hookId}")) {
+                                    // Match '- id: hook-name' with proper YAML indentation (spaces, dash, space, id:)
+                                    def hookPattern = /(?m)^\s*-\s*id:\s*${hookId}\s*$/
+                                    if (!(configContent =~ hookPattern)) {
                                         log.info("Hook '${hookId}' not found in .pre-commit-config.yaml, skipping openapi.json formatting")
                                         return
                                     }
