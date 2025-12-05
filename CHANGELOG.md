@@ -1,5 +1,12 @@
 # Changelog
 
+## [12.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v12.0.0...v12.1.0) (2025-12-05)
+
+
+### Features
+
+* add groovy-maven-plugin for openapi.json formatting ([#342](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/342)) ([cd1be67](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/cd1be677f1f46f0417a6736b2e273b981b2a7022)), closes [#341](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/341)
+
 ## [12.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.3.0...v12.0.0) (2025-11-25)
 
 
