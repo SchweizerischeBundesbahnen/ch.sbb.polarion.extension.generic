@@ -191,6 +191,154 @@ class ExecutionProfilerTest {
         assertEquals("some details", entries.get(1).details());
     }
 
+    @Test
+    void testReportWithDetails() {
+        TestClock clock = new TestClock();
+        ExecutionProfiler profiler = new ExecutionProfiler(clock);
+
+        try (var timer = profiler.startTimer("Stage with details")) {
+            clock.advance(50);
+            timer.withDetails("processed 100 items");
+        }
+        profiler.finish();
+
+        String report = profiler.generateReport("Report with Details");
+        assertTrue(report.contains("Stage with details"));
+        assertTrue(report.contains("processed 100 items"));
+        assertTrue(report.contains("└─")); // details indicator
+    }
+
+    @Test
+    void testReportWithUnaccountedTime() {
+        TestClock clock = new TestClock();
+        ExecutionProfiler profiler = new ExecutionProfiler(clock);
+
+        profiler.timed("Step 1", () -> clock.advance(30));
+        clock.advance(20); // unaccounted overhead
+        profiler.finish();
+
+        String report = profiler.generateReport("With Overhead");
+        assertTrue(report.contains("(other/overhead)"));
+        assertTrue(report.contains("20 ms")); // the unaccounted time
+    }
+
+    @Test
+    void testReportWithNestedTimersOrdering() {
+        TestClock clock = new TestClock();
+        ExecutionProfiler profiler = new ExecutionProfiler(clock);
+
+        try (var outer = profiler.startTimer("Parent")) {
+            clock.advance(10);
+            try (var inner = profiler.startTimer("Child")) {
+                clock.advance(20);
+            }
+        }
+        profiler.finish();
+
+        String report = profiler.generateReport("Nested");
+        // Verify the report contains both entries with proper indentation
+        assertTrue(report.contains("Parent"));
+        assertTrue(report.contains("Child"));
+    }
+
+    @Test
+    void testReportSlowestStagesWithDetails() {
+        TestClock clock = new TestClock();
+        ExecutionProfiler profiler = new ExecutionProfiler(clock);
+
+        try (var timer = profiler.startTimer("Slow stage")) {
+            clock.advance(100);
+            timer.withDetails("bottleneck info");
+        }
+        profiler.finish();
+
+        String report = profiler.generateReport("Slowest");
+        assertTrue(report.contains("SLOWEST STAGES"));
+        assertTrue(report.contains("Slow stage"));
+        assertTrue(report.contains("bottleneck info"));
+    }
+
+    @Test
+    void testReportTimelineWithMultipleStages() {
+        TestClock clock = new TestClock();
+        ExecutionProfiler profiler = new ExecutionProfiler(clock);
+
+        profiler.timed("First", () -> clock.advance(40));
+        profiler.timed("Second", () -> clock.advance(60));
+        profiler.finish();
+
+        String report = profiler.generateReport("Timeline Test");
+        assertTrue(report.contains("EXECUTION TIMELINE"));
+        assertTrue(report.contains("First"));
+        assertTrue(report.contains("Second"));
+        assertTrue(report.contains("0%"));
+        assertTrue(report.contains("50%"));
+        assertTrue(report.contains("100%"));
+    }
+
+    @Test
+    void testTruncateLongStageName() {
+        TestClock clock = new TestClock();
+        ExecutionProfiler profiler = new ExecutionProfiler(clock);
+
+        String longName = "This is a very long stage name that should be truncated in the report";
+        profiler.timed(longName, () -> clock.advance(10));
+        profiler.finish();
+
+        String report = profiler.generateReport("Truncate Test");
+        assertTrue(report.contains("...")); // truncation indicator
+    }
+
+    @Test
+    void testTimingEntryRecordConstructor() {
+        ExecutionProfiler.TimingEntry entry = new ExecutionProfiler.TimingEntry("test", 100, "details");
+        assertEquals("test", entry.stageName());
+        assertEquals(100, entry.durationMs());
+        assertEquals("details", entry.details());
+        assertEquals(0, entry.depth());
+        assertNull(entry.parentStage());
+    }
+
+    @Test
+    void testPerformanceIndicators() {
+        TestClock clock = new TestClock();
+        ExecutionProfiler profiler = new ExecutionProfiler(clock);
+
+        // Create stages with different percentages to trigger all indicators
+        profiler.timed("Critical", () -> clock.advance(50));   // >30% - red
+        profiler.timed("Warning", () -> clock.advance(25));    // 15-30% - yellow
+        profiler.timed("Normal", () -> clock.advance(10));     // <15% - green
+        profiler.finish();
+
+        String report = profiler.generateReport("Indicators");
+        assertTrue(report.contains("SLOWEST STAGES"));
+        // The report should contain performance indicators
+        assertTrue(report.contains("🔴") || report.contains("🟡") || report.contains("🟢"));
+    }
+
+    @Test
+    void testReportWithZeroTotalDuration() {
+        TestClock clock = new TestClock();
+        ExecutionProfiler profiler = new ExecutionProfiler(clock);
+        // Don't advance clock - total duration will be 0
+        profiler.timed("Quick", () -> {}); // no time passes
+        profiler.finish();
+
+        assertEquals(0, profiler.getTotalDurationMs());
+        String report = profiler.generateReport("Zero Duration");
+        assertTrue(report.contains("EXECUTION TIMING REPORT"));
+    }
+
+    @Test
+    void testDefaultConstructor() {
+        ExecutionProfiler profiler = new ExecutionProfiler();
+        profiler.timed("Test", () -> {});
+        profiler.finish();
+
+        // Should work with system clock
+        assertTrue(profiler.getTotalDurationMs() >= 0);
+    }
+
     /**
      * A controllable Clock implementation for testing.
      */

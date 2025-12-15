@@ -215,7 +215,7 @@ public class ExecutionProfiler {
         }
 
         long unaccountedTime = totalDurationMs - accountedTime;
-        if (unaccountedTime > 0 && totalDurationMs > 0) {
+        if (unaccountedTime > 0) {
             double percent = unaccountedTime * 100.0 / totalDurationMs;
             String bar = createBar(percent);
             report.append(String.format("%-40s %7d ms %6.1f%%  %s%n", "(other/overhead)", unaccountedTime, percent, bar));
