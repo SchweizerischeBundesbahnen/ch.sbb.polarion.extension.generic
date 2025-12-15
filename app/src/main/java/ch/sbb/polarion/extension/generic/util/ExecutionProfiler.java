@@ -12,7 +12,8 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -52,7 +53,7 @@ public class ExecutionProfiler {
 
     private final StringBuilder logBuilder = new StringBuilder();
     private final List<TimingEntry> timingEntries = new ArrayList<>();
-    private final Stack<String> timerStack = new Stack<>();
+    private final Deque<String> timerStack = new ArrayDeque<>();
     private final long startTime;
 
     @Getter
@@ -359,7 +360,7 @@ public class ExecutionProfiler {
     /**
      * Returns the timer stack for subclasses.
      */
-    protected Stack<String> getTimerStack() {
+    protected Deque<String> getTimerStack() {
         return timerStack;
     }
 
