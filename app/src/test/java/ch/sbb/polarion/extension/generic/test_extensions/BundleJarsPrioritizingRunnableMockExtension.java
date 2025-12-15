@@ -1,6 +1,7 @@
 package ch.sbb.polarion.extension.generic.test_extensions;
 
 import ch.sbb.polarion.extension.generic.util.BundleJarsPrioritizingRunnable;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -17,16 +18,20 @@ public class BundleJarsPrioritizingRunnableMockExtension implements BeforeEachCa
 
     @Override
     @SuppressWarnings("unchecked")
-    public void beforeEach(ExtensionContext context) {
+    public void beforeEach(@NonNull ExtensionContext context) {
         prioritizingRunnableMockedStatic = mockStatic(BundleJarsPrioritizingRunnable.class, RETURNS_DEEP_STUBS);
         when(BundleJarsPrioritizingRunnable.execute(any(), any()))
                 .thenAnswer(invocation -> (((Class<? extends BundleJarsPrioritizingRunnable>) invocation.getArgument(0)).getDeclaredConstructor().newInstance()).run(invocation.getArgument(1)));
         when(BundleJarsPrioritizingRunnable.execute(any(), any(), anyBoolean()))
                 .thenAnswer(invocation -> (((Class<? extends BundleJarsPrioritizingRunnable>) invocation.getArgument(0)).getDeclaredConstructor().newInstance()).run(invocation.getArgument(1)));
+        when(BundleJarsPrioritizingRunnable.executeCached(any(), any()))
+                .thenAnswer(invocation -> (((Class<? extends BundleJarsPrioritizingRunnable>) invocation.getArgument(0)).getDeclaredConstructor().newInstance()).run(invocation.getArgument(1)));
+        when(BundleJarsPrioritizingRunnable.executeCached(any(), any(), anyBoolean()))
+                .thenAnswer(invocation -> (((Class<? extends BundleJarsPrioritizingRunnable>) invocation.getArgument(0)).getDeclaredConstructor().newInstance()).run(invocation.getArgument(1)));
     }
 
     @Override
-    public void afterEach(ExtensionContext context) {
+    public void afterEach(@NonNull ExtensionContext context) {
         prioritizingRunnableMockedStatic.close();
     }
 

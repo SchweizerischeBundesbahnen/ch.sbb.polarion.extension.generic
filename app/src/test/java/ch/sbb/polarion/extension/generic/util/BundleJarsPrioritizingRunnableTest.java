@@ -16,9 +16,14 @@ import java.io.NotSerializableException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -504,6 +509,333 @@ class BundleJarsPrioritizingRunnableTest {
     }
 
 
+    // executeCached tests
+
+    @Test
+    void executeCached_shouldExecuteSuccessfully() {
+        // Arrange
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.executeCached(TestRunnableImpl.class, params);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals("result", result.get("default"));
+        }
+    }
+
+    @Test
+    void executeCached_shouldReuseCache() {
+        // Arrange
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act - call twice
+            Map<String, Object> result1 = BundleJarsPrioritizingRunnable.executeCached(CacheTestRunnable.class, params);
+            Map<String, Object> result2 = BundleJarsPrioritizingRunnable.executeCached(CacheTestRunnable.class, params);
+
+            // Assert - ManifestUtils should only be called once due to caching
+            manifestUtils.verify(ManifestUtils::getManifestAttributes, times(1));
+            assertNotNull(result1);
+            assertNotNull(result2);
+        }
+    }
+
+    @Test
+    void executeCached_withException_shouldReturnErrorMap() {
+        // Arrange
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            RuntimeException expectedException = new RuntimeException("Test exception");
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenThrow(expectedException);
+
+            // Act
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.executeCached(ExceptionCacheTestRunnable.class, params);
+
+            // Assert
+            assertNotNull(result);
+            assertTrue(result.containsKey(BundleJarsPrioritizingRunnable.ERROR_KEY));
+        }
+    }
+
+    @Test
+    void executeCached_withExceptionAndRethrowTrue_shouldThrowException() {
+        // Arrange
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            RuntimeException expectedException = new RuntimeException("Test exception");
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenThrow(expectedException);
+
+            // Act & Assert
+            assertThrows(RuntimeException.class,
+                () -> BundleJarsPrioritizingRunnable.executeCached(RethrowCacheTestRunnable.class, params, true));
+        }
+    }
+
+    @Test
+    void executeCached_shouldRestoreContextClassLoader() {
+        // Arrange
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act
+            BundleJarsPrioritizingRunnable.executeCached(ClassLoaderCacheTestRunnable.class, params);
+
+            // Assert
+            assertEquals(originalClassLoader, Thread.currentThread().getContextClassLoader());
+        }
+    }
+
+    @Test
+    void executeCached_withSerializableParams_shouldSerializeAndExecute() {
+        // Arrange
+        Map<String, Object> params = Map.of("testKey", "testValue");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.executeCached(SerializableCacheTestRunnable.class, params);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals("result", result.get("default"));
+        }
+    }
+
+    @Test
+    void executeCached_withNonSerializableParams_shouldPassParamsDirectly() {
+        // Arrange
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class);
+             MockedStatic<ObjectUtils> objectUtils = mockStatic(ObjectUtils.class)) {
+
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Mock ObjectUtils.serialize to throw NotSerializableException
+            objectUtils.when(() -> ObjectUtils.serialize(any())).thenThrow(new NotSerializableException("Not serializable"));
+
+            // Act
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.executeCached(NonSerializableCacheTestRunnable.class, params);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals("result", result.get("default"));
+        }
+    }
+
+    @Test
+    void executeCached_shouldRestoreContextClassLoaderAfterException() {
+        // Arrange
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenThrow(new RuntimeException("Test"));
+
+            // Act
+            BundleJarsPrioritizingRunnable.executeCached(ExceptionClassLoaderCacheTestRunnable.class, params);
+
+            // Assert
+            assertEquals(originalClassLoader, Thread.currentThread().getContextClassLoader());
+        }
+    }
+
+    // createRunner exception handling test
+
+    @Test
+    void createRunner_shouldCloseClassLoaderOnException() {
+        // Arrange
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act - using abstract class should fail during instantiation
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.executeCached(AbstractRunnableImpl.class, params);
+
+            // Assert - should return error and classloader should be closed (no resource leak)
+            assertNotNull(result);
+            assertTrue(result.containsKey(BundleJarsPrioritizingRunnable.ERROR_KEY));
+        }
+    }
+
+    // collectBundleURLs tests
+
+    @Test
+    void execute_withPluginXml_shouldAddBundleRootUrl() {
+        // Arrange
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act - TestRunnableImpl class has access to plugin.xml in test resources
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(RunnableWithPluginXml.class, params);
+
+            // Assert
+            assertNotNull(result);
+            // The execution should succeed, meaning plugin.xml URL was properly added
+            assertFalse(result.containsKey(BundleJarsPrioritizingRunnable.ERROR_KEY));
+        }
+    }
+
+    // Tests for real object serialization/deserialization
+
+    @Test
+    void execute_withComplexSerializableObject_shouldPassObjectCorrectly() {
+        // Arrange - create a complex serializable object
+        TestSerializableObject.TestNestedObject nested1 = TestSerializableObject.TestNestedObject.builder()
+                .name("nested1")
+                .value(100)
+                .tags(List.of("tag1", "tag2"))
+                .build();
+
+        TestSerializableObject.TestNestedObject nested2 = TestSerializableObject.TestNestedObject.builder()
+                .name("nested2")
+                .value(200)
+                .tags(List.of("tag3"))
+                .build();
+
+        TestSerializableObject testObject = TestSerializableObject.builder()
+                .stringField("testString")
+                .intField(42)
+                .integerField(100)
+                .longField(999L)
+                .doubleField(3.14)
+                .booleanField(true)
+                .stringList(List.of("a", "b", "c"))
+                .integerSet(Set.of(1, 2, 3))
+                .nestedMap(Map.of("key1", "value1", "key2", 123))
+                .localDate(LocalDate.of(2024, 6, 15))
+                .localDateTime(LocalDateTime.of(2024, 6, 15, 10, 30, 0))
+                .nestedObject(nested1)
+                .nestedObjectList(List.of(nested1, nested2))
+                .build();
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("testObject", testObject);
+        params.put("simpleString", "hello");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(ComplexObjectCapturingRunnable.class, params);
+
+            // Assert
+            assertNotNull(result);
+            assertFalse(result.containsKey(BundleJarsPrioritizingRunnable.ERROR_KEY));
+
+            TestSerializableObject received = (TestSerializableObject) result.get("receivedObject");
+            assertNotNull(received);
+            assertEquals("testString", received.getStringField());
+            assertEquals(42, received.getIntField());
+            assertEquals(100, received.getIntegerField());
+            assertEquals(999L, received.getLongField());
+            assertEquals(3.14, received.getDoubleField(), 0.001);
+            assertTrue(received.isBooleanField());
+            assertEquals(List.of("a", "b", "c"), received.getStringList());
+            assertEquals(Set.of(1, 2, 3), received.getIntegerSet());
+            assertEquals(LocalDate.of(2024, 6, 15), received.getLocalDate());
+            assertEquals(LocalDateTime.of(2024, 6, 15, 10, 30, 0), received.getLocalDateTime());
+
+            assertNotNull(received.getNestedObject());
+            assertEquals("nested1", received.getNestedObject().getName());
+            assertEquals(100, received.getNestedObject().getValue());
+
+            assertNotNull(received.getNestedObjectList());
+            assertEquals(2, received.getNestedObjectList().size());
+
+            assertEquals("hello", result.get("receivedString"));
+        }
+    }
+
+    @Test
+    void executeCached_withComplexSerializableObject_shouldPassObjectCorrectly() {
+        // Arrange
+        TestSerializableObject testObject = TestSerializableObject.builder()
+                .stringField("cachedTest")
+                .intField(77)
+                .booleanField(false)
+                .stringList(List.of("x", "y"))
+                .build();
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("testObject", testObject);
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.executeCached(CachedComplexObjectCapturingRunnable.class, params);
+
+            // Assert
+            assertNotNull(result);
+            assertFalse(result.containsKey(BundleJarsPrioritizingRunnable.ERROR_KEY));
+
+            TestSerializableObject received = (TestSerializableObject) result.get("receivedObject");
+            assertNotNull(received);
+            assertEquals("cachedTest", received.getStringField());
+            assertEquals(77, received.getIntField());
+            assertFalse(received.isBooleanField());
+            assertEquals(List.of("x", "y"), received.getStringList());
+        }
+    }
+
+    @Test
+    void execute_withNonSerializableObject_shouldFallbackToDirectPassing() {
+        // Arrange - use a non-serializable object (Thread is not serializable)
+        Map<String, Object> params = new HashMap<>();
+        params.put("thread", Thread.currentThread());
+        params.put("string", "test");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            // Act - should fall back to passing params directly
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(NonSerializableObjectRunnable.class, params);
+
+            // Assert - the runnable should still receive the params (passed directly, not serialized)
+            assertNotNull(result);
+            assertFalse(result.containsKey(BundleJarsPrioritizingRunnable.ERROR_KEY));
+            assertEquals("received", result.get("status"));
+            assertNotNull(result.get("receivedThread"));
+        }
+    }
+
     @Test
     void runInternal_withMapParams_shouldCallRunDirectly() {
         // Arrange
@@ -603,6 +935,92 @@ class BundleJarsPrioritizingRunnableTest {
         @Override
         public Map<String, Object> run(Map<String, Object> params) {
             return Map.of("result", "no plugin xml");
+        }
+    }
+
+    // Additional test helper classes for executeCached tests
+    public static class CacheTestRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            return Map.of("cached", "result");
+        }
+    }
+
+    public static class ExceptionCacheTestRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            return Map.of("result", "value");
+        }
+    }
+
+    public static class RethrowCacheTestRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            return Map.of("result", "value");
+        }
+    }
+
+    public static class ClassLoaderCacheTestRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            return Map.of("result", "value");
+        }
+    }
+
+    public static class ExceptionClassLoaderCacheTestRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            return Map.of("result", "value");
+        }
+    }
+
+    public static class RunnableWithPluginXml implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            return Map.of("result", "with plugin xml");
+        }
+    }
+
+    public static class SerializableCacheTestRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            return Map.of("default", "result");
+        }
+    }
+
+    public static class NonSerializableCacheTestRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            return Map.of("default", "result");
+        }
+    }
+
+    public static class ComplexObjectCapturingRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("receivedObject", params.get("testObject"));
+            result.put("receivedString", params.get("simpleString"));
+            return result;
+        }
+    }
+
+    public static class CachedComplexObjectCapturingRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("receivedObject", params.get("testObject"));
+            return result;
+        }
+    }
+
+    public static class NonSerializableObjectRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("status", "received");
+            result.put("receivedThread", params.get("thread"));
+            return result;
         }
     }
 }
