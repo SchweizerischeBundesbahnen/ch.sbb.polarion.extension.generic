@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -54,13 +55,19 @@ public class ExecutionProfiler {
     private final StringBuilder logBuilder = new StringBuilder();
     private final List<TimingEntry> timingEntries = new ArrayList<>();
     private final Deque<String> timerStack = new ArrayDeque<>();
+    private final Clock clock;
     private final long startTime;
 
     @Getter
     private long totalDurationMs;
 
     public ExecutionProfiler() {
-        this.startTime = System.currentTimeMillis();
+        this(Clock.systemUTC());
+    }
+
+    public ExecutionProfiler(Clock clock) {
+        this.clock = clock;
+        this.startTime = clock.millis();
     }
 
     /**
@@ -99,7 +106,7 @@ public class ExecutionProfiler {
      * Marks profiling as finished and calculates total duration.
      */
     public void finish() {
-        this.totalDurationMs = System.currentTimeMillis() - startTime;
+        this.totalDurationMs = clock.millis() - startTime;
     }
 
     /**
@@ -385,7 +392,7 @@ public class ExecutionProfiler {
         public Timer(@NotNull ExecutionProfiler profiler, @NotNull String stageName) {
             this.profiler = profiler;
             this.stageName = stageName;
-            this.startTime = System.currentTimeMillis();
+            this.startTime = profiler.clock.millis();
             profiler.getTimerStack().push(stageName);
         }
 
@@ -397,7 +404,7 @@ public class ExecutionProfiler {
         @Override
         public void close() {
             profiler.getTimerStack().pop();
-            long duration = System.currentTimeMillis() - startTime;
+            long duration = profiler.clock.millis() - startTime;
             profiler.recordTiming(stageName, duration, details);
         }
     }
