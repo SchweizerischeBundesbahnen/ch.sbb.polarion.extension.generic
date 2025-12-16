@@ -125,7 +125,7 @@ Maven's `pom.xml` should contain following content:
 
 #### Optional: OpenAPI JSON formatting
 
-To automatically format `docs/openapi.json` using the `pretty-format-json` pre-commit hook, add the following plugin configuration:
+To automatically format `docs/openapi.json` using pre-commit hooks, add the following plugin configuration:
 
 ```xml
 <plugin>
@@ -135,6 +135,18 @@ To automatically format `docs/openapi.json` using the `pretty-format-json` pre-c
         <execution>
             <id>format-openapi-json</id>
             <phase>process-classes</phase>
+            <goals>
+                <goal>run</goal>
+            </goals>
+            <configuration>
+                <hooks>
+                    <hook>pretty-format-openapi-json</hook>
+                    <hook>mixed-line-ending-openapi-json</hook>
+                </hooks>
+                <files>
+                    <file>docs/openapi.json</file>
+                </files>
+            </configuration>
         </execution>
     </executions>
 </plugin>
@@ -142,12 +154,7 @@ To automatically format `docs/openapi.json` using the `pretty-format-json` pre-c
 
 The `process-classes` phase runs right after `compile` phase where `swagger-maven-plugin` generates the file.
 
-The plugin automatically skips execution if:
-- `.pre-commit-config.yaml` doesn't exist in the project root
-- The hook `pretty-format-json` is not configured in `.pre-commit-config.yaml`
-- `pre-commit` is not installed or not available in PATH
-
-This ensures consistent JSON formatting with proper key ordering (openapi, info, servers, paths, components) across all extensions.
+This ensures consistent JSON formatting with proper key ordering (openapi, info, servers, paths, components) and line endings across all extensions.
 
 ### MANIFEST.MF
 
