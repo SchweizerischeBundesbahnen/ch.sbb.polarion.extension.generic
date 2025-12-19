@@ -100,6 +100,8 @@
         <re2j.version>1.8</re2j.version>
         <reflections.version>0.10.2</reflections.version>
         <org.osgi.framework.version>1.10.0</org.osgi.framework.version>
+        <swagger.version>2.2.41</swagger.version>
+        <jakarta.ws.rs-api.version>2.1.6</jakarta.ws.rs-api.version>
 
         <!-- Manifest entries -->
         <maven-jar-plugin.Manifest-Version>1.0</maven-jar-plugin.Manifest-Version>
@@ -195,16 +197,15 @@
             </build>
         </profile>
 
-        <!-- default profile: polarion2410 -->
         <profile>
-            <id>polarion2506</id>
+            <id>polarion2512</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <maven.compiler.source>17</maven.compiler.source>
-                <maven.compiler.target>17</maven.compiler.target>
-                <polarion.version>2506</polarion.version>
+                <maven.compiler.source>21</maven.compiler.source>
+                <maven.compiler.target>21</maven.compiler.target>
+                <polarion.version>2512</polarion.version>
 
                 <jersey.version>2.35</jersey.version>
                 <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
@@ -325,22 +326,99 @@
         </dependency>
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>com.fasterxml.jackson_2.13.4</artifactId>
+            <artifactId>com.fasterxml.jackson.core_2.19.0</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>com.fasterxml.jackson.databind_2.14.2</artifactId>
+            <artifactId>com.fasterxml.jackson.databind_2.19.0</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>com.fasterxml.jackson.annotations_2.19.0</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>io.swagger_2.1.5</artifactId>
-            <version>${polarion.version}</version>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <version>${jakarta.ws.rs-api.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${jersey.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-entity-filtering</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <version>${jersey.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>${swagger.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-integration</artifactId>
+            <version>${swagger.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-jaxrs2</artifactId>
+            <version>${swagger.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -463,6 +541,24 @@
             <artifactId>jackson-module-jaxb-annotations</artifactId>
             <version>${jackson.annotations.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.activation</groupId>
+                    <artifactId>jakarta.activation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.transaction</groupId>
