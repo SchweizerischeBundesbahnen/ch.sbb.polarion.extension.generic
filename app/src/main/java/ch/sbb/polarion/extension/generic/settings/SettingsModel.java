@@ -85,9 +85,7 @@ public abstract class SettingsModel {
         int end = serializedString.indexOf(endEntry);
         if (begin != -1 && end > begin) {
             int beginPos = begin + beginEntry.length();
-            beginPos = serializedString.startsWith(System.lineSeparator(), beginPos) ? beginPos + System.lineSeparator().length() : beginPos;
-            int endPos = serializedString.substring(0, end).endsWith(System.lineSeparator()) ? end - System.lineSeparator().length() : end;
-            return beginPos >= endPos ? "" : serializedString.substring(beginPos, endPos);
+            return beginPos >= end ? "" : serializedString.substring(beginPos, end).trim();
         }
         return null;
     }

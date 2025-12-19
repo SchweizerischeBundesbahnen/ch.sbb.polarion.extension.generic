@@ -141,6 +141,14 @@ public class SettingsModelDeserializationTest {
     }
 
     @Test
+    void testMixedLineSeparators() {
+        String serializedString = "-----BEGIN TEST_STRING-----\r\nsomeValue\n-----END TEST_STRING-----";
+        final String deserialized = model.deserializeEntry(TEST_STRING, serializedString);
+        Assertions.assertInstanceOf(String.class, deserialized);
+        Assertions.assertEquals("someValue", deserialized);
+    }
+
+    @Test
     void testDeserializeNull() {
         Object deserializedObject = model.deserializeEntry(TEST_STRING, null, Object.class);
         Assertions.assertNull(deserializedObject);
