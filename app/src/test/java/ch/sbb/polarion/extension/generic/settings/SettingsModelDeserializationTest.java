@@ -149,6 +149,14 @@ public class SettingsModelDeserializationTest {
     }
 
     @Test
+    void testEmptyValueWithWithoutLineSeparators() {
+        String serializedString = "-----BEGIN TEST_STRING----------END TEST_STRING-----";
+        final String deserialized = model.deserializeEntry(TEST_STRING, serializedString);
+        Assertions.assertInstanceOf(String.class, deserialized);
+        Assertions.assertEquals("", deserialized);
+    }
+
+    @Test
     void testDeserializeNull() {
         Object deserializedObject = model.deserializeEntry(TEST_STRING, null, Object.class);
         Assertions.assertNull(deserializedObject);
