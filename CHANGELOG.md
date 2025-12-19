@@ -1,5 +1,14 @@
 # Changelog
 
+## [12.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v12.0.0...v12.1.0) (2025-12-16)
+
+
+### Features
+
+* add caching mechanism for `BundleJarsPrioritizingRunnable` execution ([#349](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/349)) ([bdcfcfe](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/bdcfcfe4f6b7bcb1d14edd11ac006101e002af41)), closes [#347](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/347)
+* add ExecutionProfiler utility with timing and reporting capabilities ([#350](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/350)) ([28eefbc](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/28eefbc6bc2fc1dfcf91f4772f0ee50d1d7e72d5)), closes [#348](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/348)
+* add groovy-maven-plugin for openapi.json formatting ([#342](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/342)) ([cd1be67](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/cd1be677f1f46f0417a6736b2e273b981b2a7022)), closes [#341](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/341)
+
 ## [12.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v11.3.0...v12.0.0) (2025-11-25)
 
 
