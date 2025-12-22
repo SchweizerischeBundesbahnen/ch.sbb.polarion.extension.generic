@@ -5,7 +5,7 @@
     "chai": "6.2.1",
     "jsdom": "27.3.0",
     "mocha": "11.7.5",
-    "sinon": "21.0.0",
+    "sinon": "21.0.1",
     "nise": "6.1.1"
   },
   "name": "maven-js-project",
