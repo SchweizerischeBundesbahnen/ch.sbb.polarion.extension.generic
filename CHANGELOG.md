@@ -1,5 +1,13 @@
 # Changelog
 
+## [12.1.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v12.1.0...v12.1.1) (2025-12-26)
+
+
+### Bug Fixes
+
+* settings contain extra newlines when deserialized from imported … ([#354](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/354)) ([57ea9a8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/57ea9a89434d0c594581fdf383578f66df83e9ee))
+* settings contain extra newlines when deserialized from imported SVN data ([57ea9a8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/57ea9a89434d0c594581fdf383578f66df83e9ee)), closes [#353](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/353)
+
 ## [12.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v12.0.0...v12.1.0) (2025-12-16)
 
 
