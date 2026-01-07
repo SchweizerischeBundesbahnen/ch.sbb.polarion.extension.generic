@@ -8,6 +8,7 @@ import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsI
 import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerController;
 import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerDefinitionController;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.BadRequestExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.DuplicateSettingNameExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.ForbiddenExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.IllegalArgumentExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.IllegalStateExceptionMapper;
@@ -81,6 +82,7 @@ public class GenericRestApplication extends Application {
     protected Set<Object> getGenericExceptionMapperSingletons() {
         return Set.of(
                 new BadRequestExceptionMapper(),
+                new DuplicateSettingNameExceptionMapper(),
                 new ForbiddenExceptionMapper(),
                 new IllegalArgumentExceptionMapper(),
                 new IllegalStateExceptionMapper(),

@@ -2,6 +2,7 @@ package ch.sbb.polarion.extension.generic.settings;
 
 import ch.sbb.polarion.extension.generic.context.CurrentContextConfig;
 import ch.sbb.polarion.extension.generic.context.CurrentContextExtension;
+import ch.sbb.polarion.extension.generic.exception.DuplicateSettingNameException;
 import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import ch.sbb.polarion.extension.generic.settings.named_settings.TestModel;
 import ch.sbb.polarion.extension.generic.settings.named_settings.TestSettings;
@@ -269,6 +270,235 @@ class GenericNamedSettingsTest {
 
             List<Revision> projectDefaultListRevisions1 = testSettings.listRevisions("project/list_revisions_project/", SettingId.fromName("default_list_revisions1"));
             assertThat(projectDefaultListRevisions1).isEmpty();
+        }
+    }
+
+    @Test
+    void testDuplicateNameDetection() {
+        try (MockedStatic<ScopeUtils> mockScopeUtils = mockStatic(ScopeUtils.class)) {
+            SettingsService settingsService = mock(SettingsService.class);
+
+            ILocation mockProjectLocation = mock(ILocation.class);
+            ILocation mockProjectSettingsFolderLocation = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockProjectSettingsFolderLocation);
+            ILocation mockFile1Location = mock(ILocation.class);
+            ILocation mockFile2Location = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file1-uuid.settings")).thenReturn(mockFile1Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file2-uuid.settings")).thenReturn(mockFile2Location);
+
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("project/duplicate_project/")).thenReturn(mockProjectLocation);
+            when(settingsService.getLastRevision(mockProjectSettingsFolderLocation)).thenReturn("1");
+            when(settingsService.getPersistedSettingFileNames(mockProjectSettingsFolderLocation)).thenReturn(List.of("file1-uuid", "file2-uuid"));
+
+            ILocation mockDefaultLocation = mock(ILocation.class);
+            ILocation mockDefaultSettingsFolderLocation = mock(ILocation.class);
+            lenient().when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockDefaultSettingsFolderLocation);
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
+            lenient().when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn(null);
+
+            TestSettings testSettings = new TestSettings(settingsService);
+
+            // Both files have the same name "Default" - should throw DuplicateSettingNameException
+            when(settingsService.read(eq(mockFile1Location), any())).thenReturn(getModelContent("Default"));
+            when(settingsService.read(eq(mockFile2Location), any())).thenReturn(getModelContent("Default"));
+
+            DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
+                    () -> testSettings.readNames("project/duplicate_project/"));
+            assertThat(exception.getMessage()).contains("Default");
+            assertThat(exception.getMessage()).contains("Multiple settings files contain the same name");
+        }
+    }
+
+    @Test
+    void testDuplicateNameDetectionWithMultipleDuplicates() {
+        try (MockedStatic<ScopeUtils> mockScopeUtils = mockStatic(ScopeUtils.class)) {
+            SettingsService settingsService = mock(SettingsService.class);
+
+            ILocation mockProjectLocation = mock(ILocation.class);
+            ILocation mockProjectSettingsFolderLocation = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockProjectSettingsFolderLocation);
+            ILocation mockFile1Location = mock(ILocation.class);
+            ILocation mockFile2Location = mock(ILocation.class);
+            ILocation mockFile3Location = mock(ILocation.class);
+            ILocation mockFile4Location = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file1-uuid.settings")).thenReturn(mockFile1Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file2-uuid.settings")).thenReturn(mockFile2Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file3-uuid.settings")).thenReturn(mockFile3Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file4-uuid.settings")).thenReturn(mockFile4Location);
+
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("project/multi_duplicate/")).thenReturn(mockProjectLocation);
+            when(settingsService.getLastRevision(mockProjectSettingsFolderLocation)).thenReturn("1");
+            when(settingsService.getPersistedSettingFileNames(mockProjectSettingsFolderLocation)).thenReturn(List.of("file1-uuid", "file2-uuid", "file3-uuid", "file4-uuid"));
+
+            ILocation mockDefaultLocation = mock(ILocation.class);
+            ILocation mockDefaultSettingsFolderLocation = mock(ILocation.class);
+            lenient().when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockDefaultSettingsFolderLocation);
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
+            lenient().when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn(null);
+
+            TestSettings testSettings = new TestSettings(settingsService);
+
+            // Two pairs of duplicates: "ConfigA" and "ConfigB"
+            when(settingsService.read(eq(mockFile1Location), any())).thenReturn(getModelContent("ConfigA"));
+            when(settingsService.read(eq(mockFile2Location), any())).thenReturn(getModelContent("ConfigA"));
+            when(settingsService.read(eq(mockFile3Location), any())).thenReturn(getModelContent("ConfigB"));
+            when(settingsService.read(eq(mockFile4Location), any())).thenReturn(getModelContent("ConfigB"));
+
+            DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
+                    () -> testSettings.readNames("project/multi_duplicate/"));
+            assertThat(exception.getMessage()).contains("ConfigA");
+            assertThat(exception.getMessage()).contains("ConfigB");
+        }
+    }
+
+    @Test
+    void testDuplicateNameDetectionOnRead() {
+        try (MockedStatic<ScopeUtils> mockScopeUtils = mockStatic(ScopeUtils.class)) {
+            SettingsService settingsService = mock(SettingsService.class);
+
+            ILocation mockProjectLocation = mock(ILocation.class);
+            ILocation mockProjectSettingsFolderLocation = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockProjectSettingsFolderLocation);
+            ILocation mockFile1Location = mock(ILocation.class);
+            ILocation mockFile2Location = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file1-uuid.settings")).thenReturn(mockFile1Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file2-uuid.settings")).thenReturn(mockFile2Location);
+
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("project/read_duplicate/")).thenReturn(mockProjectLocation);
+            when(settingsService.getLastRevision(mockProjectSettingsFolderLocation)).thenReturn("1");
+            when(settingsService.getPersistedSettingFileNames(mockProjectSettingsFolderLocation)).thenReturn(List.of("file1-uuid", "file2-uuid"));
+
+            ILocation mockDefaultLocation = mock(ILocation.class);
+            ILocation mockDefaultSettingsFolderLocation = mock(ILocation.class);
+            lenient().when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockDefaultSettingsFolderLocation);
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
+            lenient().when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn(null);
+
+            TestSettings testSettings = new TestSettings(settingsService);
+
+            // Both files have the same name "DuplicateSetting"
+            when(settingsService.read(eq(mockFile1Location), any())).thenReturn(getModelContent("DuplicateSetting"));
+            when(settingsService.read(eq(mockFile2Location), any())).thenReturn(getModelContent("DuplicateSetting"));
+
+            // Reading by name should throw DuplicateSettingNameException
+            SettingId settingId = SettingId.fromName("DuplicateSetting");
+            DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
+                    () -> testSettings.read("project/read_duplicate/", settingId, null));
+            assertThat(exception.getMessage()).contains("DuplicateSetting");
+        }
+    }
+
+    @Test
+    void testDuplicateNameDetectionOnSave() {
+        try (MockedStatic<ScopeUtils> mockScopeUtils = mockStatic(ScopeUtils.class)) {
+            SettingsService settingsService = mock(SettingsService.class);
+
+            ILocation mockProjectLocation = mock(ILocation.class);
+            ILocation mockProjectSettingsFolderLocation = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockProjectSettingsFolderLocation);
+            ILocation mockFile1Location = mock(ILocation.class);
+            ILocation mockFile2Location = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file1-uuid.settings")).thenReturn(mockFile1Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file2-uuid.settings")).thenReturn(mockFile2Location);
+
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("project/save_duplicate/")).thenReturn(mockProjectLocation);
+            when(settingsService.getLastRevision(mockProjectSettingsFolderLocation)).thenReturn("1");
+            when(settingsService.getPersistedSettingFileNames(mockProjectSettingsFolderLocation)).thenReturn(List.of("file1-uuid", "file2-uuid"));
+
+            ILocation mockDefaultLocation = mock(ILocation.class);
+            ILocation mockDefaultSettingsFolderLocation = mock(ILocation.class);
+            lenient().when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockDefaultSettingsFolderLocation);
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
+            lenient().when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn(null);
+
+            TestSettings testSettings = new TestSettings(settingsService);
+
+            // Both files have the same name "DuplicateSetting"
+            when(settingsService.read(eq(mockFile1Location), any())).thenReturn(getModelContent("DuplicateSetting"));
+            when(settingsService.read(eq(mockFile2Location), any())).thenReturn(getModelContent("DuplicateSetting"));
+
+            TestModel modelToSave = new TestModel();
+            modelToSave.setName("DuplicateSetting");
+
+            // Saving by name should throw DuplicateSettingNameException
+            SettingId settingId = SettingId.fromName("DuplicateSetting");
+            DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
+                    () -> testSettings.save("project/save_duplicate/", settingId, modelToSave));
+            assertThat(exception.getMessage()).contains("DuplicateSetting");
+        }
+    }
+
+    @Test
+    void testDuplicateNameDetectionOnDelete() {
+        try (MockedStatic<ScopeUtils> mockScopeUtils = mockStatic(ScopeUtils.class)) {
+            SettingsService settingsService = mock(SettingsService.class);
+
+            ILocation mockProjectLocation = mock(ILocation.class);
+            ILocation mockProjectSettingsFolderLocation = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockProjectSettingsFolderLocation);
+            ILocation mockFile1Location = mock(ILocation.class);
+            ILocation mockFile2Location = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file1-uuid.settings")).thenReturn(mockFile1Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file2-uuid.settings")).thenReturn(mockFile2Location);
+
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("project/delete_duplicate/")).thenReturn(mockProjectLocation);
+            when(settingsService.getLastRevision(mockProjectSettingsFolderLocation)).thenReturn("1");
+            when(settingsService.getPersistedSettingFileNames(mockProjectSettingsFolderLocation)).thenReturn(List.of("file1-uuid", "file2-uuid"));
+
+            ILocation mockDefaultLocation = mock(ILocation.class);
+            ILocation mockDefaultSettingsFolderLocation = mock(ILocation.class);
+            lenient().when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockDefaultSettingsFolderLocation);
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
+            lenient().when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn(null);
+
+            TestSettings testSettings = new TestSettings(settingsService);
+
+            // Both files have the same name "DuplicateSetting"
+            when(settingsService.read(eq(mockFile1Location), any())).thenReturn(getModelContent("DuplicateSetting"));
+            when(settingsService.read(eq(mockFile2Location), any())).thenReturn(getModelContent("DuplicateSetting"));
+
+            // Deleting by name should throw DuplicateSettingNameException
+            SettingId settingId = SettingId.fromName("DuplicateSetting");
+            DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
+                    () -> testSettings.delete("project/delete_duplicate/", settingId));
+            assertThat(exception.getMessage()).contains("DuplicateSetting");
+        }
+    }
+
+    @Test
+    void testDuplicateNameDetectionOnListRevisions() {
+        try (MockedStatic<ScopeUtils> mockScopeUtils = mockStatic(ScopeUtils.class)) {
+            SettingsService settingsService = mock(SettingsService.class);
+
+            ILocation mockProjectLocation = mock(ILocation.class);
+            ILocation mockProjectSettingsFolderLocation = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockProjectSettingsFolderLocation);
+            ILocation mockFile1Location = mock(ILocation.class);
+            ILocation mockFile2Location = mock(ILocation.class);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file1-uuid.settings")).thenReturn(mockFile1Location);
+            when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/file2-uuid.settings")).thenReturn(mockFile2Location);
+
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("project/revisions_duplicate/")).thenReturn(mockProjectLocation);
+            when(settingsService.getLastRevision(mockProjectSettingsFolderLocation)).thenReturn("1");
+            when(settingsService.getPersistedSettingFileNames(mockProjectSettingsFolderLocation)).thenReturn(List.of("file1-uuid", "file2-uuid"));
+
+            ILocation mockDefaultLocation = mock(ILocation.class);
+            ILocation mockDefaultSettingsFolderLocation = mock(ILocation.class);
+            lenient().when(mockDefaultLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockDefaultSettingsFolderLocation);
+            mockScopeUtils.when(() -> ScopeUtils.getContextLocation("")).thenReturn(mockDefaultLocation);
+            lenient().when(settingsService.getLastRevision(mockDefaultSettingsFolderLocation)).thenReturn(null);
+
+            TestSettings testSettings = new TestSettings(settingsService);
+
+            // Both files have the same name "DuplicateSetting"
+            when(settingsService.read(eq(mockFile1Location), any())).thenReturn(getModelContent("DuplicateSetting"));
+            when(settingsService.read(eq(mockFile2Location), any())).thenReturn(getModelContent("DuplicateSetting"));
+
+            // Listing revisions by name should throw DuplicateSettingNameException
+            SettingId settingId = SettingId.fromName("DuplicateSetting");
+            DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
+                    () -> testSettings.listRevisions("project/revisions_duplicate/", settingId));
+            assertThat(exception.getMessage()).contains("DuplicateSetting");
         }
     }
 
