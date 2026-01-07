@@ -381,8 +381,9 @@ class GenericNamedSettingsTest {
             when(settingsService.read(eq(mockFile2Location), any())).thenReturn(getModelContent("DuplicateSetting"));
 
             // Reading by name should throw DuplicateSettingNameException
+            SettingId settingId = SettingId.fromName("DuplicateSetting");
             DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
-                    () -> testSettings.read("project/read_duplicate/", SettingId.fromName("DuplicateSetting"), null));
+                    () -> testSettings.read("project/read_duplicate/", settingId, null));
             assertThat(exception.getMessage()).contains("DuplicateSetting");
         }
     }
@@ -420,8 +421,9 @@ class GenericNamedSettingsTest {
             modelToSave.setName("DuplicateSetting");
 
             // Saving by name should throw DuplicateSettingNameException
+            SettingId settingId = SettingId.fromName("DuplicateSetting");
             DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
-                    () -> testSettings.save("project/save_duplicate/", SettingId.fromName("DuplicateSetting"), modelToSave));
+                    () -> testSettings.save("project/save_duplicate/", settingId, modelToSave));
             assertThat(exception.getMessage()).contains("DuplicateSetting");
         }
     }
@@ -456,8 +458,9 @@ class GenericNamedSettingsTest {
             when(settingsService.read(eq(mockFile2Location), any())).thenReturn(getModelContent("DuplicateSetting"));
 
             // Deleting by name should throw DuplicateSettingNameException
+            SettingId settingId = SettingId.fromName("DuplicateSetting");
             DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
-                    () -> testSettings.delete("project/delete_duplicate/", SettingId.fromName("DuplicateSetting")));
+                    () -> testSettings.delete("project/delete_duplicate/", settingId));
             assertThat(exception.getMessage()).contains("DuplicateSetting");
         }
     }
@@ -492,8 +495,9 @@ class GenericNamedSettingsTest {
             when(settingsService.read(eq(mockFile2Location), any())).thenReturn(getModelContent("DuplicateSetting"));
 
             // Listing revisions by name should throw DuplicateSettingNameException
+            SettingId settingId = SettingId.fromName("DuplicateSetting");
             DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
-                    () -> testSettings.listRevisions("project/revisions_duplicate/", SettingId.fromName("DuplicateSetting")));
+                    () -> testSettings.listRevisions("project/revisions_duplicate/", settingId));
             assertThat(exception.getMessage()).contains("DuplicateSetting");
         }
     }
