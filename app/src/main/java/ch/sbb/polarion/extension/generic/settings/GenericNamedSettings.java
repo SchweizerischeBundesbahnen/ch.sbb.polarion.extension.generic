@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic.settings;
 
+import ch.sbb.polarion.extension.generic.exception.DuplicateSettingNameException;
 import ch.sbb.polarion.extension.generic.exception.ObjectNotFoundException;
 import ch.sbb.polarion.extension.generic.util.ContextUtils;
 import ch.sbb.polarion.extension.generic.util.ScopeUtils;
@@ -194,13 +195,28 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
         }
         Pair<String, Set<SettingName>> cached = SETTING_NAMES_CACHE.get(targetLocation);
         if (cached == null || !Objects.equals(lastRevision, cached.left())) {
-            Set<SettingName> settingNames = settingsService.getPersistedSettingFileNames(targetLocation).stream()
+            List<SettingName> settingNamesList = settingsService.getPersistedSettingFileNames(targetLocation).stream()
                     .map(fileNameWithoutExtension -> buildSettingName(scope, fileNameWithoutExtension))
-                    .collect(Collectors.toSet());
+                    .toList();
+            checkForDuplicateNames(settingNamesList);
+            Set<SettingName> settingNames = new HashSet<>(settingNamesList);
             cached = Pair.of(lastRevision, settingNames);
             SETTING_NAMES_CACHE.put(targetLocation, cached);
         }
         return cached.right();
+    }
+
+    private void checkForDuplicateNames(List<SettingName> settingNames) {
+        Map<String, List<SettingName>> groupedByName = settingNames.stream()
+                .collect(Collectors.groupingBy(SettingName::getName));
+        List<String> duplicateNames = groupedByName.entrySet().stream()
+                .filter(entry -> entry.getValue().size() > 1)
+                .map(Map.Entry::getKey)
+                .sorted()
+                .toList();
+        if (!duplicateNames.isEmpty()) {
+            throw new DuplicateSettingNameException("Multiple settings files contain the same name: " + String.join(", ", duplicateNames));
+        }
     }
 
     private SettingName buildSettingName(String scope, String id) {
