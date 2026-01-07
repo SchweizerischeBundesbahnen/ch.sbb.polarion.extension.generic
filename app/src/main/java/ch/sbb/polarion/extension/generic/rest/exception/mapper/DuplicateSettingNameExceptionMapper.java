@@ -13,6 +13,7 @@ import javax.ws.rs.ext.Provider;
 public class DuplicateSettingNameExceptionMapper implements ExceptionMapper<DuplicateSettingNameException> {
     private static final Logger logger = Logger.getLogger(DuplicateSettingNameExceptionMapper.class);
 
+    @Override
     public Response toResponse(DuplicateSettingNameException e) {
         logger.error("Duplicate setting name conflict: " + e.getMessage(), e);
         return Response.status(Response.Status.CONFLICT.getStatusCode())

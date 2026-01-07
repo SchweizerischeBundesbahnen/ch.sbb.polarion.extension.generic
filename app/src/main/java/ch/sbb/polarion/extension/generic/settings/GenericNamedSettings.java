@@ -195,11 +195,11 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
         }
         Pair<String, Set<SettingName>> cached = SETTING_NAMES_CACHE.get(targetLocation);
         if (cached == null || !Objects.equals(lastRevision, cached.left())) {
-            List<SettingName> settingNamesList = settingsService.getPersistedSettingFileNames(targetLocation).stream()
+            List<SettingName> allSettingNames = settingsService.getPersistedSettingFileNames(targetLocation).stream()
                     .map(fileNameWithoutExtension -> buildSettingName(scope, fileNameWithoutExtension))
                     .toList();
-            checkForDuplicateNames(settingNamesList);
-            Set<SettingName> settingNames = new HashSet<>(settingNamesList);
+            checkForDuplicateNames(allSettingNames);
+            Set<SettingName> settingNames = new HashSet<>(allSettingNames);
             cached = Pair.of(lastRevision, settingNames);
             SETTING_NAMES_CACHE.put(targetLocation, cached);
         }

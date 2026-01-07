@@ -6,7 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.core.Response;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class DuplicateSettingNameExceptionMapperTest {
 
@@ -17,8 +18,6 @@ class DuplicateSettingNameExceptionMapperTest {
             ErrorEntity entity = (ErrorEntity) response.getEntity();
             assertNotNull(entity);
             assertEquals("test message", entity.getMessage());
-        } catch (Exception e) {
-            fail("Exception thrown: " + e.getMessage());
         }
     }
 
