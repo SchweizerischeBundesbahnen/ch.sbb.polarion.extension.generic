@@ -1,5 +1,12 @@
 # Changelog
 
+## [13.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v13.0.0...v13.1.0) (2026-01-08)
+
+
+### Features
+
+* add duplicate setting name detection and conflict handling ([#359](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/359)) ([85d79f3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/85d79f3e4a9aedfba377e5c0acde5e44e8eef871)), closes [#358](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/358)
+
 ## [13.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v12.1.0...v13.0.0) (2026-01-01)
 
 
