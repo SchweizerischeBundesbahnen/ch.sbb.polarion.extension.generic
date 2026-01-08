@@ -253,11 +253,16 @@ This can happen when settings files are manually created or imported via SVN.
 
 ```json
 {
-  "message": "Multiple settings files contain the same name: Default"
+  "message": "Multiple settings files contain the same name: Default (68d0a695-9865-4612-a6ab-e6102bc8d1e1, 3ea1190b-adb9-4cda-8906-953030327958)"
 }
 ```
 
-If multiple duplicate names exist, they will be listed: `"Multiple settings files contain the same name: ConfigA, ConfigB"`.
+The message includes the setting name and the file IDs (UUIDs) of the conflicting files.
+If multiple duplicate names exist, they will all be listed:
+
+```
+Multiple settings files contain the same name: ConfigA (id1, id2), ConfigB (id3, id4, id5)
+```
 
 This validation is triggered on all settings operations: read, save, delete, list names, and list revisions.
 

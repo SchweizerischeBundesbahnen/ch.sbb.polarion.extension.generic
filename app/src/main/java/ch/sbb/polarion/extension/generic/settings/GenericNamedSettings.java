@@ -209,13 +209,19 @@ public abstract class GenericNamedSettings<T extends SettingsModel> implements N
     private void checkForDuplicateNames(List<SettingName> settingNames) {
         Map<String, List<SettingName>> groupedByName = settingNames.stream()
                 .collect(Collectors.groupingBy(SettingName::getName));
-        List<String> duplicateNames = groupedByName.entrySet().stream()
+        List<String> duplicateEntries = groupedByName.entrySet().stream()
                 .filter(entry -> entry.getValue().size() > 1)
-                .map(Map.Entry::getKey)
-                .sorted()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> {
+                    String ids = entry.getValue().stream()
+                            .map(SettingName::getId)
+                            .sorted()
+                            .collect(Collectors.joining(", "));
+                    return entry.getKey() + " (" + ids + ")";
+                })
                 .toList();
-        if (!duplicateNames.isEmpty()) {
-            throw new DuplicateSettingNameException("Multiple settings files contain the same name: " + String.join(", ", duplicateNames));
+        if (!duplicateEntries.isEmpty()) {
+            throw new DuplicateSettingNameException("Multiple settings files contain the same name: " + String.join(", ", duplicateEntries));
         }
     }
 
