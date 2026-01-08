@@ -240,6 +240,27 @@ public class CssModel extends SettingsModel {
 }
 ```
 
+### Settings validation
+
+The settings API includes built-in validation to ensure data integrity:
+
+#### Duplicate setting names detection
+
+If multiple settings files contain the same name (in the `-----BEGIN NAME-----` block), the API will return **HTTP 409 Conflict** error.
+This can happen when settings files are manually created or imported via SVN.
+
+**Example error response:**
+
+```json
+{
+  "message": "Multiple settings files contain the same name: Default"
+}
+```
+
+If multiple duplicate names exist, they will be listed: `"Multiple settings files contain the same name: ConfigA, ConfigB"`.
+
+This validation is triggered on all settings operations: read, save, delete, list names, and list revisions.
+
 ### REST application
 
 REST application class should inherit from `GenericRestApplication` of generic extension,
