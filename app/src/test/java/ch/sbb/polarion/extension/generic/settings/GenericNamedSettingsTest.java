@@ -304,8 +304,8 @@ class GenericNamedSettingsTest {
 
             DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
                     () -> testSettings.readNames("project/duplicate_project/"));
-            assertThat(exception.getMessage()).contains("Default");
             assertThat(exception.getMessage()).contains("Multiple settings files contain the same name");
+            assertThat(exception.getMessage()).contains("Default (file1-uuid, file2-uuid)");
         }
     }
 
@@ -346,8 +346,8 @@ class GenericNamedSettingsTest {
 
             DuplicateSettingNameException exception = assertThrows(DuplicateSettingNameException.class,
                     () -> testSettings.readNames("project/multi_duplicate/"));
-            assertThat(exception.getMessage()).contains("ConfigA");
-            assertThat(exception.getMessage()).contains("ConfigB");
+            assertThat(exception.getMessage()).contains("ConfigA (file1-uuid, file2-uuid)");
+            assertThat(exception.getMessage()).contains("ConfigB (file3-uuid, file4-uuid)");
         }
     }
 
