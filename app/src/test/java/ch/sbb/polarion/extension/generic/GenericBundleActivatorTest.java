@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.osgi.framework.BundleContext;
 
 import java.util.Map;
 
@@ -24,10 +25,12 @@ class GenericBundleActivatorTest {
         try (MockedStatic<FormExtensionsRegistry> extensionsRegistryStatic = mockStatic(FormExtensionsRegistry.class)) {
             extensionsRegistryStatic.when(FormExtensionsRegistry::getInstance).thenReturn(registry);
 
-            new TestBundleActivator(Map.of()).start(null);
+            BundleContext bundleContext = mock(BundleContext.class);
+            new TestBundleActivator(Map.of()).start(bundleContext);
             verify(registry, times(0)).registerExtension(anyString(), any());
+            verify(bundleContext, times(1)).getProperty("test_property");
 
-            new TestBundleActivator(Map.of("first", mock(IFormExtension.class), "second", mock(IFormExtension.class))).start(null);
+            new TestBundleActivator(Map.of("first", mock(IFormExtension.class), "second", mock(IFormExtension.class))).start(bundleContext);
             verify(registry, times(1)).registerExtension(eq("first"), any());
             verify(registry, times(1)).registerExtension(eq("second"), any());
         }
@@ -45,6 +48,11 @@ class GenericBundleActivatorTest {
         @Override
         protected Map<String, IFormExtension> getExtensions() {
             return extensions;
+        }
+
+        @Override
+        public void onStart(BundleContext context) {
+            context.getProperty("test_property");
         }
     }
 }
