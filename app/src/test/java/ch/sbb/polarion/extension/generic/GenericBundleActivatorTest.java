@@ -26,6 +26,9 @@ class GenericBundleActivatorTest {
             extensionsRegistryStatic.when(FormExtensionsRegistry::getInstance).thenReturn(registry);
 
             BundleContext bundleContext = mock(BundleContext.class);
+            new SimplestTestBundleActivator().start(bundleContext); // Force call onStart() in GenericBundleActivator
+            verify(registry, times(0)).registerExtension(anyString(), any());
+
             new TestBundleActivator(Map.of()).start(bundleContext);
             verify(registry, times(0)).registerExtension(anyString(), any());
             verify(bundleContext, times(1)).getProperty("test_property");
@@ -53,6 +56,14 @@ class GenericBundleActivatorTest {
         @Override
         public void onStart(BundleContext context) {
             context.getProperty("test_property");
+        }
+    }
+
+    private static class SimplestTestBundleActivator extends GenericBundleActivator {
+
+        @Override
+        protected Map<String, IFormExtension> getExtensions() {
+            return Map.of();
         }
     }
 }
