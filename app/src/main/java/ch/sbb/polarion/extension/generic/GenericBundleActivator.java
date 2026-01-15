@@ -18,7 +18,7 @@ public abstract class GenericBundleActivator implements BundleActivator {
 
     protected abstract Map<String, IFormExtension> getExtensions();
 
-    public void onStart(BundleContext context) {
+    protected void onStart(BundleContext context) {
         // for overriding if needed
     }
 
