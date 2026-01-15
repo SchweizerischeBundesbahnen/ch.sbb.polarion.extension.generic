@@ -18,8 +18,13 @@ public abstract class GenericBundleActivator implements BundleActivator {
 
     protected abstract Map<String, IFormExtension> getExtensions();
 
+    protected void onStart(BundleContext context) {
+        // for overriding if needed
+    }
+
     @Override
     public void start(BundleContext context) {
+        onStart(context);
         getExtensions().forEach((key, value) -> {
             logger.info("Registering form extension: " + key);
             FormExtensionsRegistry.getInstance().registerExtension(key, value);
