@@ -1,5 +1,12 @@
 # Changelog
 
+## [13.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v13.1.0...v13.2.0) (2026-01-18)
+
+
+### Features
+
+* add onStart lifecycle method to the bundle activator ([#364](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/364)) ([6235c75](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6235c75eca627ead56f00c2b49a7af44e6a5c75e)), closes [#363](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/363)
+
 ## [13.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v13.0.0...v13.1.0) (2026-01-08)
 
 
