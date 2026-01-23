@@ -100,7 +100,7 @@
         <re2j.version>1.8</re2j.version>
         <reflections.version>0.10.2</reflections.version>
         <org.osgi.framework.version>1.10.0</org.osgi.framework.version>
-        <swagger.version>2.2.41</swagger.version>
+        <swagger.version>2.2.42</swagger.version>
         <jakarta.ws.rs-api.version>2.1.6</jakarta.ws.rs-api.version>
 
         <!-- Manifest entries -->
