@@ -1,5 +1,18 @@
 # Changelog
 
+## [13.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v13.1.0...v13.2.0) (2026-01-27)
+
+
+### Features
+
+* add onStart lifecycle method to the bundle activator ([#364](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/364)) ([6235c75](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6235c75eca627ead56f00c2b49a7af44e6a5c75e)), closes [#363](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/363)
+* exception mapper for UnauthorizedException ([#369](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/369)) ([0b13e17](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/0b13e1751aa99328dfdf30967c96394971ca1185)), closes [#367](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/367)
+
+
+### Bug Fixes
+
+* **deps:** update swagger.version to v2.2.42 ([25ad644](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/25ad64409f77f955d9f39c31e48870502c88ec10))
+
 ## [13.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v13.0.0...v13.1.0) (2026-01-08)
 
 
