@@ -15,7 +15,7 @@ import ch.sbb.polarion.extension.generic.rest.exception.mapper.IllegalStateExcep
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.InternalServerErrorExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotFoundExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.ObjectNotFoundExceptionMapper;
-import ch.sbb.polarion.extension.generic.rest.exception.mapper.UnauthorizedExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotAuthorizedExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.UncaughtExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.filter.AuthenticationFilter;
 import ch.sbb.polarion.extension.generic.rest.filter.CorsFilter;
@@ -87,9 +87,9 @@ public class GenericRestApplication extends Application {
                 new IllegalArgumentExceptionMapper(),
                 new IllegalStateExceptionMapper(),
                 new InternalServerErrorExceptionMapper(),
+                new NotAuthorizedExceptionMapper(),
                 new NotFoundExceptionMapper(),
                 new ObjectNotFoundExceptionMapper(),
-                new UnauthorizedExceptionMapper(),
                 new UncaughtExceptionMapper()
         );
     }

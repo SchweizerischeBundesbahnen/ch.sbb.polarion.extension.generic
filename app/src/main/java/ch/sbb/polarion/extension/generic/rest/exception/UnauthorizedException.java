@@ -1,9 +1,18 @@
 package ch.sbb.polarion.extension.generic.rest.exception;
 
-public class UnauthorizedException extends RuntimeException {
+import ch.sbb.polarion.extension.generic.rest.filter.AuthenticationFilter;
+
+import javax.ws.rs.NotAuthorizedException;
+
+/**
+ * Custom exception representing an unauthorized access attempt.
+ * Extends the NotAuthorizedException from JAX-RS which means it will be handled
+ * by {@link ch.sbb.polarion.extension.generic.rest.exception.mapper.NotAuthorizedExceptionMapper}.
+ */
+public class UnauthorizedException extends NotAuthorizedException {
 
     public UnauthorizedException(String message) {
-        super(message);
+        super(message, AuthenticationFilter.BEARER);
     }
 
 }
