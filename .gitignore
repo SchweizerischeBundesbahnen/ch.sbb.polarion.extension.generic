@@ -27,6 +27,7 @@ replay_pid*
 # Additonal not included in Java.gitignore
 .history/
 .idea/*
+.claude/*
 
 # code style config
 !.idea/codeStyles
