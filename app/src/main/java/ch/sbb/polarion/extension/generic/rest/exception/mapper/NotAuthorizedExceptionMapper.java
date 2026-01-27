@@ -14,6 +14,7 @@ public class NotAuthorizedExceptionMapper implements ExceptionMapper<NotAuthoriz
 
     private static final Logger logger = Logger.getLogger(NotAuthorizedExceptionMapper.class);
 
+    @Override
     public Response toResponse(NotAuthorizedException e) {
         logger.error("NotAuthorizedException in controller: " + e.getMessage(), e);
         return Response.status(Response.Status.UNAUTHORIZED.getStatusCode())

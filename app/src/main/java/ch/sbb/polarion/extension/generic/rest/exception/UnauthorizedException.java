@@ -9,6 +9,7 @@ import javax.ws.rs.NotAuthorizedException;
  * Extends the NotAuthorizedException from JAX-RS which means it will be handled
  * by {@link ch.sbb.polarion.extension.generic.rest.exception.mapper.NotAuthorizedExceptionMapper}.
  */
+@SuppressWarnings("squid:S110")
 public class UnauthorizedException extends NotAuthorizedException {
 
     public UnauthorizedException(String message) {
