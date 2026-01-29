@@ -1,6 +1,7 @@
 export default class SearchableDropdown {
     static COOKIE_PREFIX = 'searchable_dropdown_';
     static COOKIE_EXPIRY_DAYS = 30;
+    static BLUR_DELAY_MS = 100;
 
     constructor({
                     element,
@@ -159,7 +160,7 @@ export default class SearchableDropdown {
                     this.selectItem(match);
                 }
                 this._close();
-            }, 100);
+            }, SearchableDropdown.BLUR_DELAY_MS);
         });
 
         // Better UX - add possibility to navigate the list and select items via keyboard
@@ -298,8 +299,8 @@ export default class SearchableDropdown {
     _show() {
         this.optionsEl.style.display = 'block';
 
-        let bounding = this.optionsEl.getBoundingClientRect();
-        if (bounding.bottom > (window.innerHeight || document.documentElement.clientHeight)) {
+        let boundingRect = this.optionsEl.getBoundingClientRect();
+        if (boundingRect.bottom > (window.innerHeight || document.documentElement.clientHeight)) {
             this.optionsEl.classList.add('dropup');
         }
     }
