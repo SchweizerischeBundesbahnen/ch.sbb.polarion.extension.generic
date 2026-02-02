@@ -34,6 +34,7 @@ export default class SearchableDropdown {
         this.searchable = searchable;
         this.isOpen = false;
         this.activeIndex = -1;
+        this._blurTimeoutId = null;
 
         this._createContainer();
         this._render();
@@ -147,7 +148,8 @@ export default class SearchableDropdown {
         // dropdown selection will be reset
         this.input.addEventListener('blur', () => {
             // Should be timed out, otherwise disturbs item selection via mouse
-            setTimeout(() => {
+            this._blurTimeoutId = setTimeout(() => {
+                this._blurTimeoutId = null;
                 if (this.searchable) {
                     const text = this.input.value.trim();
                     if (!text) {
@@ -215,7 +217,7 @@ export default class SearchableDropdown {
                 option.classList.add('active');
             }
 
-            option.addEventListener('click', () => {
+            option.addEventListener('mousedown', () => {
                 this.selectItem(item);
             });
 
@@ -330,6 +332,12 @@ export default class SearchableDropdown {
     }
 
     selectItem(item, preventClosing = false) {
+        // Cancel any pending blur timeout to prevent it from overwriting this selection
+        if (this._blurTimeoutId) {
+            clearTimeout(this._blurTimeoutId);
+            this._blurTimeoutId = null;
+        }
+
         this.input.value = item ? item.label : "";
         if (!preventClosing) {
             this._close();
