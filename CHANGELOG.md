@@ -1,5 +1,12 @@
 # Changelog
 
+## [13.2.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v13.2.0...v13.2.1) (2026-02-02)
+
+
+### Bug Fixes
+
+* Add searchable dropdown CSS and fix events race condition ([#373](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/373)) ([14c1879](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/14c18797c6c850003604749ca57a35272c37cc46)), closes [#370](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/370)
+
 ## [13.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v13.1.0...v13.2.0) (2026-01-30)
 
 
