@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -21,6 +22,7 @@ import com.polarion.core.config.IRestConfiguration;
 
 import io.swagger.v3.oas.annotations.Hidden;
 
+@Singleton
 @Hidden
 @Path("/swagger")
 public class SwaggerController {

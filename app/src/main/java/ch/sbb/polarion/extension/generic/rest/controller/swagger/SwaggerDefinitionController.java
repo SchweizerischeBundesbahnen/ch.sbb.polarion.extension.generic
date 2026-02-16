@@ -3,6 +3,7 @@ package ch.sbb.polarion.extension.generic.rest.controller.swagger;
 import java.util.List;
 import java.util.Set;
 
+import javax.inject.Singleton;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -30,6 +31,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 
+@Singleton
 @Hidden
 @Path("/swagger/definition.json")
 public class SwaggerDefinitionController extends BaseOpenApiResource {

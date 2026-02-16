@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jetbrains.annotations.NotNull;
 
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -33,6 +34,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+@Singleton
 @Hidden
 @Tag(name = "Settings")
 @Path("/internal")

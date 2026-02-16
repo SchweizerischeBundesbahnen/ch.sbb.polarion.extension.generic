@@ -56,18 +56,7 @@ public class GenericRestApplication extends Application {
 
     @NotNull
     protected Set<Object> getGenericControllerSingletons() {
-        HashSet<Object> genericControllerSingletons = new HashSet<>(Arrays.asList(
-                new ExtensionInfoApiController(),
-                new ExtensionInfoInternalController(),
-                new OpenApiController(),
-                new SwaggerController(),
-                new SwaggerDefinitionController()
-        ));
-        if (!NamedSettingsRegistry.INSTANCE.getAll().isEmpty()) {
-            genericControllerSingletons.add(new NamedSettingsApiController());
-            genericControllerSingletons.add(new NamedSettingsInternalController());
-        }
-        return genericControllerSingletons;
+        return Set.of();
     }
 
     @NotNull
@@ -111,7 +100,18 @@ public class GenericRestApplication extends Application {
 
     @NotNull
     protected Set<Class<?>> getGenericControllerClasses() {
-        return Set.of();
+        HashSet<Class<?>> genericControllerClasses = new HashSet<>(Arrays.asList(
+                ExtensionInfoApiController.class,
+                ExtensionInfoInternalController.class,
+                OpenApiController.class,
+                SwaggerController.class,
+                SwaggerDefinitionController.class
+        ));
+        if (!NamedSettingsRegistry.INSTANCE.getAll().isEmpty()) {
+            genericControllerClasses.add(NamedSettingsApiController.class);
+            genericControllerClasses.add(NamedSettingsInternalController.class);
+        }
+        return genericControllerClasses;
     }
 
     @NotNull
