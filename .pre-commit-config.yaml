@@ -46,7 +46,7 @@ repos:
       - id: check-git-config-user-email
         args: [--templates, ^\S+\.\S+@sbb\.ch$]
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.13.6
+    rev: v4.13.7
     hooks:
       - id: commitizen
   - repo: https://github.com/woodruffw/zizmor-pre-commit
@@ -54,6 +54,6 @@ repos:
     hooks:
       - id: zizmor
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.10
+    rev: v1.7.11
     hooks:
       - id: actionlint
