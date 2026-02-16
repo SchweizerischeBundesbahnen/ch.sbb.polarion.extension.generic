@@ -1,5 +1,16 @@
 # Changelog
 
+## [14.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v13.2.1...v14.0.0) (2026-02-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* move controller singleton creation to class registration and add `@Singleton` annotations ([#377](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/377))
+
+### Features
+
+* move controller singleton creation to class registration and add `@Singleton` annotations ([#377](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/377)) ([6658fef](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6658fef560d75027aa84175fe7f1210b47812a31)), closes [#366](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/366)
+
 ## [13.2.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v13.2.0...v13.2.1) (2026-02-02)
 
 
