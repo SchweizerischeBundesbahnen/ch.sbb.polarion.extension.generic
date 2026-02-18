@@ -17,6 +17,7 @@ import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotFoundException
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.ObjectNotFoundExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotAuthorizedExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.UncaughtExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.feature.SingletonBindingFeature;
 import ch.sbb.polarion.extension.generic.rest.filter.AuthenticationFilter;
 import ch.sbb.polarion.extension.generic.rest.filter.CorsFilter;
 import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
@@ -38,6 +39,7 @@ public class GenericRestApplication extends Application {
     public Set<Object> getSingletons() {
         Set<Object> singletons = new HashSet<>();
         singletons.add(JacksonFeature.withoutExceptionMappers());
+        singletons.add(SingletonBindingFeature.bindFrom(getClasses()));
         singletons.addAll(getAllExceptionMapperSingletons());
         singletons.addAll(getAllFilterSingletons());
         singletons.addAll(getAllControllerSingletons());
