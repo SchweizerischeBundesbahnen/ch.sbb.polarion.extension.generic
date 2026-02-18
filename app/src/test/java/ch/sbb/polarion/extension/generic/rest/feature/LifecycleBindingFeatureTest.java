@@ -14,8 +14,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,22 +35,26 @@ class LifecycleBindingFeatureTest {
     static class PostConstructController {
         @PostConstruct
         void init() {
+            // intentionally empty — annotation presence is what matters
         }
     }
 
     static class PreDestroyController {
         @PreDestroy
         void cleanup() {
+            // intentionally empty — annotation presence is what matters
         }
     }
 
     static class BothLifecycleController {
         @PostConstruct
         void init() {
+            // intentionally empty — annotation presence is what matters
         }
 
         @PreDestroy
         void cleanup() {
+            // intentionally empty — annotation presence is what matters
         }
     }
 
@@ -59,10 +62,12 @@ class LifecycleBindingFeatureTest {
     static class SingletonWithLifecycleController {
         @PostConstruct
         void init() {
+            // intentionally empty — annotation presence is what matters
         }
 
         @PreDestroy
         void cleanup() {
+            // intentionally empty — annotation presence is what matters
         }
     }
 
