@@ -1,5 +1,17 @@
 # Changelog
 
+## [14.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.0.0...v14.1.0) (2026-02-19)
+
+
+### Features
+
+* add support for OSGi manifest generation and extend `pom.xml` configuration ([#384](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/384)) ([6242c62](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6242c62ef517c3131b876e680f5b025b60026e26)), closes [#383](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/383)
+
+
+### Bug Fixes
+
+* add SingletonBindingFeature to support @Singleton annotations in generic REST app ([#381](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/381)) ([b53fbc8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/b53fbc8a746ad93b51e19554e337ad0fcf9f67ba)), closes [#380](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/380)
+
 ## [14.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v13.2.1...v14.0.0) (2026-02-16)
 
 
