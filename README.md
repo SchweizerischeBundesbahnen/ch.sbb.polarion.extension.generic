@@ -57,9 +57,12 @@ Maven's `pom.xml` should contain following content:
     <maven-jar-plugin.Configuration-Properties-Prefix>ch.sbb.polarion.extension.pdf-exporter</maven-jar-plugin.Configuration-Properties-Prefix>
     <web.app.name>${maven-jar-plugin.Extension-Context}</web.app.name>
 
-    <!-- Extension-specific bundles (in addition to common ones from parent POM).
-         Must start with comma. Leave empty or omit if only common bundles are needed. -->
-    <maven-jar-plugin.Require-Bundle.extension>,com.polarion.alm.tracker,com.polarion.platform.guice,com.polarion.alm.wiki,org.jsoup,org.springframework.spring-core,org.springframework.spring-web</maven-jar-plugin.Require-Bundle.extension>
+    <!-- Extension-specific Require-Bundle (in addition to common ones from parent POM):
+        com.polarion.alm.wiki
+        org.jsoup
+    -->
+    <maven-jar-plugin.Require-Bundle.extension>com.polarion.alm.wiki,org.jsoup</maven-jar-plugin.Require-Bundle.extension>
+    <maven-jar-plugin.Require-Bundle>${maven-jar-plugin.Require-Bundle.common},${maven-jar-plugin.Require-Bundle.extension}</maven-jar-plugin.Require-Bundle>
 </properties>
 ```
 
@@ -168,24 +171,29 @@ The following entries are **managed by the parent POM** via `<manifestEntries>` 
 
 | Entry | POM Property | Default Value |
 |-------|-------------|---------------|
-| `Require-Bundle` | `maven-jar-plugin.Require-Bundle.common` + `.extension` | 11 common bundles (see below) |
+| `Require-Bundle` | `maven-jar-plugin.Require-Bundle` | 17 common bundles (see below) |
 | `Support-Email` | `maven-jar-plugin.Support-Email` | `polarion-opensource@sbb.ch` |
 | `Bundle-ActivationPolicy` | `maven-jar-plugin.Bundle-ActivationPolicy` | `lazy` |
 | `Import-Package` | `maven-jar-plugin.Import-Package` | `org.osgi.framework` |
 
 Common `Require-Bundle` bundles defined in the parent POM (`maven-jar-plugin.Require-Bundle.common`):
-`com.polarion.portal.tomcat`, `com.polarion.alm.ui`, `javax.inject`, `javax.annotation-api`, `org.glassfish.jersey`, `com.fasterxml.jackson.core`, `com.fasterxml.jackson.databind`, `com.fasterxml.jackson.annotations`, `com.fasterxml.jackson.module.jaxb.annotations`, `org.apache.commons.logging`, `slf4j.api`
+`com.polarion.portal.tomcat`, `com.polarion.alm.ui`, `javax.inject`, `javax.annotation-api`, `org.glassfish.jersey`, `com.fasterxml.jackson.core`, `com.fasterxml.jackson.databind`, `com.fasterxml.jackson.annotations`, `com.fasterxml.jackson.module.jaxb.annotations`, `org.apache.commons.logging`, `slf4j.api`, `org.springframework.spring-core`, `org.springframework.spring-web`, `com.polarion.alm.tracker`, `com.polarion.platform.guice`, `org.apache.commons.commons-collections4`, `org.apache.commons.lang3`
 
-To add extension-specific bundles, override `maven-jar-plugin.Require-Bundle.extension` in the extension's `pom.xml` (value must start with `,`):
+To add extension-specific bundles, set `maven-jar-plugin.Require-Bundle.extension` and override `maven-jar-plugin.Require-Bundle` in the extension's `pom.xml`:
 
 ```xml
-<maven-jar-plugin.Require-Bundle.extension>,com.polarion.alm.tracker,com.polarion.platform.guice,org.springframework.spring-core,org.springframework.spring-web</maven-jar-plugin.Require-Bundle.extension>
+<!-- Extension-specific Require-Bundle (in addition to common ones from parent POM):
+    com.polarion.alm.wiki
+    org.jsoup
+-->
+<maven-jar-plugin.Require-Bundle.extension>com.polarion.alm.wiki,org.jsoup</maven-jar-plugin.Require-Bundle.extension>
+<maven-jar-plugin.Require-Bundle>${maven-jar-plugin.Require-Bundle.common},${maven-jar-plugin.Require-Bundle.extension}</maven-jar-plugin.Require-Bundle>
 ```
 
-To override `Import-Package` (e.g. to add `org.eclipse.core.runtime`), set `maven-jar-plugin.Import-Package` in the extension's `pom.xml`:
+To override `Import-Package` (e.g. to add `org.osgi.util.tracker`), set `maven-jar-plugin.Import-Package` in the extension's `pom.xml`:
 
 ```xml
-<maven-jar-plugin.Import-Package>org.osgi.framework,org.eclipse.core.runtime</maven-jar-plugin.Import-Package>
+<maven-jar-plugin.Import-Package>org.osgi.framework,org.osgi.util.tracker</maven-jar-plugin.Import-Package>
 ```
 
 The static `MANIFEST.MF` should only contain:
