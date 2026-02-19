@@ -47,7 +47,7 @@ Maven's `pom.xml` should contain following content:
 </parent>
 ```
 
-* Specify extension context, automatic module name, discover base package and web application name in POM's properties:
+* Specify extension context, automatic module name, discover base package, web application name and extension-specific `Require-Bundle` entries in POM's properties:
 
 ```xml
 <properties>
@@ -56,6 +56,10 @@ Maven's `pom.xml` should contain following content:
     <maven-jar-plugin.Discover-Base-Package>ch.sbb.polarion.extension.pdf_exporter</maven-jar-plugin.Discover-Base-Package>
     <maven-jar-plugin.Configuration-Properties-Prefix>ch.sbb.polarion.extension.pdf-exporter</maven-jar-plugin.Configuration-Properties-Prefix>
     <web.app.name>${maven-jar-plugin.Extension-Context}</web.app.name>
+
+    <!-- Extension-specific bundles (in addition to common ones from parent POM).
+         Must start with comma. Leave empty or omit if only common bundles are needed. -->
+    <maven-jar-plugin.Require-Bundle.extension>,com.polarion.alm.tracker,com.polarion.platform.guice,com.polarion.alm.wiki,org.jsoup,org.springframework.spring-core,org.springframework.spring-web</maven-jar-plugin.Require-Bundle.extension>
 </properties>
 ```
 
@@ -158,35 +162,54 @@ This ensures consistent JSON formatting with proper key ordering (openapi, info,
 
 ### MANIFEST.MF
 
-File `MANIFEST.MF` should be created in `src/main/resources/META-INF/MANIFEST.MF` with following content:
+File `MANIFEST.MF` should be created in `src/main/resources/META-INF/MANIFEST.MF` with **only extension-specific** entries.
 
-* Property `Bundle-Name` should contain extension name, eg.
+The following entries are **managed by the parent POM** via `<manifestEntries>` and must **NOT** be added to the static `MANIFEST.MF` file (they will be silently overridden if present):
+
+| Entry | POM Property | Default Value |
+|-------|-------------|---------------|
+| `Require-Bundle` | `maven-jar-plugin.Require-Bundle.common` + `.extension` | 11 common bundles (see below) |
+| `Support-Email` | `maven-jar-plugin.Support-Email` | `polarion-opensource@sbb.ch` |
+| `Bundle-ActivationPolicy` | `maven-jar-plugin.Bundle-ActivationPolicy` | `lazy` |
+| `Import-Package` | `maven-jar-plugin.Import-Package` | `org.osgi.framework` |
+
+Common `Require-Bundle` bundles defined in the parent POM (`maven-jar-plugin.Require-Bundle.common`):
+`com.polarion.portal.tomcat`, `com.polarion.alm.ui`, `javax.inject`, `javax.annotation-api`, `org.glassfish.jersey`, `com.fasterxml.jackson.core`, `com.fasterxml.jackson.databind`, `com.fasterxml.jackson.annotations`, `com.fasterxml.jackson.module.jaxb.annotations`, `org.apache.commons.logging`, `slf4j.api`
+
+To add extension-specific bundles, override `maven-jar-plugin.Require-Bundle.extension` in the extension's `pom.xml` (value must start with `,`):
+
+```xml
+<maven-jar-plugin.Require-Bundle.extension>,com.polarion.alm.tracker,com.polarion.platform.guice,org.springframework.spring-core,org.springframework.spring-web</maven-jar-plugin.Require-Bundle.extension>
+```
+
+To override `Import-Package` (e.g. to add `org.eclipse.core.runtime`), set `maven-jar-plugin.Import-Package` in the extension's `pom.xml`:
+
+```xml
+<maven-jar-plugin.Import-Package>org.osgi.framework,org.eclipse.core.runtime</maven-jar-plugin.Import-Package>
+```
+
+The static `MANIFEST.MF` should only contain:
+
+* `Bundle-Name` — extension display name:
 
 ```properties
 Bundle-Name: PDF Exporter Extension for Polarion ALM
 ```
 
-* Property `Require-Bundle` should list all bundles from which this extension depends, eg.
+* `Bundle-Activator` — if the bundle has a form extension, registered either using custom `org.osgi.framework.BundleActivator` or `ch.sbb.polarion.extension.generic.GenericBundleActivator`:
 
 ```properties
-Require-Bundle: com.polarion.portal.tomcat,
- com.polarion.alm.ui,
- com.polarion.platform.guice,
- com.polarion.alm.tracker,
- org.glassfish.jersey,
- com.fasterxml.jackson,
- com.fasterxml.jackson.jaxrs,
- io.swagger,
- org.apache.commons.logging,
- slf4j.api,
- org.springframework.spring-core,
- org.springframework.spring-web
+Bundle-Activator: ch.sbb.polarion.extension.pdf_exporter.ExtensionBundleActivator
 ```
 
-* If the bundle has a form extension, it can be registered either using custom `org.osgi.framework.BundleActivator` or implement `ch.sbb.polarion.extension.generic.GenericBundleActivator`.
-In both cases the manifest must contain:
-  - activator class in the `Bundle-Activator` entry
-  - `Import-Package: org.osgi.framework` + `Bundle-ActivationPolicy: lazy` entries
+* `Export-Package` — if the extension exports packages for use by other bundles:
+
+```properties
+Export-Package: ch.sbb.polarion.extension.pdf_exporter,
+ ch.sbb.polarion.extension.pdf_exporter.converter
+```
+
+* Any other extension-specific entries (e.g. `Guice-Modules`)
 
 ### Setting classes
 
