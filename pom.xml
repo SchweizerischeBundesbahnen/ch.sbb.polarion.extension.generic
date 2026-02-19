@@ -116,6 +116,29 @@
         <maven-jar-plugin.Discover-Base-Package>${project.artifactId}</maven-jar-plugin.Discover-Base-Package>
         <maven-jar-plugin.Configuration-Properties-Prefix/>
         <maven-jar-plugin.Project-URL>${project.scm.url}</maven-jar-plugin.Project-URL>
+        <maven-jar-plugin.Support-Email>polarion-opensource@sbb.ch</maven-jar-plugin.Support-Email>
+        <maven-jar-plugin.Bundle-ActivationPolicy>lazy</maven-jar-plugin.Bundle-ActivationPolicy>
+        <maven-jar-plugin.Import-Package>org.osgi.framework</maven-jar-plugin.Import-Package>
+        <!-- Common Require-Bundle:
+            com.polarion.portal.tomcat
+            com.polarion.alm.ui
+            javax.inject
+            javax.annotation-api
+            org.glassfish.jersey
+            com.fasterxml.jackson.core
+            com.fasterxml.jackson.databind
+            com.fasterxml.jackson.annotations
+            com.fasterxml.jackson.module.jaxb.annotations
+            org.apache.commons.logging
+            slf4j.api
+            org.springframework.spring-core
+            org.springframework.spring-web
+            com.polarion.alm.tracker
+            com.polarion.platform.guice
+        -->
+        <maven-jar-plugin.Require-Bundle.common>com.polarion.portal.tomcat,com.polarion.alm.ui,javax.inject,javax.annotation-api,org.glassfish.jersey,com.fasterxml.jackson.core,com.fasterxml.jackson.databind,com.fasterxml.jackson.annotations,com.fasterxml.jackson.module.jaxb.annotations,org.apache.commons.logging,slf4j.api,org.springframework.spring-core,org.springframework.spring-web,com.polarion.alm.tracker,com.polarion.platform.guice</maven-jar-plugin.Require-Bundle.common>
+        <maven-jar-plugin.Require-Bundle.extension/>
+        <maven-jar-plugin.Require-Bundle>${maven-jar-plugin.Require-Bundle.common}</maven-jar-plugin.Require-Bundle>
 
         <central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
         <central-publishing-maven-plugin.autoPublish>true</central-publishing-maven-plugin.autoPublish>
@@ -801,6 +824,10 @@
                                 <Discover-Base-Package>${maven-jar-plugin.Discover-Base-Package}</Discover-Base-Package>
                                 <Configuration-Properties-Prefix>${maven-jar-plugin.Configuration-Properties-Prefix}</Configuration-Properties-Prefix>
                                 <Project-URL>${maven-jar-plugin.Project-URL}</Project-URL>
+                                <Support-Email>${maven-jar-plugin.Support-Email}</Support-Email>
+                                <Bundle-ActivationPolicy>${maven-jar-plugin.Bundle-ActivationPolicy}</Bundle-ActivationPolicy>
+                                <Import-Package>${maven-jar-plugin.Import-Package}</Import-Package>
+                                <Require-Bundle>${maven-jar-plugin.Require-Bundle}</Require-Bundle>
                             </manifestEntries>
                         </archive>
                     </configuration>
