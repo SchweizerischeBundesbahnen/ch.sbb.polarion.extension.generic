@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.1.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.0...v14.1.1) (2026-02-26)
+
+
+### Bug Fixes
+
+* **deps:** update swagger.version to v2.2.43 ([0a12d34](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/0a12d345a52d191fc6abcc01842113a071e0166e))
+
 ## [14.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.0.0...v14.1.0) (2026-02-19)
 
 
