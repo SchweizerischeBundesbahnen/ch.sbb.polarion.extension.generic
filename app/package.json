@@ -3,7 +3,7 @@
   },
   "devDependencies": {
     "chai": "6.2.2",
-    "jsdom": "28.1.0",
+    "jsdom": "29.0.1",
     "mocha": "11.7.5",
     "sinon": "21.0.3",
     "nise": "6.1.4"
