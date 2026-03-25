@@ -40,10 +40,10 @@ final class BundleJarsPrioritizingRunnableExecutor {
 
             return invokeRunnable(cached.runnableClass(), cached.instance(), params);
         } catch (Exception e) {
-            Logger.getLogger(BundleJarsPrioritizingRunnable.class).error("Error while running cached impl", e);
             if (rethrowException) {
                 throw e;
             } else {
+                Logger.getLogger(BundleJarsPrioritizingRunnable.class).error("Error while running cached impl", e);
                 return Map.of(BundleJarsPrioritizingRunnable.ERROR_KEY, e);
             }
         } finally {
@@ -87,10 +87,10 @@ final class BundleJarsPrioritizingRunnableExecutor {
                 return invokeRunnable(runnableClass, runnable, params);
             }
         } catch (Exception e) {
-            Logger.getLogger(BundleJarsPrioritizingRunnable.class).error("Error while running impl", e);
             if (rethrowException) {
                 throw e;
             } else {
+                Logger.getLogger(BundleJarsPrioritizingRunnable.class).error("Error while running impl", e);
                 return Map.of(BundleJarsPrioritizingRunnable.ERROR_KEY, e);
             }
         } finally {
