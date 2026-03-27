@@ -54,6 +54,10 @@ class GenericUiServletTest {
         GenericUiServlet.setContentType("/img.ico", response);
         verify(response, times(1)).setContentType("image/x-icon");
 
+        response = mock(HttpServletResponse.class);
+        GenericUiServlet.setContentType("/data.txt", response);
+        verify(response, times(1)).setContentType("text/plain");
+
         HttpServletResponse servletResponse = mock(HttpServletResponse.class);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> GenericUiServlet.setContentType("unknown_file.xml", servletResponse));
         assertEquals("Unsupported file type", exception.getMessage());
