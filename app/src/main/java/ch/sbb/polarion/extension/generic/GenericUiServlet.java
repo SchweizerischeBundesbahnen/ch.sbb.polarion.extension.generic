@@ -33,7 +33,8 @@ public abstract class GenericUiServlet extends HttpServlet {
             Pair.of(".gif", "image/gif"),
             Pair.of(".woff", "application/font-woff"),
             Pair.of(".woff2", "application/font-woff2"),
-            Pair.of(".ico", "image/x-icon")
+            Pair.of(".ico", "image/x-icon"),
+            Pair.of(".txt", "text/plain")
     );
 
     private static final Logger logger = Logger.getLogger(GenericUiServlet.class);
