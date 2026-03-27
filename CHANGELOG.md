@@ -1,5 +1,16 @@
 # Changelog
 
+## [14.1.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.0...v14.1.1) (2026-03-27)
+
+
+### Bug Fixes
+
+* add support for `.txt` file content type handling in `GenericUiServlet` ([#392](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/392)) ([13acdd1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/13acdd1ac4982e5521aaff19b3b025c82e78671d)), closes [#391](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/391)
+* **deps:** update swagger.version to v2.2.43 ([0a12d34](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/0a12d345a52d191fc6abcc01842113a071e0166e))
+* **deps:** update swagger.version to v2.2.44 ([696f79a](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/696f79a63b05b23571a6d257e141669102803a3e))
+* **deps:** update swagger.version to v2.2.45 ([592d0a0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/592d0a0c4b3896f9025dc8f9a4582e3e7779e9d8))
+* move error logging inside exception handling to ensure it runs reliably ([#390](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/390)) ([476fbf2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/476fbf207839141d1a06d1c4876b52896498ead4)), closes [#389](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/389)
+
 ## [14.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.0.0...v14.1.0) (2026-02-19)
 
 
