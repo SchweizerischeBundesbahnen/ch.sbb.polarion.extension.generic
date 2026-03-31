@@ -271,7 +271,8 @@ public class PolarionServiceTest {
             fieldMetadataStatic.when(() -> FieldMetadata.fromPrototype(any(), eq("key1"))).thenReturn(metadata1);
             fieldMetadataStatic.when(() -> FieldMetadata.fromPrototype(any(), eq("key2"))).thenReturn(metadata2);
             fieldMetadataStatic.when(() -> FieldMetadata.fromPrototype(any(), eq("key3"))).thenReturn(metadata3);
-            assertTrue(polarionService.getGeneralFields("protoName", mock(IContextId.class)).containsAll(List.of(metadata1, metadata2, metadata3)));
+            assertTrue(polarionService.getGeneralFields("protoName", mock(IContextId.class), null).containsAll(List.of(metadata1, metadata2, metadata3)));
+            assertTrue(polarionService.getGeneralFields("protoName", mock(IContextId.class), "someTypeId").containsAll(List.of(metadata1, metadata2, metadata3)));
         }
     }
 
@@ -406,21 +407,53 @@ public class PolarionServiceTest {
     @Test
     void testGetOptionsForEnum() {
         IContextId contextId = mock(IContextId.class);
-        assertNull(polarionService.getOptionsForEnum(FieldType.STRING.getType(), contextId));
-        assertNull(polarionService.getOptionsForEnum(new ListType("listTypeId", FieldType.STRING.getType()), contextId));
+        assertNull(polarionService.getOptionsForEnum(FieldType.STRING.getType(), contextId, null));
+        assertNull(polarionService.getOptionsForEnum(new ListType("listTypeId", FieldType.STRING.getType()), contextId, null));
 
         IEnumOption enumOption1 = new EnumOption("enumId1", "optionId1", "optionName1", 1, false);
         IEnumOption enumOption2 = new EnumOption("enumId2", "optionId2", "optionName2", 2, false);
         IEnumOption enumOption3 = new EnumOption("enumId3", "optionId3", "optionName3", 3, false);
         IEnumeration enumeration = mock(IEnumeration.class);
-        when(enumeration.getAllOptions()).thenReturn(List.of(enumOption1, enumOption2, enumOption3));
+        when(enumeration.getAvailableOptions(null)).thenReturn(List.of(enumOption1, enumOption2, enumOption3));
         when(polarionService.getEnumeration(any(), any())).thenReturn(enumeration);
 
-        Set<Option> enumSet = polarionService.getOptionsForEnum(new EnumType("enumId"), contextId);
+        Set<Option> enumSet = polarionService.getOptionsForEnum(new EnumType("enumId"), contextId, null);
         assertEquals(3, enumSet.size());
         assertTrue(enumSet.stream().anyMatch(option -> Objects.equals(option.getKey(), "optionId1") && Objects.equals(option.getName(), "optionName1")));
         assertTrue(enumSet.stream().anyMatch(option -> Objects.equals(option.getKey(), "optionId2") && Objects.equals(option.getName(), "optionName2")));
         assertTrue(enumSet.stream().anyMatch(option -> Objects.equals(option.getKey(), "optionId3") && Objects.equals(option.getName(), "optionName3")));
+    }
+
+    @Test
+    void testGetOptionsForEnumWithOptTypeId() {
+        IContextId contextId = mock(IContextId.class);
+        String optTypeId = "someTypeId";
+
+        IEnumOption enumOption1 = new EnumOption("enumId1", "optionId1", "optionName1", 1, false);
+        IEnumOption enumOption2 = new EnumOption("enumId2", "optionId2", "optionName2", 2, false);
+        IEnumeration enumeration = mock(IEnumeration.class);
+        when(enumeration.getAvailableOptions(optTypeId)).thenReturn(List.of(enumOption1, enumOption2));
+        when(polarionService.getEnumeration(any(), any())).thenReturn(enumeration);
+
+        Set<Option> enumSet = polarionService.getOptionsForEnum(new EnumType("enumId"), contextId, optTypeId);
+        assertEquals(2, enumSet.size());
+        assertTrue(enumSet.stream().anyMatch(option -> Objects.equals(option.getKey(), "optionId1")));
+        assertTrue(enumSet.stream().anyMatch(option -> Objects.equals(option.getKey(), "optionId2")));
+    }
+
+    @Test
+    void testGetOptionsForEnumWithOptTypeIdListType() {
+        IContextId contextId = mock(IContextId.class);
+        String optTypeId = "someTypeId";
+
+        IEnumOption enumOption1 = new EnumOption("enumId1", "optionId1", "optionName1", 1, false);
+        IEnumeration enumeration = mock(IEnumeration.class);
+        when(enumeration.getAvailableOptions(optTypeId)).thenReturn(List.of(enumOption1));
+        when(polarionService.getEnumeration(any(), any())).thenReturn(enumeration);
+
+        Set<Option> enumSet = polarionService.getOptionsForEnum(new ListType("listTypeId", new EnumType("enumId")), contextId, optTypeId);
+        assertEquals(1, enumSet.size());
+        assertTrue(enumSet.stream().anyMatch(option -> Objects.equals(option.getKey(), "optionId1")));
     }
 
     @Test
