@@ -186,6 +186,14 @@ public class PolarionService {
         }
     }
 
+    /**
+     * @deprecated use {@link #getGeneralFields(String, IContextId, String)} instead to provide optTypeId if needed for correct options retrieval for enum fields
+     */
+    @Deprecated(forRemoval = true)
+    public Set<FieldMetadata> getGeneralFields(@NotNull String proto, @NotNull IContextId contextId) {
+        return getGeneralFields(proto, contextId, null);
+    }
+
     @SuppressWarnings({"unchecked"})
     public Set<FieldMetadata> getGeneralFields(@NotNull String proto, @NotNull IContextId contextId, @Nullable String optTypeId) {
         final IPrototype prototype = trackerService.getDataService().getPrototype(proto);

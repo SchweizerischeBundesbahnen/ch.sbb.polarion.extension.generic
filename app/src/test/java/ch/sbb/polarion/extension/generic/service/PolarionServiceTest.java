@@ -277,6 +277,25 @@ public class PolarionServiceTest {
     }
 
     @Test
+    void testGetGeneralFieldsDeprecatedDelegatesToNewMethod() {
+        IDataService mockDataService = mock(IDataService.class);
+        when(trackerService.getDataService()).thenReturn(mockDataService);
+        IPrototype prototype = mock(IPrototype.class);
+        when(prototype.getKeyNames()).thenReturn(List.of("key1"));
+        when(mockDataService.getPrototype(anyString())).thenReturn(prototype);
+
+        FieldMetadata metadata1 = FieldMetadata.builder().id("id1").build();
+
+        try (MockedStatic<FieldMetadata> fieldMetadataStatic = mockStatic(FieldMetadata.class)) {
+            fieldMetadataStatic.when(() -> FieldMetadata.fromPrototype(any(), eq("key1"))).thenReturn(metadata1);
+            IContextId contextId = mock(IContextId.class);
+            Set<FieldMetadata> result = polarionService.getGeneralFields("protoName", contextId);
+            assertTrue(result.contains(metadata1));
+            assertEquals(1, result.size());
+        }
+    }
+
+    @Test
     void testGetCustomFields() {
         IDataService mockDataService = mock(IDataService.class);
         when(trackerService.getDataService()).thenReturn(mockDataService);

@@ -40,6 +40,7 @@ public class TestUtils {
         lenient().when(polarionService.getResolvableObjectOrThrow(any(), any(), any())).thenCallRealMethod();
         lenient().when(polarionService.getObjectRevision(any(), any())).thenCallRealMethod();
 
+        lenient().when(polarionService.getGeneralFields(any(), any())).thenCallRealMethod();
         lenient().when(polarionService.getGeneralFields(any(), any(), any())).thenCallRealMethod();
         lenient().when(polarionService.getCustomFields(any(), any(), any())).thenCallRealMethod();
         lenient().when(polarionService.getFieldValue(any(), any())).thenCallRealMethod();
