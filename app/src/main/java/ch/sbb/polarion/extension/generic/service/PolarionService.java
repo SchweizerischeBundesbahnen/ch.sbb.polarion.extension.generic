@@ -186,18 +186,26 @@ public class PolarionService {
         }
     }
 
-    @SuppressWarnings({"unchecked"})
+    /**
+     * @deprecated use {@link #getGeneralFields(String, IContextId, String)} instead to provide optTypeId if needed for correct options retrieval for enum fields
+     */
+    @Deprecated(forRemoval = true)
     public Set<FieldMetadata> getGeneralFields(@NotNull String proto, @NotNull IContextId contextId) {
+        return getGeneralFields(proto, contextId, null);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public Set<FieldMetadata> getGeneralFields(@NotNull String proto, @NotNull IContextId contextId, @Nullable String optTypeId) {
         final IPrototype prototype = trackerService.getDataService().getPrototype(proto);
         return ((List<String>) prototype.getKeyNames()).stream()
-                .map(keyName -> FieldMetadata.fromPrototype(prototype, keyName).setOptions(getOptionsForEnum(prototype.getKeyType(keyName), contextId)))
+                .map(keyName -> FieldMetadata.fromPrototype(prototype, keyName).setOptions(getOptionsForEnum(prototype.getKeyType(keyName), contextId, optTypeId)))
                 .collect(Collectors.toSet());
     }
 
-    public Set<FieldMetadata> getCustomFields(@NotNull String proto, @NotNull IContextId contextId, String optTypeId) {
+    public Set<FieldMetadata> getCustomFields(@NotNull String proto, @NotNull IContextId contextId, @Nullable String optTypeId) {
         final Collection<ICustomField> customFields = trackerService.getDataService().getCustomFieldsService().getCustomFields(proto, contextId, optTypeId);
         return customFields.stream()
-                .map(customField -> FieldMetadata.fromCustomField(customField).setOptions(getOptionsForEnum(customField.getType(), contextId)))
+                .map(customField -> FieldMetadata.fromCustomField(customField).setOptions(getOptionsForEnum(customField.getType(), contextId, optTypeId)))
                 .collect(Collectors.toSet());
     }
 
@@ -261,12 +269,12 @@ public class PolarionService {
         return trackerService.getDataService().getEnumerationForEnumId(enumType, contextId);
     }
 
-    public Set<Option> getOptionsForEnum(final IType objectFieldType, final IContextId contextId) {
+    public Set<Option> getOptionsForEnum(final IType objectFieldType, final IContextId contextId, final String optTypeId) {
         IType fieldType = objectFieldType;
         if (fieldType instanceof ListType listType && listType.getItemType() instanceof EnumType enumType) { //in case of multiple enum field
             fieldType = enumType;
         }
-        return fieldType instanceof EnumType enumType ? getEnumeration(enumType, contextId).getAllOptions().stream()
+        return fieldType instanceof EnumType enumType ? getEnumeration(enumType, contextId).getAvailableOptions(optTypeId).stream()
                 .map(o -> new Option(EnumUtils.getEnumId(o), o.getName(), EnumUtils.getIconUrl(o))).collect(Collectors.toSet()) : null;
     }
 
