@@ -1,5 +1,13 @@
 # Changelog
 
+## [14.1.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.1...v14.1.2) (2026-04-01)
+
+
+### Bug Fixes
+
+* methods getGeneralFields/getCustomFields return items containing wrong enum options list ([11c835d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/11c835de305e1ddbcf152604b6fe2d052ab786a8)), closes [#395](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/395)
+* methods getGeneralFields/getCustomFields return items containing… ([#396](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/396)) ([11c835d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/11c835de305e1ddbcf152604b6fe2d052ab786a8))
+
 ## [14.1.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.0...v14.1.1) (2026-03-27)
 
 
