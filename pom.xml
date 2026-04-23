@@ -67,7 +67,7 @@
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
         <pre-commit-run-maven-plugin.version>1.0.0</pre-commit-run-maven-plugin.version>
         <swagger-maven-plugin.version>2.2.48</swagger-maven-plugin.version>
-        <sonar-maven-plugin.version>5.5.0.6356</sonar-maven-plugin.version>
+        <sonar-maven-plugin.version>5.6.0.6792</sonar-maven-plugin.version>
 
         <!-- Test dependencies -->
         <junit.version>6.0.3</junit.version>
