@@ -334,17 +334,17 @@ public class PdfExporterRestApplication extends GenericRestApplication {
 
 Extensions built on top of this generic extension expose REST endpoints under two distinct URL spaces with **different security models**. Understanding the split is important - they are not interchangeable, and `@Secured` is intentionally applied to one but not the other.
 
-| URL space | Intended caller | Authentication | Authorization | CSRF protection |
-|---|---|---|---|---|
-| `/rest/internal/*` | The extension's own UI, running inside an authenticated Polarion session | Servlet container (`<security-constraint>` in `web.xml` with `<role-name>user</role-name>`, FORM-based login against `PolarionRealm`) | Real Polarion user from the session — operations run under that user's permissions | Polarion session cookie + `X-Polarion-REST-Token` (XSRF), which the Polarion UI attaches |
-| `/rest/api/*` | External clients (scripts, integrations, other services) | `@Secured` filter (`AuthenticationFilter`), validating either `Authorization: Bearer <PAT>` or `X-Polarion-REST-Token` | Wrapped in `polarionService.callPrivileged(...)` — the PAT principal has no Polarion subject, so calls run with elevated privileges | Custom header (PAT / XSRF) is itself a CSRF defense per OWASP — browsers cannot attach custom headers to cookie-only cross-origin requests without a CORS preflight |
+| URL space | Intended caller | Authentication | Authorization                                                                                                                       | CSRF protection                                                                                                                                                                                                                                                                                                                                          |
+|---|---|---|-------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `/rest/internal/*` | The extension's own UI, running inside an authenticated Polarion session | Servlet container (`<security-constraint>` in `web.xml` with `<role-name>user</role-name>`, FORM-based login against `PolarionRealm`); Polarion's `DoAsFilter` then propagates the session's `Subject` to the request thread | Real Polarion user from the session - operations run under that user's permissions | No server-side token check - `X-Polarion-REST-Token` is **not** validated on `/internal/*`. Defence relies on (a) the container session being required, (b) browser SameSite=Lax cookie default, which prevents cookie-bearing cross-site `<form>` POST/PUT/DELETE, and (c) the REST convention that state-changing methods are POST/PUT/DELETE, not GET |
+| `/rest/api/*` | External clients. Mirrors Polarion's own public REST API authentication model (see `AccessTokenAuthenticator`) | `@Secured` filter (`AuthenticationFilter`), validating either `Authorization: Bearer <PAT>` or `X-Polarion-REST-Token` | Wrapped in `polarionService.callPrivileged(...)` - the PAT principal has no Polarion subject, so calls run with elevated privileges | Custom-header requirement is itself a CSRF defence per OWASP - browsers cannot attach custom headers to cookie-only cross-origin requests without a CORS preflight                                                                                                                                                                                       |
 
 The controller pattern that implements this split is illustrated by `NamedSettingsInternalController` and `NamedSettingsApiController`:
 
-* `NamedSettingsInternalController` — `@Path("/internal")`, **no** `@Secured`. Container-level auth already gates the endpoint.
-* `NamedSettingsApiController extends NamedSettingsInternalController` — `@Path("/api")`, `@Secured`, each method overridden to wrap the inherited logic in `polarionService.callPrivileged(...)`.
+* `NamedSettingsInternalController` - `@Path("/internal")`, **no** `@Secured`. Container-level auth already gates the endpoint.
+* `NamedSettingsApiController extends NamedSettingsInternalController` - `@Path("/api")`, `@Secured`, each method overridden to wrap the inherited logic in `polarionService.callPrivileged(...)`.
 
-Each consuming extension's `web.xml` must declare both constraints — the role-protected one for `/*` and an open one for `/rest/api/*` so the container does not interfere with `@Secured`:
+Each consuming extension's `web.xml` must declare both constraints - the role-protected one for `/*` and an open one for `/rest/api/*` so the container does not interfere with `@Secured`:
 
 ```xml
 <!-- Container-level auth: everything except /rest/api/* requires a Polarion session -->
@@ -358,7 +358,7 @@ Each consuming extension's `web.xml` must declare both constraints — the role-
     </auth-constraint>
 </security-constraint>
 
-<!-- /rest/api/* is opened at the container level — auth happens in @Secured (AuthenticationFilter) -->
+<!-- /rest/api/* is opened at the container level - auth happens in @Secured (AuthenticationFilter) -->
 <security-constraint>
     <web-resource-collection>
         <web-resource-name>All</web-resource-name>
@@ -366,6 +366,13 @@ Each consuming extension's `web.xml` must declare both constraints — the role-
     </web-resource-collection>
     <auth-constraint/>
 </security-constraint>
+
+<!--
+    Note on the empty <auth-constraint/>: per the Servlet spec this would deny all access, but
+    Polarion's `PolarionRealm` (com.polarion.platform/.../PolarionRealm.java) overrides
+    `hasResourcePermission()` to always return `true`, disabling container-level role enforcement.
+    In this stack the empty constraint effectively means "open at the container level".
+-->
 
 <login-config>
     <auth-method>FORM</auth-method>
