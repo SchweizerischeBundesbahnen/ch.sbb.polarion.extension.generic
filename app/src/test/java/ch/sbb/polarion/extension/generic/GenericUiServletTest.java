@@ -85,6 +85,32 @@ class GenericUiServletTest {
         verify(servlet, times(1)).serveResource(any(), any());
     }
 
+    @Test
+    @SneakyThrows
+    void testServiceRejectsPathTraversal() {
+        // `..` segment — would otherwise pass the prefix and suffix checks and
+        // reach getServletContext().getResourceAsStream(...) (CodeQL alert
+        // java/path-injection #5).
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> callServlet("/polarion/testServletName/ui/../some.css"));
+        assertEquals("Path traversal not allowed", exception.getMessage());
+
+        // backslash
+        exception = assertThrows(IllegalArgumentException.class,
+                () -> callServlet("/polarion/testServletName/ui/sub\\evil.css"));
+        assertEquals("Path traversal not allowed", exception.getMessage());
+
+        // double slash
+        exception = assertThrows(IllegalArgumentException.class,
+                () -> callServlet("/polarion/testServletName/ui//bypass.css"));
+        assertEquals("Path traversal not allowed", exception.getMessage());
+
+        // generic-prefixed traversal
+        exception = assertThrows(IllegalArgumentException.class,
+                () -> callServlet("/polarion/testServletName/ui/generic/../escape.html"));
+        assertEquals("Path traversal not allowed", exception.getMessage());
+    }
+
     @SneakyThrows
     private TestServlet callServlet(String uri) {
         TestServlet spy = spy(new TestServlet("testServletName"));
