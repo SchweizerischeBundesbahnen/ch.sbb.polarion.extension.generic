@@ -10,11 +10,14 @@ repos:
     rev: v6.0.0
     hooks:
       - id: check-added-large-files
+        args: [--maxkb=5120]
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: trailing-whitespace
+        exclude_types: [markdown]  # Avoid conflicts with markdown formatting
       - id: check-xml
       - id: check-json
+      - id: check-toml
       - id: check-yaml
       - id: no-commit-to-branch
       - id: mixed-line-ending
@@ -46,7 +49,7 @@ repos:
       - id: check-git-config-user-email
         args: [--templates, ^\S+\.\S+@sbb\.ch$]
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.13.10
+    rev: v4.15.0
     hooks:
       - id: commitizen
   - repo: https://github.com/woodruffw/zizmor-pre-commit
