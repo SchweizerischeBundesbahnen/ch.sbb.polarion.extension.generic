@@ -1,0 +1,20 @@
+---
+name: Claude Code Review
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+permissions: {}
+jobs:
+  claude-review:
+    uses: SchweizerischeBundesbahnen/github-workflows-polarion/.github/workflows/reusable-claude-code-review.yml@main
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
