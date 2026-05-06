@@ -100,7 +100,13 @@ class GenericUiServletTest {
                 () -> callServlet("/polarion/testServletName/ui/sub\\evil.css"));
         assertEquals("Path traversal not allowed", exception.getMessage());
 
-        // double slash
+        // double slash inside the path
+        exception = assertThrows(IllegalArgumentException.class,
+                () -> callServlet("/polarion/testServletName/ui/foo//bar.css"));
+        assertEquals("Path traversal not allowed", exception.getMessage());
+
+        // leading slash after the prefix (URI like `/polarion/<app>/ui//bypass.css`
+        // strips to `/bypass.css` — caught by `startsWith("/")`)
         exception = assertThrows(IllegalArgumentException.class,
                 () -> callServlet("/polarion/testServletName/ui//bypass.css"));
         assertEquals("Path traversal not allowed", exception.getMessage());

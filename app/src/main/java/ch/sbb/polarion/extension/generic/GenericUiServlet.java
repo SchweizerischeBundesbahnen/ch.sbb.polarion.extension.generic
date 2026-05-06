@@ -87,7 +87,8 @@ public abstract class GenericUiServlet extends HttpServlet {
         // `getServletContext().getResourceAsStream(...)` and could expose files
         // outside the intended UI resource directory.
         // See CodeQL alert java/path-injection.
-        if (relative.contains("..") || relative.contains("\\") || relative.contains("//")) {
+        if (relative.contains("..") || relative.contains("\\") || relative.contains("//")
+                || relative.startsWith("/") || relative.startsWith("\\")) {
             throw new IllegalArgumentException("Path traversal not allowed");
         }
         return relative;
