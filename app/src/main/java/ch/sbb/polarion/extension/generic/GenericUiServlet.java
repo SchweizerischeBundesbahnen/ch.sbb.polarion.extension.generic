@@ -80,7 +80,18 @@ public abstract class GenericUiServlet extends HttpServlet {
         if (ALLOWED_FILE_TYPES.stream().noneMatch(t -> fullUri.endsWith(t.left()))) {
             throw new IllegalArgumentException("Unsupported file type");
         }
-        return fullUri.substring(acceptablePath.length());
+        String relative = fullUri.substring(acceptablePath.length());
+        // Reject path-traversal segments. The prefix and file-type checks above only
+        // bound which file types may be served; without this check, a request like
+        // `/polarion/<app>/ui/../some.css` would still resolve through `..` inside
+        // `getServletContext().getResourceAsStream(...)` and could expose files
+        // outside the intended UI resource directory.
+        // See CodeQL alert java/path-injection.
+        if (relative.contains("..") || relative.contains("\\") || relative.contains("//")
+                || relative.startsWith("/") || relative.startsWith("\\")) {
+            throw new IllegalArgumentException("Path traversal not allowed");
+        }
+        return relative;
     }
 
     @VisibleForTesting
