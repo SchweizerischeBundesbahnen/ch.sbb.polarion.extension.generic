@@ -330,6 +330,58 @@ public class PdfExporterRestApplication extends GenericRestApplication {
 }
 ```
 
+### REST architecture: `/internal` vs `/api`
+
+Extensions built on top of this generic extension expose REST endpoints under two distinct URL spaces with **different security models**. Understanding the split is important - they are not interchangeable, and `@Secured` is intentionally applied to one but not the other.
+
+| URL space | Intended caller | Authentication | Authorization | CSRF protection |
+|---|---|---|---|---|
+| `/rest/internal/*` | The extension's own UI, running inside an authenticated Polarion session | Servlet container (`<security-constraint>` in `web.xml` with `<role-name>user</role-name>`, FORM-based login against `PolarionRealm`) | Real Polarion user from the session — operations run under that user's permissions | Polarion session cookie + `X-Polarion-REST-Token` (XSRF), which the Polarion UI attaches |
+| `/rest/api/*` | External clients (scripts, integrations, other services) | `@Secured` filter (`AuthenticationFilter`), validating either `Authorization: Bearer <PAT>` or `X-Polarion-REST-Token` | Wrapped in `polarionService.callPrivileged(...)` — the PAT principal has no Polarion subject, so calls run with elevated privileges | Custom header (PAT / XSRF) is itself a CSRF defense per OWASP — browsers cannot attach custom headers to cookie-only cross-origin requests without a CORS preflight |
+
+The controller pattern that implements this split is illustrated by `NamedSettingsInternalController` and `NamedSettingsApiController`:
+
+* `NamedSettingsInternalController` — `@Path("/internal")`, **no** `@Secured`. Container-level auth already gates the endpoint.
+* `NamedSettingsApiController extends NamedSettingsInternalController` — `@Path("/api")`, `@Secured`, each method overridden to wrap the inherited logic in `polarionService.callPrivileged(...)`.
+
+Each consuming extension's `web.xml` must declare both constraints — the role-protected one for `/*` and an open one for `/rest/api/*` so the container does not interfere with `@Secured`:
+
+```xml
+<!-- Container-level auth: everything except /rest/api/* requires a Polarion session -->
+<security-constraint>
+    <web-resource-collection>
+        <web-resource-name>All</web-resource-name>
+        <url-pattern>/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>user</role-name>
+    </auth-constraint>
+</security-constraint>
+
+<!-- /rest/api/* is opened at the container level — auth happens in @Secured (AuthenticationFilter) -->
+<security-constraint>
+    <web-resource-collection>
+        <web-resource-name>All</web-resource-name>
+        <url-pattern>/rest/api/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint/>
+</security-constraint>
+
+<login-config>
+    <auth-method>FORM</auth-method>
+    <realm-name>PolarionRealm</realm-name>
+    <form-login-config>
+        <form-login-page>/login/login</form-login-page>
+        <form-error-page>/login/error</form-error-page>
+    </form-login-config>
+</login-config>
+```
+
+Consequences of this design:
+
+* **Do not add `@Secured` to `/internal/*` controllers.** It is redundant with the container's `<security-constraint>`, and it would break the extension's UI flow, which authenticates via the Polarion session, not via PAT.
+* **Do not call `/internal/*` from external clients.** It is not a public API. External integrations must use `/rest/api/*`.
+
 ### UI servlet class
 
 If new extension will contain UI parts/pages/artifacts, UI servlet class should be created extending `GenericUiServlet`
