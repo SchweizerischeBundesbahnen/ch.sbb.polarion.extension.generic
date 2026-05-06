@@ -53,15 +53,15 @@ The `release-v*` pattern in the workflow automatically recognizes new LTS branch
 
 ### Deployment Matrix
 
-| Branch | Version Type | Maven Central | GitHub Packages | GitHub Release |
-|--------|--------------|---------------|-----------------|----------------|
-| `main` | SNAPSHOT | - | ✓ | - |
-| `main` | Release | ✓ | - | ✓ |
-| `release-v*` | SNAPSHOT | - | - | - |
-| `release-v*` | Release | ✓ | - | ✓ |
+| Branch | Version Type | Maven Central | GitHub Release |
+|--------|--------------|---------------|----------------|
+| `main` | SNAPSHOT | - | - |
+| `main` | Release | ✓ | ✓ |
+| `release-v*` | SNAPSHOT | - | - |
+| `release-v*` | Release | ✓ | ✓ |
 
 ### Notes
 
-- SNAPSHOT versions from LTS branches are NOT deployed to GitHub Packages
+- This repo does NOT publish to GitHub Packages — releases go to Maven Central only, SNAPSHOTs are not published anywhere. (Diverges from `open-source-polarion-java-repo-template`; documented in CLAUDE.md.)
 - Only release versions from LTS branches are deployed to Maven Central
 - Each LTS branch operates independently with its own release PR

@@ -139,15 +139,16 @@ jobs:
             -Dmaven.wagon.http.connectionTimeout=3600000 \
             -Dmaven.wagon.http.readTimeout=3600000 \
             -Dcentral-publishing-maven-plugin.autoPublish=${{ github.event.repository.visibility == 'public' }}
-  # Deploy to GitHub Packages (snapshots from main only) and upload release assets to GitHub Release
-  # LTS branches (release-v*) only upload release assets, no snapshot deployment
-  deploy-github-packages:
+  # Upload release assets to the corresponding GitHub Release.
+  # Generic intentionally does NOT publish to GitHub Packages (releases go to
+  # Maven Central; SNAPSHOTs are not published anywhere) — see CLAUDE.md.
+  # Runs only on actual release builds; non-release pushes skip this job entirely.
+  upload-release-assets:
     needs: build
-    if: ${{ github.ref == 'refs/heads/main' || (needs.build.outputs.is_release == 'true' && startsWith(github.ref, 'refs/heads/release-v')) }}
+    if: ${{ needs.build.outputs.is_release == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: write
     env:
       GITHUB_TOKEN: ${{ github.token }}
       GITHUB_REPO_NAME: ${{ github.repository }}
@@ -164,9 +165,7 @@ jobs:
         with:
           name: maven-artifacts
           path: app/target/
-      # Releases and snapshots do not need to be deployed to GitHub packages
       - name: 📦 Upload assets to GitHub Release
-        if: ${{ needs.build.outputs.is_release == 'true' }}
         run: |-
           gh release upload "v${PROJECT_VERSION}" "app/target/*-${PROJECT_VERSION}.jar" --clobber
           gh release upload "v${PROJECT_VERSION}" "app/target/*-${PROJECT_VERSION}-tests.jar" --clobber
