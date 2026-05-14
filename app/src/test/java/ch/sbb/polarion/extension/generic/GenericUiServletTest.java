@@ -7,7 +7,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.Serial;
+import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -115,6 +117,30 @@ class GenericUiServletTest {
         exception = assertThrows(IllegalArgumentException.class,
                 () -> callServlet("/polarion/testServletName/ui/generic/../escape.html"));
         assertEquals("Path traversal not allowed", exception.getMessage());
+    }
+
+    @Test
+    @SneakyThrows
+    void testResolveJarFileWithRegularPath() {
+        URL location = new URL("file:/tmp/some-extension.jar");
+        File resolved = GenericUiServlet.resolveJarFile(location);
+        assertEquals(new File("/tmp/some-extension.jar"), resolved);
+    }
+
+    @Test
+    @SneakyThrows
+    void testResolveJarFileWithPercentEncodedSpace() {
+        URL location = new URL("file:/tmp/dir%20with%20space/some-extension.jar");
+        File resolved = GenericUiServlet.resolveJarFile(location);
+        assertEquals(new File("/tmp/dir with space/some-extension.jar"), resolved);
+    }
+
+    @Test
+    @SneakyThrows
+    void testResolveJarFileWithLiteralSpace() {
+        URL location = new URL("file:/C:/Users/test folder with spaces/workspace/some-extension.jar");
+        File resolved = GenericUiServlet.resolveJarFile(location);
+        assertEquals("/C:/Users/test folder with spaces/workspace/some-extension.jar", resolved.getPath().replace('\\', '/'));
     }
 
     @SneakyThrows
