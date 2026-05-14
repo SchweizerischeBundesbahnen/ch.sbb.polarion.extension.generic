@@ -3,16 +3,26 @@ package ch.sbb.polarion.extension.generic;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.Serial;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -143,6 +153,33 @@ class GenericUiServletTest {
         assertEquals("/C:/Users/test folder with spaces/workspace/some-extension.jar", resolved.getPath().replace('\\', '/'));
     }
 
+    @Test
+    @SneakyThrows
+    void testServeGenericResourceServesEntryFromJar(@TempDir Path tempDir) {
+        // Test the full serveGenericResource flow against a real ZIP — covers the
+        // resolveJarFile(getCodeLocation()) wiring inside the try-with-resources.
+        // Includes a literal space in the path to mirror the original failure mode.
+        Path dirWithSpace = Files.createDirectory(tempDir.resolve("dir with space"));
+        Path jarPath = dirWithSpace.resolve("fake-extension.jar");
+        byte[] payload = "console.log('hi');".getBytes();
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(jarPath))) {
+            zos.putNextEntry(new ZipEntry("genericUri/file.js"));
+            zos.write(payload);
+            zos.closeEntry();
+        }
+
+        TestServlet servlet = new TestServlet("testServletName", jarPath.toUri().toURL());
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        ByteArrayOutputStream captured = new ByteArrayOutputStream();
+        when(response.getOutputStream()).thenReturn(new CapturingServletOutputStream(captured));
+
+        servlet.serveGenericResource(response, "genericUri/file.js");
+
+        verify(response).setContentType("text/javascript");
+        assertArrayEquals(payload, captured.toByteArray());
+        verify(response, never()).sendError(anyInt());
+    }
+
     @SneakyThrows
     private TestServlet callServlet(String uri) {
         TestServlet spy = spy(new TestServlet("testServletName"));
@@ -160,8 +197,43 @@ class GenericUiServletTest {
         @Serial
         private static final long serialVersionUID = 7300367869059799910L;
 
+        private final URL codeLocationOverride;
+
         protected TestServlet(String webAppName) {
+            this(webAppName, null);
+        }
+
+        protected TestServlet(String webAppName, URL codeLocationOverride) {
             super(webAppName);
+            this.codeLocationOverride = codeLocationOverride;
+        }
+
+        @Override
+        URL getCodeLocation() {
+            return codeLocationOverride != null ? codeLocationOverride : super.getCodeLocation();
+        }
+    }
+
+    private static final class CapturingServletOutputStream extends ServletOutputStream {
+        private final ByteArrayOutputStream sink;
+
+        CapturingServletOutputStream(ByteArrayOutputStream sink) {
+            this.sink = sink;
+        }
+
+        @Override
+        public boolean isReady() {
+            return true;
+        }
+
+        @Override
+        public void setWriteListener(WriteListener writeListener) {
+            // not needed for blocking writes in tests
+        }
+
+        @Override
+        public void write(int b) {
+            sink.write(b);
         }
     }
 }

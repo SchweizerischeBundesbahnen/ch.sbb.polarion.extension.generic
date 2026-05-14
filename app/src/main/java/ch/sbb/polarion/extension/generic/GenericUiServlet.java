@@ -98,8 +98,7 @@ public abstract class GenericUiServlet extends HttpServlet {
 
     @VisibleForTesting
     void serveGenericResource(@NotNull HttpServletResponse response, @NotNull String uri) throws IOException {
-        final URL location = GenericUiServlet.class.getProtectionDomain().getCodeSource().getLocation();
-        File resolvedJarFile = resolveJarFile(location);
+        File resolvedJarFile = resolveJarFile(getCodeLocation());
         try (ZipFile zipFile = new ZipFile(resolvedJarFile)) {
             final ZipEntry zipEntry = zipFile.getEntry(uri);
             try (InputStream inputStream = zipFile.getInputStream(zipEntry)) {
@@ -113,6 +112,11 @@ public abstract class GenericUiServlet extends HttpServlet {
                 }
             }
         }
+    }
+
+    @VisibleForTesting
+    @NotNull URL getCodeLocation() {
+        return GenericUiServlet.class.getProtectionDomain().getCodeSource().getLocation();
     }
 
     @VisibleForTesting
