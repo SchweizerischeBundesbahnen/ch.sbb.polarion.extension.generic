@@ -15,8 +15,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serial;
-import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -95,10 +97,9 @@ public abstract class GenericUiServlet extends HttpServlet {
     }
 
     @VisibleForTesting
-    void serveGenericResource(@NotNull HttpServletResponse response, @NotNull String uri) throws IOException, URISyntaxException {
-        final URI currentJar = GenericUiServlet.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-        final String path = new File(currentJar).getPath();
-        try (ZipFile zipFile = new ZipFile(path)) {
+    void serveGenericResource(@NotNull HttpServletResponse response, @NotNull String uri) throws IOException {
+        File resolvedJarFile = resolveJarFile(getCodeLocation());
+        try (ZipFile zipFile = new ZipFile(resolvedJarFile)) {
             final ZipEntry zipEntry = zipFile.getEntry(uri);
             try (InputStream inputStream = zipFile.getInputStream(zipEntry)) {
                 if (inputStream == null) {
@@ -110,6 +111,23 @@ public abstract class GenericUiServlet extends HttpServlet {
                     }
                 }
             }
+        }
+    }
+
+    @VisibleForTesting
+    @NotNull URL getCodeLocation() {
+        return GenericUiServlet.class.getProtectionDomain().getCodeSource().getLocation();
+    }
+
+    @VisibleForTesting
+    static @NotNull File resolveJarFile(@NotNull URL location) {
+        try {
+            return new File(location.toURI());
+        } catch (URISyntaxException e) {
+            // CodeSource.getLocation() may return a URL with unencoded characters
+            // (e.g. literal spaces from a Windows username). URI.toURI() rejects
+            // those, so fall back to decoding the raw path.
+            return new File(URLDecoder.decode(location.getPath(), StandardCharsets.UTF_8));
         }
     }
 
