@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.Serial;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -132,7 +133,7 @@ class GenericUiServletTest {
     @Test
     @SneakyThrows
     void testResolveJarFileWithRegularPath() {
-        URL location = new URL("file:/tmp/some-extension.jar");
+        URL location = URI.create("file:/tmp/some-extension.jar").toURL();
         File resolved = GenericUiServlet.resolveJarFile(location);
         assertEquals(new File("/tmp/some-extension.jar"), resolved);
     }
@@ -140,13 +141,16 @@ class GenericUiServletTest {
     @Test
     @SneakyThrows
     void testResolveJarFileWithPercentEncodedSpace() {
-        URL location = new URL("file:/tmp/dir%20with%20space/some-extension.jar");
+        URL location = URI.create("file:/tmp/dir%20with%20space/some-extension.jar").toURL();
         File resolved = GenericUiServlet.resolveJarFile(location);
         assertEquals(new File("/tmp/dir with space/some-extension.jar"), resolved);
     }
 
     @Test
     @SneakyThrows
+    @SuppressWarnings("deprecation") // URI.create rejects unencoded characters; the test
+    // intentionally constructs a URL like the one CodeSource.getLocation() returns on
+    // Windows when the username contains spaces — that is the bug being reproduced.
     void testResolveJarFileWithLiteralSpace() {
         URL location = new URL("file:/C:/Users/test folder with spaces/workspace/some-extension.jar");
         File resolved = GenericUiServlet.resolveJarFile(location);
