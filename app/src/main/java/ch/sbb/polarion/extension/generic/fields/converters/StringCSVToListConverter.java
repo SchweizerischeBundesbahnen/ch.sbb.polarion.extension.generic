@@ -6,6 +6,7 @@ import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,6 +28,6 @@ public class StringCSVToListConverter implements IConverter<String, List<Object>
 
     @Override
     public String convertBack(@NotNull List<Object> value, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-        return value.stream().map(Object::toString).collect(Collectors.joining(SEPARATOR));
+        return value.stream().filter(Objects::nonNull).map(Object::toString).collect(Collectors.joining(SEPARATOR));
     }
 }

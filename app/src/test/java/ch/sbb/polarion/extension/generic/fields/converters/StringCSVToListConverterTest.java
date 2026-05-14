@@ -175,6 +175,19 @@ class StringCSVToListConverterTest {
             // Then
             assertEquals("123,true,45.67", result);
         }
+
+        @Test
+        @DisplayName("Should gracefully skip null values when converting back")
+        void shouldSkipNullValuesWhenConvertingBack() {
+            // Given
+            List<Object> input = Arrays.asList("item1", null, "item2", null, "item3");
+
+            // When
+            String result = assertDoesNotThrow(() -> converter.convertBack(input, context, fieldMetadata));
+
+            // Then
+            assertEquals("item1,item2,item3", result);
+        }
     }
 
     @Nested
