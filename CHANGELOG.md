@@ -1,5 +1,25 @@
 # Changelog
 
+## [14.1.3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.2...v14.1.3) (2026-05-18)
+
+
+### Bug Fixes
+
+* align deploy job and RELEASE.md with actual no-GH-Packages behavior ([#407](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/407)) ([36881ec](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/36881ecd2a1e21f53a571c6008a62823558391ed))
+* **deps:** update swagger.version to v2.2.46 ([837a849](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/837a849999d313b1b9d791ad32a23cee5779166d))
+* **deps:** update swagger.version to v2.2.47 ([1bac0e4](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/1bac0e4124c39b5f29c108ef26a260aff7d9fce7))
+* **deps:** update swagger.version to v2.2.48 ([2f9c794](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2f9c7945667c0355054f62e6b32c9cfd60a9ad1a))
+* **deps:** update swagger.version to v2.2.49 ([616e786](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/616e786b5799b47d1f6b49da816a3ccde3d795a4))
+* **deps:** update swagger.version to v2.2.50 ([#417](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/417)) ([60f75e4](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/60f75e42cba9586bdb757aad27633c82b93069d8))
+* fix NPE in StringCSVToListConverter ([#414](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/414)) ([4f1e56a](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/4f1e56ae18835ba23d1301ea1acbc826f5d15f91))
+* resolve jar file paths with unencoded characters in GenericUiServlet ([#413](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/413)) ([413265e](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/413265e701492563831a362bc64d3b088190aa70)), closes [#412](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/412)
+* **security:** reject path traversal in GenericUiServlet ([#408](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/408)) ([e475b47](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/e475b471d424ee7f43bd7ede8733e4d18d12c1ce))
+
+
+### Documentation
+
+* update README to clarify REST architecture and security models for internal and API endpoints ([#402](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/402)) ([1c59f47](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/1c59f470663c45570910aa560894687ecc03818e)), closes [#400](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/400)
+
 ## [14.1.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.1...v14.1.2) (2026-04-01)
 
 
