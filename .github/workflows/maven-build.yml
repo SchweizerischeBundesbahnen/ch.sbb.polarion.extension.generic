@@ -132,7 +132,7 @@ jobs:
         # Additionally, timeouts are set to 1 hour to avoid issues with the connection to Sonatype Central during deployment
         run: |
           mvn --batch-mode -s "${SETTINGS_XML}" clean deploy \
-            -Dmaven.test.skip=true \
+            -DskipTests=true \
             -P gpg-sign \
             -P central-publishing \
             -Dcentral.timeout=3600 \
