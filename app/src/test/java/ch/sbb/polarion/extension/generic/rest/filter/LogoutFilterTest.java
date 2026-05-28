@@ -3,7 +3,7 @@ package ch.sbb.polarion.extension.generic.rest.filter;
 import java.io.IOException;
 
 import javax.security.auth.Subject;
-import javax.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestContext;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

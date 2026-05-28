@@ -73,7 +73,7 @@
         <junit.version>6.1.0</junit.version>
         <mockito.version>5.23.0</mockito.version>
         <assertj-core.version>3.27.7</assertj-core.version>
-        <jaxb.impl.version>2.4.0-b180830.0438</jaxb.impl.version>
+        <jaxb.impl.version>4.0.5</jaxb.impl.version>
         <istack.version>4.2.0</istack.version>
         <log4j.version>2.26.0</log4j.version>
         <jackson.annotations.version>2.21.3</jackson.annotations.version>
@@ -101,7 +101,7 @@
         <reflections.version>0.10.2</reflections.version>
         <org.osgi.framework.version>1.10.0</org.osgi.framework.version>
         <swagger.version>2.2.50</swagger.version>
-        <jakarta.ws.rs-api.version>2.1.6</jakarta.ws.rs-api.version>
+        <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
 
         <!-- Manifest entries -->
         <maven-jar-plugin.Manifest-Version>1.0</maven-jar-plugin.Manifest-Version>
@@ -221,22 +221,20 @@
         </profile>
 
         <profile>
-            <id>polarion2512</id>
+            <id>polarion606</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <maven.compiler.source>21</maven.compiler.source>
                 <maven.compiler.target>21</maven.compiler.target>
-                <polarion.version>2512</polarion.version>
+                <polarion.version>2606</polarion.version>
 
-                <jersey.version>2.35</jersey.version>
-                <jersey-osgi-bundle.version>2.35.0</jersey-osgi-bundle.version>
-
-                <commons-io.artifactId>org.apache.commons.commons-io_2.15.1</commons-io.artifactId>
+                <jersey.version>3.1.8</jersey.version>
+                <jersey-osgi-bundle.version>3.1.8</jersey-osgi-bundle.version>
 
                 <slf4j-api.artifactId>slf4j.api_1.7.36</slf4j-api.artifactId>
-                <jaxb-api.artifactId>jaxb-api.patched_2.4.0.b1808300359</jaxb-api.artifactId>
+                <jaxb-core.artifactId>org.glassfish.jaxb-core_4.0.1</jaxb-core.artifactId>
             </properties>
         </profile>
 
@@ -411,13 +409,13 @@
 
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
+            <artifactId>swagger-annotations-jakarta</artifactId>
             <version>${swagger.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-integration</artifactId>
+            <artifactId>swagger-integration-jakarta</artifactId>
             <version>${swagger.version}</version>
             <exclusions>
                 <exclusion>
@@ -437,7 +435,7 @@
 
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-jaxrs2</artifactId>
+            <artifactId>swagger-jaxrs2-jakarta</artifactId>
             <version>${swagger.version}</version>
             <exclusions>
                 <exclusion>
@@ -459,35 +457,35 @@
         </dependency>
 
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.22.0</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>${commons-io.artifactId}</artifactId>
+            <artifactId>jakarta.servlet-api_6.1.0</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>javax.servlet_4.0.0</artifactId>
+            <artifactId>${jaxb-core.artifactId}</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>${jaxb-api.artifactId}</artifactId>
-            <version>${polarion.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>org.springframework.spring-web_5.3.20</artifactId>
+            <artifactId>org.springframework.spring-web_6.2.14</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>org.springframework.spring-core_5.3.20</artifactId>
+            <artifactId>org.springframework.spring-core_6.2.14</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -543,8 +541,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
             <version>${jaxb.impl.version}</version>
             <scope>test</scope>
         </dependency>

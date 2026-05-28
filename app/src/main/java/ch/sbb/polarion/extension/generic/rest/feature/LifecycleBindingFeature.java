@@ -2,18 +2,18 @@ package ch.sbb.polarion.extension.generic.rest.feature;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import javax.inject.Singleton;
-import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.FeatureContext;
+import jakarta.ws.rs.core.Feature;
+import jakarta.ws.rs.core.FeatureContext;
 import java.lang.reflect.Method;
 import java.util.Set;
 
 /**
  * Jersey Feature that configures HK2 to honor {@link Singleton}, {@link PostConstruct}
  * and {@link PreDestroy} annotations on resource classes registered via
- * {@link javax.ws.rs.core.Application#getClasses()}.
+ * {@link jakarta.ws.rs.core.Application#getClasses()}.
  * <p>
  * By default, Jersey creates a new instance of each resource class per request
  * without HK2 lifecycle management. This feature explicitly registers HK2 bindings

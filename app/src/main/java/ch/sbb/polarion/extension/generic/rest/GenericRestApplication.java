@@ -25,7 +25,7 @@ import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.jetbrains.annotations.NotNull;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

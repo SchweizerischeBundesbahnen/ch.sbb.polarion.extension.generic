@@ -2,7 +2,7 @@ package ch.sbb.polarion.extension.generic.jaxb;
 
 import org.junit.jupiter.api.Test;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import java.io.IOException;
 import java.io.Reader;
 

@@ -2,7 +2,7 @@ package ch.sbb.polarion.extension.generic.rest.exception;
 
 import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.NotAuthorizedException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
