@@ -96,7 +96,7 @@ public abstract class GenericUiServlet extends HttpServlet {
      * <p>
      * Without this guard, a request like {@code /polarion/<app>/ui/../some.css}
      * would resolve through {@code ..} inside
-     * {@link jakarta.servlet.ServletContext#getResourceAsStream(String)} and could
+     * {@link javax.servlet.ServletContext#getResourceAsStream(String)} and could
      * expose files outside the intended UI resource directory
      * (see CodeQL alert {@code java/path-injection}).
      * <p>
@@ -111,6 +111,17 @@ public abstract class GenericUiServlet extends HttpServlet {
      * </ul>
      * Note that {@code ..} inside a filename — such as {@code chunk..hash.js} or
      * {@code page/asset..v2.css} — is NOT treated as traversal.
+     * <p>
+     * Percent-encoded separators ({@code %2F}, {@code %5C}) are intentionally NOT
+     * decoded here: the servlet container has already decoded the request URI by
+     * the time this method runs, so any real separator is present as a literal
+     * {@code /} or {@code \} and caught above. If a downstream layer ever bypasses
+     * that decoding, {@link javax.servlet.ServletContext#getResourceAsStream(String)}
+     * and {@link java.util.zip.ZipFile#getEntry(String)} treat the percent-encoded
+     * forms as literal filename characters, not separators, so no traversal is
+     * possible either way. Do NOT re-broaden this to a naive
+     * {@code relative.contains("..")} — that would falsely reject legitimate
+     * filenames containing {@code ..} (Turbopack chunks).
      */
     @VisibleForTesting
     static boolean containsPathTraversal(@NotNull String relative) {

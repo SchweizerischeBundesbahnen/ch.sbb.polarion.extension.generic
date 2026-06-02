@@ -215,7 +215,16 @@ class GenericUiServletTest {
             ".foo.css",
             // hashed/versioned filenames
             "main.abc123def..v2.js",
-            "[locale]..page.js"
+            "[locale]..page.js",
+            // Percent-encoded separators are NOT decoded at this layer — the
+            // servlet container decodes them before we run. If a downstream
+            // layer ever skips decoding, getResourceAsStream / ZipFile.getEntry
+            // treat these as literal filename characters, not separators, so
+            // no traversal is possible. Pinned here to prevent re-broadening
+            // the check to a naive contains("..").
+            "..%2ffoo.css",
+            "foo%2f..%2fbar.css",
+            "..%5cfoo.css"
     })
     void containsPathTraversal_allowsSafePaths(String path) {
         assertFalse(GenericUiServlet.containsPathTraversal(path),
