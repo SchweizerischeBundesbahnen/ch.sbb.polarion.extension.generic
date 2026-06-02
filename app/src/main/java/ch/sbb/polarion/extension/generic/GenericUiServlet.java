@@ -83,17 +83,60 @@ public abstract class GenericUiServlet extends HttpServlet {
             throw new IllegalArgumentException("Unsupported file type");
         }
         String relative = fullUri.substring(acceptablePath.length());
-        // Reject path-traversal segments. The prefix and file-type checks above only
-        // bound which file types may be served; without this check, a request like
-        // `/polarion/<app>/ui/../some.css` would still resolve through `..` inside
-        // `getServletContext().getResourceAsStream(...)` and could expose files
-        // outside the intended UI resource directory.
-        // See CodeQL alert java/path-injection.
-        if (relative.contains("..") || relative.contains("\\") || relative.contains("//")
-                || relative.startsWith("/") || relative.startsWith("\\")) {
+        if (containsPathTraversal(relative)) {
             throw new IllegalArgumentException("Path traversal not allowed");
         }
         return relative;
+    }
+
+    /**
+     * Rejects path-traversal attempts in a relative resource path while still
+     * permitting filenames that merely contain {@code ..} (e.g. Turbopack chunk
+     * names like {@code chunk..hash.js}).
+     * <p>
+     * Without this guard, a request like {@code /polarion/<app>/ui/../some.css}
+     * would resolve through {@code ..} inside
+     * {@link javax.servlet.ServletContext#getResourceAsStream(String)} and could
+     * expose files outside the intended UI resource directory
+     * (see CodeQL alert {@code java/path-injection}).
+     * <p>
+     * Returns {@code true} if any of the following holds:
+     * <ul>
+     *   <li>the path contains a backslash (not a valid URL separator and a common
+     *       Windows-style traversal bypass);</li>
+     *   <li>the path starts with {@code /} or contains an empty segment
+     *       ({@code //}) — both can collapse the path or escape the configured root;</li>
+     *   <li>any path segment (substring between {@code /} separators, or at the
+     *       boundaries) is exactly {@code ".."}.</li>
+     * </ul>
+     * Note that {@code ..} inside a filename — such as {@code chunk..hash.js} or
+     * {@code page/asset..v2.css} — is NOT treated as traversal.
+     * <p>
+     * Percent-encoded separators ({@code %2F}/{@code %5C}, any case) are first
+     * normalized to their literal {@code /} / {@code \} forms, then the checks
+     * above run against the normalized value. So {@code foo%2fbar.css} is
+     * accepted (it's just a subdirectory reference) while {@code ..%2ffoo.css}
+     * becomes {@code ../foo.css} and is rejected. This protects against a
+     * misconfigured container or downstream decoder that might unescape an
+     * encoded separator after this check.
+     */
+    @VisibleForTesting
+    static boolean containsPathTraversal(@NotNull String relative) {
+        String normalized = relative
+                .replace("%2f", "/").replace("%2F", "/")
+                .replace("%5c", "\\").replace("%5C", "\\");
+        if (normalized.indexOf('\\') >= 0) {
+            return true;
+        }
+        if (normalized.startsWith("/") || normalized.contains("//")) {
+            return true;
+        }
+        for (String segment : normalized.split("/", -1)) {
+            if ("..".equals(segment)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @VisibleForTesting
