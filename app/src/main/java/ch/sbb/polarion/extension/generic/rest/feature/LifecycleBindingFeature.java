@@ -4,7 +4,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.FeatureContext;
 import java.lang.reflect.Method;

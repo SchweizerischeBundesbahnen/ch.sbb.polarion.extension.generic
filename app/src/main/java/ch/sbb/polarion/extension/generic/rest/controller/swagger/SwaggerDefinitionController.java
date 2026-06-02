@@ -3,7 +3,7 @@ package ch.sbb.polarion.extension.generic.rest.controller.swagger;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import jakarta.servlet.ServletConfig;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;

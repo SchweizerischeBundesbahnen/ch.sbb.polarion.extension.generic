@@ -1,13 +1,13 @@
 package ch.sbb.polarion.extension.generic.util;
 
 import ch.sbb.polarion.extension.generic.rest.model.Context;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.reflections.Reflections;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.jar.Attributes;
@@ -23,7 +23,7 @@ public class ContextUtils {
     public static final String CONFIGURATION_PROPERTIES_PREFIX = "Configuration-Properties-Prefix";
 
     private static final String BASE_PACKAGE = getBasePackage();
-    private static Reflections reflections;
+    private static List<Class<?>> discoverableClasses;
 
     @NotNull
     public static Context getContext() {
@@ -36,22 +36,23 @@ public class ContextUtils {
     }
 
     public <T> Set<Class<? extends T>> findSubTypes(Class<T> type) {
-        return getReflections().getSubTypesOf(type).stream().filter(c -> c.isAnnotationPresent(Discoverable.class)).collect(Collectors.toSet());
+        return getDiscoverableClasses().stream()
+                .filter(c -> type.isAssignableFrom(c) && !c.equals(type))
+                .map(c -> c.asSubclass(type))
+                .collect(Collectors.toSet());
     }
 
-    private static Reflections getReflections() {
-        if (reflections == null) {
-            reflections = new Reflections(
-                    new ConfigurationBuilder()
-                            .setUrls(
-                                    ClasspathHelper.forPackage(BASE_PACKAGE).stream()
-                                            .filter(url -> "file".equals(url.getProtocol()))
-                                            .toList()
-                            )
-                            .forPackage(BASE_PACKAGE)
-            );
+    private static synchronized List<Class<?>> getDiscoverableClasses() {
+        if (discoverableClasses == null) {
+            try (ScanResult result = new ClassGraph()
+                    .acceptPackages(BASE_PACKAGE)
+                    .enableClassInfo()
+                    .enableAnnotationInfo()
+                    .scan()) {
+                discoverableClasses = result.getClassesWithAnnotation(Discoverable.class.getName()).loadClasses();
+            }
         }
-        return reflections;
+        return discoverableClasses;
     }
 
     private static String getBasePackage() {

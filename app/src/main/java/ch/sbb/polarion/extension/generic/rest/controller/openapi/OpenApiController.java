@@ -4,7 +4,7 @@ import ch.sbb.polarion.extension.generic.rest.controller.swagger.SwaggerDefiniti
 import ch.sbb.polarion.extension.generic.rest.filter.Secured;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import jakarta.ws.rs.Path;
 
 @Singleton

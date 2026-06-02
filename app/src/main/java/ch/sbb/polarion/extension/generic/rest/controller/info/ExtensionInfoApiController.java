@@ -1,6 +1,6 @@
 package ch.sbb.polarion.extension.generic.rest.controller.info;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import jakarta.ws.rs.Path;
 
 import ch.sbb.polarion.extension.generic.rest.filter.Secured;
