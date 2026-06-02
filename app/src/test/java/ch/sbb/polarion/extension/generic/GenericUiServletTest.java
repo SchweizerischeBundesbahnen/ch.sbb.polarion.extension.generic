@@ -4,6 +4,8 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.servlet.ServletOutputStream;
@@ -22,7 +24,9 @@ import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
@@ -128,6 +132,94 @@ class GenericUiServletTest {
         exception = assertThrows(IllegalArgumentException.class,
                 () -> callServlet("/polarion/testServletName/ui/generic/../escape.html"));
         assertEquals("Path traversal not allowed", exception.getMessage());
+    }
+
+    @Test
+    @SneakyThrows
+    void testServiceAllowsTurbopackChunkNamesWithDoubleDot() {
+        // Turbopack/Next.js can emit chunk filenames that contain `..` inside the
+        // filename itself (e.g. `chunk..hash.js`). These are NOT path traversal
+        // and must be served normally.
+        TestServlet servlet = callServlet("/polarion/testServletName/ui/_next/static/chunks/page..a1b2c3.js");
+        verify(servlet, times(1)).serveResource(any(), eq("/_next/static/chunks/page..a1b2c3.js"));
+        verify(servlet, times(0)).serveGenericResource(any(), any());
+
+        servlet = callServlet("/polarion/testServletName/ui/asset..v2.css");
+        verify(servlet, times(1)).serveResource(any(), eq("/asset..v2.css"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            // bare ".." segment
+            "..",
+            "../foo.css",
+            "../../foo.css",
+            "foo/..",
+            "foo/../bar.css",
+            "foo/bar/../baz.css",
+            "foo/../../bar.css",
+            "a/b/c/../../d.css",
+            // leading slash (post-prefix empty segment)
+            "/foo.css",
+            "/sub/foo.css",
+            // empty segment in the middle
+            "foo//bar.css",
+            "a/b//c.css",
+            // backslash anywhere — Windows-style separator, used to bypass unix checks
+            "a\\b.css",
+            "..\\foo.css",
+            "foo\\..\\bar.css",
+            "foo/sub\\evil.css",
+            "\\evil.css",
+            "foo.css\\",
+            // generic-prefixed traversal
+            "generic/../escape.html",
+            // mixed
+            "../sub/..//foo.css"
+    })
+    void containsPathTraversal_rejectsTraversal(String path) {
+        assertTrue(GenericUiServlet.containsPathTraversal(path),
+                "expected to detect traversal in: " + path);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            // ordinary safe paths
+            "foo.css",
+            "app.js",
+            "sub/foo.css",
+            "deep/nested/path/foo.css",
+            "_next/static/chunks/main.js",
+            // ".." as part of the FILENAME (Turbopack-style) — must be allowed
+            "chunk..hash.js",
+            "page..a1b2c3.js",
+            "asset..v2.css",
+            "foo..bar.css",
+            "a/foo..bar.css",
+            "_next/static/chunks/page..a1b2c3.js",
+            "_next/static/chunks/[id]..[hash].js",
+            // ".." inside the middle of a segment, not as a full segment
+            "foo..bar/baz.css",
+            "foo/bar..baz.css",
+            "a/b..c/d.css",
+            "a/b../c.css",
+            "a/..b/c.css",
+            // names that start or end with ".." but are not the literal ".." segment
+            "..foo.css",
+            "foo...css",
+            "...css",
+            "....js",
+            // single-dot segments are allowed (not path traversal)
+            "./foo.css",
+            "a/./b.css",
+            ".foo.css",
+            // hashed/versioned filenames
+            "main.abc123def..v2.js",
+            "[locale]..page.js"
+    })
+    void containsPathTraversal_allowsSafePaths(String path) {
+        assertFalse(GenericUiServlet.containsPathTraversal(path),
+                "expected NOT to detect traversal in: " + path);
     }
 
     @Test
