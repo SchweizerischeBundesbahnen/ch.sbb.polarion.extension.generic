@@ -175,7 +175,18 @@ class GenericUiServletTest {
             // generic-prefixed traversal
             "generic/../escape.html",
             // mixed
-            "../sub/..//foo.css"
+            "../sub/..//foo.css",
+            // Percent-encoded separators (%2F = '/', %5C = '\') in any case.
+            // No legitimate filename contains these — '/' and '\' aren't valid
+            // filename characters — so rejecting them is free defense in depth
+            // against misconfigured downstream decoders.
+            "..%2ffoo.css",
+            "..%2Ffoo.css",
+            "foo%2f..%2fbar.css",
+            "%2f..%2fevil.css",
+            "..%5cfoo.css",
+            "..%5Cfoo.css",
+            "foo%5cbar.css"
     })
     void containsPathTraversal_rejectsTraversal(String path) {
         assertTrue(GenericUiServlet.containsPathTraversal(path),
@@ -216,15 +227,14 @@ class GenericUiServletTest {
             // hashed/versioned filenames
             "main.abc123def..v2.js",
             "[locale]..page.js",
-            // Percent-encoded separators are NOT decoded at this layer — the
-            // servlet container decodes them before we run. If a downstream
-            // layer ever skips decoding, getResourceAsStream / ZipFile.getEntry
-            // treat these as literal filename characters, not separators, so
-            // no traversal is possible. Pinned here to prevent re-broadening
-            // the check to a naive contains("..").
-            "..%2ffoo.css",
-            "foo%2f..%2fbar.css",
-            "..%5cfoo.css"
+            // Percent-encoded separators are normalized to literal '/' before
+            // the segment check runs. So an encoded sequence is treated exactly
+            // as if a downstream decoder had unescaped it — which means a
+            // standalone encoded slash that is NOT next to ".." is fine, since
+            // its literal form (foo/bar.css) is just a subdirectory.
+            "foo%2fbar.css",
+            "foo%2Fbar.css",
+            "sub%2fchunk..hash.js"
     })
     void containsPathTraversal_allowsSafePaths(String path) {
         assertFalse(GenericUiServlet.containsPathTraversal(path),

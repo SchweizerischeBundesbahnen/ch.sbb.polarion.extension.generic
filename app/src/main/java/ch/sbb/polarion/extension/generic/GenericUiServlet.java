@@ -112,26 +112,26 @@ public abstract class GenericUiServlet extends HttpServlet {
      * Note that {@code ..} inside a filename — such as {@code chunk..hash.js} or
      * {@code page/asset..v2.css} — is NOT treated as traversal.
      * <p>
-     * Percent-encoded separators ({@code %2F}, {@code %5C}) are intentionally NOT
-     * decoded here: the servlet container has already decoded the request URI by
-     * the time this method runs, so any real separator is present as a literal
-     * {@code /} or {@code \} and caught above. If a downstream layer ever bypasses
-     * that decoding, {@link javax.servlet.ServletContext#getResourceAsStream(String)}
-     * and {@link java.util.zip.ZipFile#getEntry(String)} treat the percent-encoded
-     * forms as literal filename characters, not separators, so no traversal is
-     * possible either way. Do NOT re-broaden this to a naive
-     * {@code relative.contains("..")} — that would falsely reject legitimate
-     * filenames containing {@code ..} (Turbopack chunks).
+     * Percent-encoded separators ({@code %2F}/{@code %5C}, any case) are first
+     * normalized to their literal {@code /} / {@code \} forms, then the checks
+     * above run against the normalized value. So {@code foo%2fbar.css} is
+     * accepted (it's just a subdirectory reference) while {@code ..%2ffoo.css}
+     * becomes {@code ../foo.css} and is rejected. This protects against a
+     * misconfigured container or downstream decoder that might unescape an
+     * encoded separator after this check.
      */
     @VisibleForTesting
     static boolean containsPathTraversal(@NotNull String relative) {
-        if (relative.indexOf('\\') >= 0) {
+        String normalized = relative
+                .replace("%2f", "/").replace("%2F", "/")
+                .replace("%5c", "\\").replace("%5C", "\\");
+        if (normalized.indexOf('\\') >= 0) {
             return true;
         }
-        if (relative.startsWith("/") || relative.contains("//")) {
+        if (normalized.startsWith("/") || normalized.contains("//")) {
             return true;
         }
-        for (String segment : relative.split("/", -1)) {
+        for (String segment : normalized.split("/", -1)) {
             if ("..".equals(segment)) {
                 return true;
             }
