@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.1.5](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.4...v14.1.5) (2026-06-02)
+
+
+### Bug Fixes
+
+* fix logic checking if path traversal exists in resource request ([#433](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/433)) ([46b1ee9](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/46b1ee9674760c62681b6df1baf653b77d6e8c22))
+
 ## [14.1.4](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.3...v14.1.4) (2026-05-19)
 
 
