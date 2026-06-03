@@ -4,7 +4,7 @@
 
     <groupId>ch.sbb.polarion.extensions</groupId>
     <artifactId>ch.sbb.polarion.extension.generic</artifactId>
-    <version>14.1.5-SNAPSHOT</version>
+    <version>14.1.5</version>
     <packaging>pom</packaging>
 
     <name>Versatile extension for developing additional extensions within Polarion ALM: parent POM</name>
@@ -62,12 +62,12 @@
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
         <maven-resources-plugin.version>3.5.0</maven-resources-plugin.version>
         <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
-        <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
-        <maven-dependency-plugin.version>3.10.0</maven-dependency-plugin.version>
+        <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
+        <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
         <pre-commit-run-maven-plugin.version>1.0.0</pre-commit-run-maven-plugin.version>
         <swagger-maven-plugin.version>2.2.50</swagger-maven-plugin.version>
-        <sonar-maven-plugin.version>5.6.0.6792</sonar-maven-plugin.version>
+        <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
 
         <!-- Test dependencies -->
         <junit.version>6.1.0</junit.version>
