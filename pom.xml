@@ -734,7 +734,7 @@
 
                 <plugin>
                     <groupId>io.swagger.core.v3</groupId>
-                    <artifactId>swagger-maven-plugin</artifactId>
+                    <artifactId>swagger-maven-plugin-jakarta</artifactId>
                     <version>${swagger-maven-plugin.version}</version>
                     <configuration>
                         <outputFileName>openapi</outputFileName>
