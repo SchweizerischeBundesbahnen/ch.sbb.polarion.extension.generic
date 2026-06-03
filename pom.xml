@@ -266,6 +266,25 @@
         </profile>
     </profiles>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- commons-logging carries ServletContextCleaner, which references javax.servlet.* and is
+                 rejected by Polarion 2606's JakartaCompatibilityChecker. Extensions pull it transitively
+                 (pdfbox, docx4j, fop, …), often in several versions. Manage it to `provided` here so every
+                 extension that pulls it gets it demoted out of WEB-INF/lib (and out of Bundle-ClassPath —
+                 both driven by includeScope=runtime) without each extension repeating the override; this is
+                 a no-op for extensions that don't pull it. The runtime API is supplied by Polarion's OSGi
+                 bundle org.apache.commons.logging_1.2.0, declared in `Require-Bundle.common` above — keep
+                 these two in sync: removing org.apache.commons.logging from Require-Bundle would break
+                 logging resolution at runtime for every extension relying on this `provided` demotion. -->
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- Polarion artifacts -->
         <dependency>
