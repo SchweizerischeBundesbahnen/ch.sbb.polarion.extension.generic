@@ -1,15 +1,18 @@
 package ch.sbb.polarion.extension.generic.util;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockStatic;
 
 class ContextUtilsTest {
@@ -53,5 +56,28 @@ class ContextUtilsTest {
                 assertEquals(expected, ContextUtils.getConfigurationPropertiesPrefix());
             }
         }
+    }
+
+    @Test
+    void testFindSubTypesReturnsOnlyDiscoverableSubTypes() {
+        Set<Class<? extends TestDiscoverableService>> subTypes = ContextUtils.findSubTypes(TestDiscoverableService.class);
+
+        assertEquals(Set.of(DiscoverableImpl.class), subTypes);
+    }
+
+    @Test
+    void testFindSubTypesExcludesQueriedTypeItself() {
+        assertTrue(ContextUtils.findSubTypes(DiscoverableImpl.class).isEmpty());
+    }
+
+    public interface TestDiscoverableService {
+    }
+
+    @Discoverable
+    public static class DiscoverableImpl implements TestDiscoverableService {
+    }
+
+    @SuppressWarnings("unused")
+    public static class NotDiscoverableImpl implements TestDiscoverableService {
     }
 }
