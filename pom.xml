@@ -133,13 +133,14 @@
             com.fasterxml.jackson.annotations
             com.fasterxml.jackson.module.jakarta.xmlbind.annotations
             org.apache.commons.logging
+            commons-io
             slf4j.api
             org.springframework.spring-core
             org.springframework.spring-web
             com.polarion.alm.tracker
             com.polarion.platform.guice
         -->
-        <maven-jar-plugin.Require-Bundle.common>com.polarion.portal.tomcat,com.polarion.alm.ui,jakarta.inject-api,jakarta.annotation-api,jakarta.ws.rs-api,jakarta.xml.bind-api,jakarta.activation-api,org.glassfish.jersey,com.fasterxml.jackson.core,com.fasterxml.jackson.databind,com.fasterxml.jackson.annotations,com.fasterxml.jackson.module.jakarta.xmlbind.annotations,org.apache.commons.logging,slf4j.api,org.springframework.spring-core,org.springframework.spring-web,com.polarion.alm.tracker,com.polarion.platform.guice</maven-jar-plugin.Require-Bundle.common>
+        <maven-jar-plugin.Require-Bundle.common>com.polarion.portal.tomcat,com.polarion.alm.ui,jakarta.inject-api,jakarta.annotation-api,jakarta.ws.rs-api,jakarta.xml.bind-api,jakarta.activation-api,org.glassfish.jersey,com.fasterxml.jackson.core,com.fasterxml.jackson.databind,com.fasterxml.jackson.annotations,com.fasterxml.jackson.module.jakarta.xmlbind.annotations,org.apache.commons.logging,commons-io,slf4j.api,org.springframework.spring-core,org.springframework.spring-web,com.polarion.alm.tracker,com.polarion.platform.guice</maven-jar-plugin.Require-Bundle.common>
         <maven-jar-plugin.Require-Bundle.extension/>
         <maven-jar-plugin.Require-Bundle>${maven-jar-plugin.Require-Bundle.common}</maven-jar-plugin.Require-Bundle>
 
@@ -509,10 +510,10 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.22.0</version>
-            <scope>compile</scope>
+            <groupId>com.polarion.thirdparty</groupId>
+            <artifactId>commons-io_2.20.0</artifactId>
+            <version>${polarion.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
