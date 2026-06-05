@@ -36,6 +36,7 @@ public class GenericRestApplication extends Application {
 
     @Override
     @NotNull
+    @Deprecated(since = "3.1") // jakarta.ws.rs.core.Application#getSingletons() is deprecated, but Jersey still relies on it for singleton registration
     public Set<Object> getSingletons() {
         Set<Object> singletons = new HashSet<>();
         singletons.add(JacksonFeature.withoutExceptionMappers());
