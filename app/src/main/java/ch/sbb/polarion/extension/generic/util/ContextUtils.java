@@ -38,7 +38,7 @@ public class ContextUtils {
     public <T> Set<Class<? extends T>> findSubTypes(Class<T> type) {
         return getDiscoverableClasses().stream()
                 .filter(c -> type.isAssignableFrom(c) && !c.equals(type))
-                .map(c -> c.asSubclass(type))
+                .<Class<? extends T>>map(c -> c.asSubclass(type))
                 .collect(Collectors.toSet());
     }
 
