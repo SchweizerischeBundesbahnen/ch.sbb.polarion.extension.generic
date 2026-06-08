@@ -17,8 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import jakarta.ws.rs.container.ContainerRequestContext;
 
 import javax.security.auth.Subject;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -33,6 +31,11 @@ class XsrfTokenValidatorTest {
 
     private static final String USER_ID = "testUser";
     private static final String ENCRYPTED_TOKEN = "encryptedToken";
+
+    // Fixed epoch-milli bounds so the tests don't depend on the system clock:
+    // Long.MAX_VALUE is always in the future, 0 (Instant.EPOCH) is always in the past.
+    private static final String FAR_FUTURE_TIMESTAMP = String.valueOf(Long.MAX_VALUE);
+    private static final String PAST_TIMESTAMP = "0";
 
     @Mock
     private ISecurityService securityService;
@@ -51,7 +54,7 @@ class XsrfTokenValidatorTest {
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
              MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
             mockRestApiTokenEnabled(configurationMockedStatic, true);
-            mockDecryptedToken(passwordEncryptorMockedStatic, futureTimestamp() + "$" + USER_ID);
+            mockDecryptedToken(passwordEncryptorMockedStatic, FAR_FUTURE_TIMESTAMP + "$" + USER_ID);
 
             Subject subject = new Subject();
             when(securityService.getCurrentSubject()).thenReturn(subject);
@@ -66,8 +69,7 @@ class XsrfTokenValidatorTest {
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
              MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
             mockRestApiTokenEnabled(configurationMockedStatic, true);
-            String expiredTimestamp = String.valueOf(Instant.now().minus(1, ChronoUnit.HOURS).toEpochMilli());
-            mockDecryptedToken(passwordEncryptorMockedStatic, expiredTimestamp + "$" + USER_ID);
+            mockDecryptedToken(passwordEncryptorMockedStatic, PAST_TIMESTAMP + "$" + USER_ID);
 
             assertThrows(AuthenticationFailedException.class, createValidator()::validate);
         }
@@ -89,7 +91,7 @@ class XsrfTokenValidatorTest {
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
              MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
             mockRestApiTokenEnabled(configurationMockedStatic, true);
-            mockDecryptedToken(passwordEncryptorMockedStatic, futureTimestamp() + "$anotherUser");
+            mockDecryptedToken(passwordEncryptorMockedStatic, FAR_FUTURE_TIMESTAMP + "$anotherUser");
 
             assertThrows(AuthenticationFailedException.class, createValidator()::validate);
         }
@@ -122,7 +124,7 @@ class XsrfTokenValidatorTest {
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
              MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
             mockRestApiTokenEnabled(configurationMockedStatic, true);
-            mockDecryptedToken(passwordEncryptorMockedStatic, futureTimestamp() + "$" + USER_ID);
+            mockDecryptedToken(passwordEncryptorMockedStatic, FAR_FUTURE_TIMESTAMP + "$" + USER_ID);
 
             Subject subject = new Subject();
             when(securityService.getCurrentSubject()).thenReturn(subject);
@@ -147,10 +149,6 @@ class XsrfTokenValidatorTest {
         XsrfTokenValidator validator = new XsrfTokenValidator();
         validator.userId(USER_ID).secret(ENCRYPTED_TOKEN).securityService(securityService);
         return validator;
-    }
-
-    private String futureTimestamp() {
-        return String.valueOf(Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli());
     }
 
     private void mockRestApiTokenEnabled(MockedStatic<Configuration> configurationMockedStatic, boolean enabled) {
