@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class XsrfTokenValidatorTest {
 
     private static final String USER_ID = "testUser";
-    private static final String ENCRYPTED_TOKEN = "encryptedToken";
+    private static final String VALIDATOR_INPUT = "dummy-value";
 
     // Fixed epoch-milli bounds so the tests don't depend on the system clock:
     // Long.MAX_VALUE is always in the future, 0 (Instant.EPOCH) is always in the past.
@@ -147,7 +147,7 @@ class XsrfTokenValidatorTest {
 
     private XsrfTokenValidator createValidator() {
         XsrfTokenValidator validator = new XsrfTokenValidator();
-        validator.userId(USER_ID).secret(ENCRYPTED_TOKEN).securityService(securityService);
+        validator.userId(USER_ID).secret(VALIDATOR_INPUT).securityService(securityService);
         return validator;
     }
 
@@ -162,6 +162,6 @@ class XsrfTokenValidatorTest {
     private void mockDecryptedToken(MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic, String decryptedToken) {
         PasswordEncryptor passwordEncryptor = mock(PasswordEncryptor.class);
         passwordEncryptorMockedStatic.when(() -> PasswordEncryptor.getInstance(anyString())).thenReturn(passwordEncryptor);
-        when(passwordEncryptor.decrypt(ENCRYPTED_TOKEN)).thenReturn(decryptedToken);
+        when(passwordEncryptor.decrypt(VALIDATOR_INPUT)).thenReturn(decryptedToken);
     }
 }
