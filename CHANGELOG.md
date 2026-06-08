@@ -1,5 +1,14 @@
 # Changelog
 
+## [14.1.6](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.5...v14.1.6) (2026-06-08)
+
+
+### Bug Fixes
+
+* make CodeQL recognize path-traversal sanitizer in GenericUiServlet ([#444](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/444)) ([3bc53f6](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/3bc53f653bb4eec1499475c306d9f8408ba39d19))
+* SAXParseException: An invalid XML character (Unicode: 0x0) was f… ([#442](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/442)) ([3fc88d1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/3fc88d166cb38f26561688c9bae28accf9522d59))
+* SAXParseException: An invalid XML character (Unicode: 0x0) was found in the element content ([3fc88d1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/3fc88d166cb38f26561688c9bae28accf9522d59)), closes [#441](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/441)
+
 ## [14.1.5](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.4...v14.1.5) (2026-06-02)
 
 
