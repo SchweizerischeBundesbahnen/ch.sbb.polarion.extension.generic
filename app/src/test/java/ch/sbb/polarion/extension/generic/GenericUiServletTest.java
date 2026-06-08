@@ -265,7 +265,10 @@ class GenericUiServletTest {
     void testResolveJarFileWithLiteralSpace() {
         URL location = new URL("file:/C:/Users/test folder with spaces/workspace/some-extension.jar");
         File resolved = GenericUiServlet.resolveJarFile(location);
-        assertEquals("/C:/Users/test folder with spaces/workspace/some-extension.jar", resolved.getPath().replace('\\', '/'));
+        // Compare File objects rather than the raw path string: File.getPath() canonicalizes
+        // "/C:/..." differently per OS (Windows strips the leading slash before the drive letter,
+        // Unix keeps it). Both sides go through the same normalization, so this holds on either.
+        assertEquals(new File("/C:/Users/test folder with spaces/workspace/some-extension.jar"), resolved);
     }
 
     @Test
