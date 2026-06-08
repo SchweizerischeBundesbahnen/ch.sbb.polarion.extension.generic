@@ -1,5 +1,16 @@
 # Changelog
 
+## [15.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.6...v15.0.0) (2026-06-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* Polarion 2606 support ([#437](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/437))
+
+### Features
+
+* Polarion 2606 support ([#437](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/437)) ([6729e77](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6729e77ca1223805d065e32e3b9c4192abb2c65c)), closes [#428](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/428)
+
 ## [14.1.6](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v14.1.5...v14.1.6) (2026-06-08)
 
 
