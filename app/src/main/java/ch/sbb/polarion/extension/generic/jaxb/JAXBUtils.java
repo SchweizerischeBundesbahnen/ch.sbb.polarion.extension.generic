@@ -21,6 +21,8 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
+import com.polarion.core.util.xml.DOMHelper;
+
 import ch.sbb.polarion.extension.generic.exception.JAXBUnmarshalException;
 import lombok.experimental.UtilityClass;
 
@@ -102,7 +104,12 @@ public class JAXBUtils {
             }
 
             stringWriter.flush();
-            return stringWriter.toString();
+            // JAXB does not validate characters on marshaling, so the output may still contain
+            // characters which are illegal in XML 1.0 (control chars, unpaired surrogates, noncharacters).
+            // They would corrupt the persisted XML and break all subsequent reads, so strip them here.
+            // Reuse Polarion's own sanitizer to stay consistent with how the platform itself
+            // cleans content before persisting it (see DOMHelper#appendSafeTextNode).
+            return DOMHelper.stripXMLInvalidCharacters(stringWriter.toString());
         }
     }
 }
