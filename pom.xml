@@ -80,7 +80,7 @@
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
 
         <!-- Sonar and JaCoCo -->
-        <jacoco.version>0.8.14</jacoco.version>
+        <jacoco.version>0.8.15</jacoco.version>
         <sonar.projectKey>SchweizerischeBundesbahnen_${project.artifactId}</sonar.projectKey>
         <sonar.organization>schweizerischebundesbahnen</sonar.organization>
         <sonar.projectName>${project.artifactId}</sonar.projectName>
