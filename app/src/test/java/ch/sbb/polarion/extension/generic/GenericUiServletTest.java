@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
@@ -91,6 +90,10 @@ class GenericUiServletTest {
         exception = assertThrows(IllegalArgumentException.class, () -> callServlet("/polarion/testServletName/unknownPath"));
         assertEquals("Unsupported resource path", exception.getMessage());
 
+        // path under /ui/ but with a disallowed file extension
+        exception = assertThrows(IllegalArgumentException.class, () -> callServlet("/polarion/testServletName/ui/evil.exe"));
+        assertEquals("Unsupported file type", exception.getMessage());
+
         // generic resource
         TestServlet servlet = callServlet("/polarion/testServletName/ui/generic/genericUri/someImage.gif");
         verify(servlet, times(1)).serveGenericResource(any(), eq("genericUri/someImage.gif"));
@@ -117,20 +120,15 @@ class GenericUiServletTest {
                 () -> callServlet("/polarion/testServletName/ui/sub\\evil.css"));
         assertEquals("Path traversal not allowed", exception.getMessage());
 
-        // double slash inside the path
-        exception = assertThrows(IllegalArgumentException.class,
-                () -> callServlet("/polarion/testServletName/ui/foo//bar.css"));
-        assertEquals("Path traversal not allowed", exception.getMessage());
-
         // leading slash after the prefix (URI like `/polarion/<app>/ui//bypass.css`
-        // strips to `/bypass.css` — caught by `startsWith("/")`)
+        // strips to `/bypass.css`, an absolute path that escapes the sentinel root)
         exception = assertThrows(IllegalArgumentException.class,
                 () -> callServlet("/polarion/testServletName/ui//bypass.css"));
         assertEquals("Path traversal not allowed", exception.getMessage());
 
-        // generic-prefixed traversal
+        // generic-prefixed traversal that escapes the root
         exception = assertThrows(IllegalArgumentException.class,
-                () -> callServlet("/polarion/testServletName/ui/generic/../escape.html"));
+                () -> callServlet("/polarion/testServletName/ui/generic/../../escape.html"));
         assertEquals("Path traversal not allowed", exception.getMessage());
     }
 
@@ -150,47 +148,37 @@ class GenericUiServletTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            // bare ".." segment
+            // ".." that escapes the root
             "..",
             "../foo.css",
             "../../foo.css",
-            "foo/..",
-            "foo/../bar.css",
-            "foo/bar/../baz.css",
             "foo/../../bar.css",
-            "a/b/c/../../d.css",
-            // leading slash (post-prefix empty segment)
+            "../sub/..//foo.css",
+            // absolute path (leading slash) — resolve() makes it absolute, escaping the root
             "/foo.css",
             "/sub/foo.css",
-            // empty segment in the middle
-            "foo//bar.css",
-            "a/b//c.css",
-            // backslash anywhere — Windows-style separator, used to bypass unix checks
+            // backslash anywhere — not a valid URL separator, rejected on every OS
             "a\\b.css",
             "..\\foo.css",
             "foo\\..\\bar.css",
             "foo/sub\\evil.css",
             "\\evil.css",
             "foo.css\\",
-            // generic-prefixed traversal
-            "generic/../escape.html",
-            // mixed
-            "../sub/..//foo.css",
-            // Percent-encoded separators (%2F = '/', %5C = '\') in any case.
-            // No legitimate filename contains these — '/' and '\' aren't valid
-            // filename characters — so rejecting them is free defense in depth
-            // against misconfigured downstream decoders.
+            // Percent-encoded separators (%2F = '/', %5C = '\') decode first, then the
+            // checks above run — so an encoded payload is treated as a downstream
+            // decoder would unescape it.
             "..%2ffoo.css",
             "..%2Ffoo.css",
-            "foo%2f..%2fbar.css",
             "%2f..%2fevil.css",
             "..%5cfoo.css",
             "..%5Cfoo.css",
             "foo%5cbar.css"
     })
-    void containsPathTraversal_rejectsTraversal(String path) {
-        assertTrue(GenericUiServlet.containsPathTraversal(path),
-                "expected to detect traversal in: " + path);
+    void sanitizeResourcePath_rejectsTraversal(String path) {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> GenericUiServlet.sanitizeResourcePath(path),
+                "expected to reject traversal in: " + path);
+        assertEquals("Path traversal not allowed", exception.getMessage());
     }
 
     @ParameterizedTest
@@ -220,25 +208,50 @@ class GenericUiServletTest {
             "foo...css",
             "...css",
             "....js",
-            // single-dot segments are allowed (not path traversal)
+            // single-dot segments collapse but stay inside the root
             "./foo.css",
             "a/./b.css",
             ".foo.css",
+            // within-root ".." that does NOT escape — collapses to a path inside the root
+            "foo/../bar.css",
+            "foo/bar/../baz.css",
+            "a/b/c/../../d.css",
+            // empty segments collapse harmlessly
+            "foo//bar.css",
+            "a/b//c.css",
             // hashed/versioned filenames
             "main.abc123def..v2.js",
             "[locale]..page.js",
-            // Percent-encoded separators are normalized to literal '/' before
-            // the segment check runs. So an encoded sequence is treated exactly
-            // as if a downstream decoder had unescaped it — which means a
-            // standalone encoded slash that is NOT next to ".." is fine, since
-            // its literal form (foo/bar.css) is just a subdirectory.
+            // Percent-encoded separators decode to literal '/'. A standalone encoded
+            // slash that is NOT next to ".." is just a subdirectory reference; an
+            // encoded ".." that stays within the root decodes and collapses safely.
             "foo%2fbar.css",
             "foo%2Fbar.css",
-            "sub%2fchunk..hash.js"
+            "sub%2fchunk..hash.js",
+            "foo%2f..%2fbar.css"
     })
-    void containsPathTraversal_allowsSafePaths(String path) {
-        assertFalse(GenericUiServlet.containsPathTraversal(path),
-                "expected NOT to detect traversal in: " + path);
+    void sanitizeResourcePath_allowsAndCleansSafePaths(String path) {
+        String cleaned = GenericUiServlet.sanitizeResourcePath(path);
+        // never escapes, never absolute, always '/'-separated
+        assertFalse(cleaned.startsWith("/"), "must stay relative: " + cleaned);
+        assertFalse(cleaned.contains("\\"), "must be '/'-separated: " + cleaned);
+    }
+
+    @Test
+    void sanitizeResourcePathReturnsCleanedPath() {
+        // ".." inside a filename is preserved
+        assertEquals("chunk..hash.js", GenericUiServlet.sanitizeResourcePath("chunk..hash.js"));
+        assertEquals("generic/genericUri/someImage.gif",
+                GenericUiServlet.sanitizeResourcePath("generic/genericUri/someImage.gif"));
+        // within-root ".." and empty segments collapse to a clean path
+        assertEquals("bar.css", GenericUiServlet.sanitizeResourcePath("foo/../bar.css"));
+        assertEquals("foo/bar.css", GenericUiServlet.sanitizeResourcePath("foo//bar.css"));
+        // a within-root ".." under the generic/ prefix resolves to a regular resource
+        assertEquals("escape.html", GenericUiServlet.sanitizeResourcePath("generic/../escape.html"));
+        // encoded separators decode to subdirectories; an encoded within-root ".."
+        // decodes and then collapses just like its literal form
+        assertEquals("foo/bar.css", GenericUiServlet.sanitizeResourcePath("foo%2fbar.css"));
+        assertEquals("bar.css", GenericUiServlet.sanitizeResourcePath("foo%2f..%2fbar.css"));
     }
 
     @Test
