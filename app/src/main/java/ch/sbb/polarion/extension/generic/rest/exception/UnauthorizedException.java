@@ -2,7 +2,7 @@ package ch.sbb.polarion.extension.generic.rest.exception;
 
 import ch.sbb.polarion.extension.generic.rest.filter.AuthenticationFilter;
 
-import javax.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.NotAuthorizedException;
 
 /**
  * Custom exception representing an unauthorized access attempt.

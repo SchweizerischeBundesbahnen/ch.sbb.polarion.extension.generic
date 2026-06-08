@@ -6,10 +6,10 @@ import org.glassfish.jersey.internal.inject.ClassBinding;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Singleton;
-import javax.ws.rs.core.FeatureContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.FeatureContext;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Map;

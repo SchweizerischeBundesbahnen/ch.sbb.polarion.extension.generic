@@ -9,8 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.security.auth.Subject;
-import javax.ws.rs.container.ContainerRequestContext;
-import java.util.Date;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import java.time.Instant;
 import java.util.Objects;
 
 public class XsrfTokenValidator extends AbstractAuthValidator {
@@ -42,7 +42,7 @@ public class XsrfTokenValidator extends AbstractAuthValidator {
 
         String[] parts = token.split("\\$");
         if (parts.length >= 2) {
-            Date tokenTimestamp = parseTokenTimestamp(parts[0]);
+            Instant tokenTimestamp = parseTokenTimestamp(parts[0]);
             String tokenUser = parts[1];
             return isTokenValid(userId, tokenUser, tokenTimestamp);
         }
@@ -59,15 +59,15 @@ public class XsrfTokenValidator extends AbstractAuthValidator {
         }
     }
 
-    private boolean isTokenValid(@NotNull String userId, @NotNull String tokenUser, @NotNull Date tokenTimestamp) {
-        return Objects.equals(userId, tokenUser) && !tokenTimestamp.before(new Date());
+    private boolean isTokenValid(@NotNull String userId, @NotNull String tokenUser, @NotNull Instant tokenTimestamp) {
+        return Objects.equals(userId, tokenUser) && !tokenTimestamp.isBefore(Instant.now());
     }
 
-    private Date parseTokenTimestamp(@NotNull String timestampPart) {
+    private Instant parseTokenTimestamp(@NotNull String timestampPart) {
         try {
-            return new Date(Long.parseLong(timestampPart));
+            return Instant.ofEpochMilli(Long.parseLong(timestampPart));
         } catch (NumberFormatException e) {
-            return new Date(0);
+            return Instant.EPOCH;
         }
     }
 

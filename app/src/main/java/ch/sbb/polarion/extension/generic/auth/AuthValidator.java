@@ -6,7 +6,7 @@ import com.polarion.platform.security.ISecurityService;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.Subject;
-import javax.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestContext;
 
 public interface AuthValidator {
     @NotNull Subject validate() throws AuthenticationFailedException;
