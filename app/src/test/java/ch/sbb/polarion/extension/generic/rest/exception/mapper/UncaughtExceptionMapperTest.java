@@ -43,6 +43,18 @@ class UncaughtExceptionMapperTest {
     }
 
     @Test
+    void testFormatLogMessageUsesExceptionMessage() {
+        String logMessage = UncaughtExceptionMapper.formatLogMessage("the-error-id", new IllegalStateException("boom"));
+        assertEquals("Error ID: the-error-id - Error message: boom", logMessage);
+    }
+
+    @Test
+    void testFormatLogMessageFallsBackWhenMessageIsNull() {
+        String logMessage = UncaughtExceptionMapper.formatLogMessage("the-error-id", new NullPointerException());
+        assertEquals("Error ID: the-error-id - Error message: <no message>", logMessage);
+    }
+
+    @Test
     void testEachResponseGetsUniqueErrorId() {
         try (Response first = new UncaughtExceptionMapper().toResponse(new IllegalStateException("boom"));
              Response second = new UncaughtExceptionMapper().toResponse(new IllegalStateException("boom"))) {

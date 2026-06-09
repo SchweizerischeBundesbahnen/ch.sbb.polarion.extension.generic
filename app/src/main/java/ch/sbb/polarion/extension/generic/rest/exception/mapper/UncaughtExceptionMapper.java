@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -33,12 +34,17 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
     private static final Logger logger = Logger.getLogger(UncaughtExceptionMapper.class);
 
+    @Override
     public Response toResponse(Throwable throwable) {
         String errorId = UUID.randomUUID().toString();
-        logger.error("Error ID: " + errorId + " - Error message: " + throwable.getMessage(), throwable);
+        logger.error(formatLogMessage(errorId, throwable), throwable);
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
                 .entity(new ErrorEntity(GENERIC_MESSAGE + " (Error ID: " + errorId + ")"))
                 .type(MediaType.APPLICATION_JSON)
                 .build();
+    }
+
+    static String formatLogMessage(String errorId, Throwable throwable) {
+        return "Error ID: " + errorId + " - Error message: " + Objects.toString(throwable.getMessage(), "<no message>");
     }
 }
