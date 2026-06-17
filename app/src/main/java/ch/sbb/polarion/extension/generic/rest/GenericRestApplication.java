@@ -13,6 +13,7 @@ import ch.sbb.polarion.extension.generic.rest.exception.mapper.ForbiddenExceptio
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.IllegalArgumentExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.IllegalStateExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.InternalServerErrorExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.JsonProcessingExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotFoundExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.ObjectNotFoundExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotAuthorizedExceptionMapper;
@@ -79,6 +80,7 @@ public class GenericRestApplication extends Application {
                 new IllegalArgumentExceptionMapper(),
                 new IllegalStateExceptionMapper(),
                 new InternalServerErrorExceptionMapper(),
+                new JsonProcessingExceptionMapper(),
                 new NotAuthorizedExceptionMapper(),
                 new NotFoundExceptionMapper(),
                 new ObjectNotFoundExceptionMapper(),
