@@ -30,7 +30,7 @@ public class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProces
 
     @Override
     public Response toResponse(JsonProcessingException exception) {
-        logger.warn("Invalid JSON in request body: " + exception.getMessage());
+        logger.warn("Invalid JSON in request body: " + exception.getMessage(), exception);
         return Response.status(Response.Status.BAD_REQUEST.getStatusCode())
                 .entity(new ErrorEntity(exception.getMessage()))
                 .type(MediaType.APPLICATION_JSON)
