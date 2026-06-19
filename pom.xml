@@ -145,7 +145,7 @@
         <maven-jar-plugin.Require-Bundle.extension/>
         <maven-jar-plugin.Require-Bundle>${maven-jar-plugin.Require-Bundle.common}</maven-jar-plugin.Require-Bundle>
 
-        <central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
+        <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
         <central-publishing-maven-plugin.autoPublish>true</central-publishing-maven-plugin.autoPublish>
 
         <markdown2html-maven-plugin.version>1.6.0</markdown2html-maven-plugin.version>
