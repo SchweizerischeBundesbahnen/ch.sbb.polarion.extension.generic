@@ -13,6 +13,7 @@
  * Usage (thin extension starter.js loads this, then):
  *   const starter = window.GenericDleToolbarStarter.create({ markerId, alternateHtml, defaultHtml });
  *   starter.injectToolbar({ alternate: true });
+ *   // optionally, when the caller tears down: starter.destroy();
  */
 (function () {
     function injectStyles(id, href) {
@@ -42,13 +43,26 @@
     // Stable ancestor that survives the toolbar re-render — observed for re-injection.
     const STABLE_ANCESTOR_SELECTOR = 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container';
 
+    // Registry of live observers keyed by markerId, kept on the top window so it survives this
+    // script being re-loaded each time the DLE editor is (re-)opened in Polarion's GWT SPA.
+    // Re-using the key lets us disconnect the previous observer instead of accumulating them.
+    const observerRegistry = top.__genericDleToolbarObservers || (top.__genericDleToolbarObservers = {});
+
     window.GenericDleToolbarStarter = {
         injectStyles: injectStyles,
         injectScript: injectScript,
 
         /**
          * @param config {{ markerId: string, alternateHtml: string, defaultHtml: string }}
-         * @returns {{ injectToolbar: function }}
+         *   markerId      unique id set on the injected element; also the idempotency/dedup key.
+         *   alternateHtml markup injected into the toolbar row when injectToolbar({alternate: true}).
+         *   defaultHtml   markup injected above the rich-text area otherwise.
+         *
+         *   SECURITY: alternateHtml / defaultHtml are written via innerHTML into the top Polarion
+         *   frame, so they MUST be static, trusted markup. Never interpolate user-controlled data
+         *   (document fields, work-item attributes, ...) into them without sanitizing it first.
+         *
+         * @returns {{ injectToolbar: function, destroy: function }}
          */
         create: function (config) {
             // Idempotent: only inject if the toolbar exists and our button isn't already there.
@@ -64,7 +78,13 @@
                     const toolbarContainer = top.document.createElement('td');
                     toolbarContainer.id = config.markerId;
                     toolbarContainer.innerHTML = config.alternateHtml;
-                    toolbarParent.insertBefore(toolbarContainer, toolbarParent.querySelector('td[width="100%"]'));
+                    const reference = toolbarParent.querySelector('td[width="100%"]');
+                    if (!reference) {
+                        // Polarion DOM changed (e.g. after an upgrade) — fall back to appending at the
+                        // end of the row, but warn so the mislayout is diagnosable.
+                        console.warn(`GenericDleToolbarStarter: reference cell td[width="100%"] not found for '${config.markerId}'; appending button at the end of the toolbar row.`);
+                    }
+                    toolbarParent.insertBefore(toolbarContainer, reference);
                 } else {
                     const documentFrame = top.document.querySelector(RICH_TEXT_AREA_SELECTOR);
                     if (!documentFrame) {
@@ -80,12 +100,15 @@
             }
 
             let observerSetUp = false;
+            // The observer re-injects with the params of the latest injectToolbar() call.
+            let lastParams;
 
             return {
                 injectToolbar: function (params) {
+                    lastParams = params;
                     inject(params);
 
-                    // Re-inject when Polarion re-renders the toolbar (e.g. after Save) and our button disappears.
+                    // Set up the self-healing observer once per starter instance.
                     if (observerSetUp) {
                         return;
                     }
@@ -104,10 +127,25 @@
                         // Coalesce the burst of mutations during a re-render into a single re-inject.
                         requestAnimationFrame(function () {
                             scheduled = false;
-                            inject(params);
+                            inject(lastParams);
                         });
                     });
+                    // Disconnect any observer left over from a previous editor open for this markerId
+                    // so observers don't accumulate across the SPA's editor open/close cycles.
+                    if (observerRegistry[config.markerId]) {
+                        observerRegistry[config.markerId].disconnect();
+                    }
+                    observerRegistry[config.markerId] = observer;
                     observer.observe(anchor, { childList: true, subtree: true });
+                },
+
+                // Stop self-healing and release the observer (for callers that have a teardown hook).
+                destroy: function () {
+                    if (observerRegistry[config.markerId]) {
+                        observerRegistry[config.markerId].disconnect();
+                        delete observerRegistry[config.markerId];
+                    }
+                    observerSetUp = false;
                 }
             };
         }
