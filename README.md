@@ -433,7 +433,7 @@ of writing the injection logic in every extension. The engine knows the toolbar 
 user clicks *Save* — so the button does not disappear (a one-time injection otherwise would).
 
 The engine is served to each extension at `/polarion/<extension>/ui/generic/js/dle-toolbar-starter.js`
-and exposes `window.GenericDleToolbarStarter.create({ markerId, alternateHtml, defaultHtml })`.
+and exposes `window.GenericDleToolbarStarter.create({ markerId, alternateHtml, defaultHtml, order })`.
 
 Add a thin `starter.js` to your extension's webapp that supplies only the extension-specific parts
 (button markup, a unique `markerId`, any css/js the button needs) and bootstraps the engine:
@@ -445,10 +445,18 @@ Add a thin `starter.js` to your extension's webapp that supplies only the extens
     const ALTERNATE_TOOLBAR_HTML = `<table class="dleToolBarTable">...your button...</table>`;  // variant for inside the toolbar row
 
     // Expose the global immediately and queue calls until the engine has loaded.
-    let starter = null;
+    let starter = null, order;
     const pending = [];
     window.MyExtensionStarter = {
-        injectToolbar: (params) => starter ? starter.injectToolbar(params) : pending.push(params)
+        injectToolbar: (params) => {
+            // Capture this button's position among all toolbar buttons: this stub runs synchronously
+            // as dleEditorHead executes, so the shared counter reflects config order (see "Ordering").
+            if (order === undefined) {
+                const seq = top.__genericDleToolbarSeq || (top.__genericDleToolbarSeq = { n: 0 });
+                order = seq.n++;
+            }
+            starter ? starter.injectToolbar(params) : pending.push(params);
+        }
     };
 
     const engine = document.createElement('script');
@@ -460,7 +468,8 @@ Add a thin `starter.js` to your extension's webapp that supplies only the extens
         starter = generic.create({
             markerId: 'my-extension-toolbar-injected',   // unique id set on the injected element
             alternateHtml: ALTERNATE_TOOLBAR_HTML,
-            defaultHtml: TOOLBAR_HTML
+            defaultHtml: TOOLBAR_HTML,
+            order                                        // stable left-to-right order (see "Ordering")
         });
         pending.forEach(p => starter.injectToolbar(p));
         pending.length = 0;
@@ -479,3 +488,23 @@ scriptInjection.dleEditorHead=<script src="/polarion/my-extension/js/starter.js"
 `injectToolbar({ alternate: true })` inserts the button into the editor toolbar row; calling it without
 `alternate` renders the standalone `defaultHtml` variant above the rich-text area. The engine is
 idempotent (guarded by `markerId`) and sets up one self-healing observer per extension.
+
+#### Ordering multiple buttons
+
+When several extensions each add a button (separate `dleEditorHead` entries), the engine keeps them in a
+stable left-to-right order across re-renders. The order is **not configured by hand** — it is the
+position of the `injectToolbar` call in `dleEditorHead`:
+
+- The inline `<script>…injectToolbar(...)</script>` tags in `dleEditorHead` execute in document order, so
+  each thin starter's `injectToolbar` stub runs synchronously in that order.
+- On its first call the stub reads (and increments) a shared `top.__genericDleToolbarSeq` counter and
+  passes that value as `order` to `create({ order })`.
+- On every (re-)injection the engine inserts the button before the first already-present button whose
+  `order` is higher, otherwise before the toolbar spacer cell. The marker→order map lives on
+  `top.__genericDleToolbarOrder`, so placement is independent of which extension's self-healing observer
+  happens to re-fire first after a toolbar re-render.
+
+To change the order, reorder the `injectToolbar` lines in `dleEditorHead`. Note that determinism requires
+**distinct** `order` values: buttons that share the same `order` (including any caller that omits it — it
+defaults to `0`) tie-break by observer-fire order, i.e. non-deterministically, exactly as before this
+mechanism existed.

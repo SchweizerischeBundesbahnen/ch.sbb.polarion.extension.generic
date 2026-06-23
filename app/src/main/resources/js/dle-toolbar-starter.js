@@ -65,6 +65,16 @@
          * @returns {{ injectToolbar: function, destroy: function }}
          */
         create: function (config) {
+            // Stable left-to-right order across re-renders. Each button keeps the order it was
+            // registered with (config.order — the config-execution order); re-injection inserts
+            // before the first already-present button with a *higher* order. Buttons with distinct
+            // orders keep their position regardless of which extension's observer re-fires first;
+            // buttons sharing an order (e.g. callers that omit it → default 0) tie-break by
+            // observer-fire order, so distinct orders are required for full determinism.
+            const myOrder = (typeof config.order === 'number') ? config.order : 0;
+            const orderByMarker = top.__genericDleToolbarOrder || (top.__genericDleToolbarOrder = {});
+            orderByMarker[config.markerId] = myOrder;
+
             // Idempotent: only inject if the toolbar exists and our button isn't already there.
             function inject(params) {
                 if (top.document.getElementById(config.markerId)) {
@@ -78,11 +88,21 @@
                     const toolbarContainer = top.document.createElement('td');
                     toolbarContainer.id = config.markerId;
                     toolbarContainer.innerHTML = config.alternateHtml;
-                    const reference = toolbarParent.querySelector('td[width="100%"]');
-                    if (!reference) {
+                    const spacer = toolbarParent.querySelector('td[width="100%"]');
+                    if (!spacer) {
                         // Polarion DOM changed (e.g. after an upgrade) — fall back to appending at the
                         // end of the row, but warn so the mislayout is diagnosable.
                         console.warn(`GenericDleToolbarStarter: reference cell td[width="100%"] not found for '${config.markerId}'; appending button at the end of the toolbar row.`);
+                    }
+                    // Keep a stable order: insert before the first already-present button whose order
+                    // is higher than ours, otherwise before the spacer cell.
+                    let reference = spacer;
+                    for (const cell of toolbarParent.children) {
+                        const cellOrder = orderByMarker[cell.id];
+                        if (cellOrder !== undefined && cellOrder > myOrder) {
+                            reference = cell;
+                            break;
+                        }
                     }
                     toolbarParent.insertBefore(toolbarContainer, reference);
                 } else {
