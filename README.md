@@ -423,3 +423,59 @@ public class PdfExporterExtensionConfiguration extends ExtensionConfiguration {
     ...
 }
 ```
+
+### Document (DLE) editor toolbar button
+
+To add a button to Polarion's document editor toolbar (via the `scriptInjection.dleEditorHead`
+configuration property), reuse the shared engine `dle-toolbar-starter.js` shipped by generic instead
+of writing the injection logic in every extension. The engine knows the toolbar DOM selectors and
+**re-injects the button automatically** whenever Polarion (GWT) re-renders the toolbar — e.g. after the
+user clicks *Save* — so the button does not disappear (a one-time injection otherwise would).
+
+The engine is served to each extension at `/polarion/<extension>/ui/generic/js/dle-toolbar-starter.js`
+and exposes `window.GenericDleToolbarStarter.create({ markerId, alternateHtml, defaultHtml })`.
+
+Add a thin `starter.js` to your extension's webapp that supplies only the extension-specific parts
+(button markup, a unique `markerId`, any css/js the button needs) and bootstraps the engine:
+
+```js
+(function () {
+    const ts = `?timestamp=${Date.now()}`;
+    const TOOLBAR_HTML = `<table class="dleToolBarTable">...your button...</table>`;           // standalone variant
+    const ALTERNATE_TOOLBAR_HTML = `<table class="dleToolBarTable">...your button...</table>`;  // variant for inside the toolbar row
+
+    // Expose the global immediately and queue calls until the engine has loaded.
+    let starter = null;
+    const pending = [];
+    window.MyExtensionStarter = {
+        injectToolbar: (params) => starter ? starter.injectToolbar(params) : pending.push(params)
+    };
+
+    const engine = document.createElement('script');
+    engine.src = `/polarion/my-extension/ui/generic/js/dle-toolbar-starter.js${ts}`;
+    engine.onload = () => {
+        const generic = window.GenericDleToolbarStarter;
+        generic.injectStyles("my-extension-styles", `/polarion/my-extension/css/my-extension.css${ts}`);
+        // ...inject any other css/js the button needs...
+        starter = generic.create({
+            markerId: 'my-extension-toolbar-injected',   // unique id set on the injected element
+            alternateHtml: ALTERNATE_TOOLBAR_HTML,
+            defaultHtml: TOOLBAR_HTML
+        });
+        pending.forEach(p => starter.injectToolbar(p));
+        pending.length = 0;
+    };
+    document.head.appendChild(engine);
+})();
+```
+
+Then point the document editor at it via the Polarion configuration property (the bootstrap loads the
+engine and queues the call, so this config is the same as without the shared engine):
+
+```properties
+scriptInjection.dleEditorHead=<script src="/polarion/my-extension/js/starter.js"></script><script>MyExtensionStarter.injectToolbar({alternate: true});</script>
+```
+
+`injectToolbar({ alternate: true })` inserts the button into the editor toolbar row; calling it without
+`alternate` renders the standalone `defaultHtml` variant above the rich-text area. The engine is
+idempotent (guarded by `markerId`) and sets up one self-healing observer per extension.
