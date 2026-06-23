@@ -1,3 +1,5 @@
+@import url("checkboxes.css");
+
 @font-face {
     font-family: "Selawik";
     src: url("/polarion/ria/fonts/selawik/selawk.ttf");
@@ -33,12 +35,31 @@
     font-style: italic;
 }
 
+/*
+ * Polarion 2606 theme palette (measured from com.polarion.alm.ui 3.26.6).
+ * 2606 restyled its UI/document chrome: the old light-blue accents shifted to a
+ * teal accent (#007993) with near-black headings (#000028) and neutral grays.
+ * Centralised here so every downstream extension's admin page inherits the look;
+ * override a token downstream if a page needs a different shade.
+ */
+:root {
+    --polarion-accent: #007993;          /* links / accent (was #197FA2) */
+    --polarion-heading-text: #000028;    /* admin / section heading text (was #004d73) */
+    --polarion-heading-bg: #F3F3F0;      /* section-header bar + h1 underline (was #EBF0F5) */
+    --polarion-table-header-bg: #E8E8E3; /* repo-browser header fill (was #75A8E2) */
+    --polarion-table-border: #B3B3BE;    /* repo-browser header/column separator */
+    --polarion-table-cell-border: #DDDDDD; /* data-cell column separator */
+    --polarion-table-row-alt: #F3F3F0;   /* zebra odd-row (repo-browser #F3F3F0/white) */
+    --polarion-table-row-hover: #EBF7F8; /* row hover light-teal */
+    --polarion-button-bg: #F5F5F5;       /* toolbar button fill — flat (matches 2606 .polarion-generalToolbarButton; was unset/white) */
+}
+
 a, td, div, li, ul, input, button, option {
     font-family: "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif;
 }
 
 a {
-    color: #197FA2;
+    color: var(--polarion-accent);
     text-decoration: none;
 }
 
@@ -63,7 +84,7 @@ select {
 }
 
 .standard-admin-page h1, .standard-admin-page h2, .standard-admin-page h3 {
-    color: #004d73;
+    color: var(--polarion-heading-text);
     font-weight: bold;
 }
 
@@ -71,7 +92,7 @@ select {
     font-size: 30px;
     line-height: 38px;
     margin-top: 10px;
-    border-bottom: 4px solid #EBF0F5;
+    border-bottom: 4px solid var(--polarion-heading-bg);
 }
 
 .standard-admin-page h2 {
@@ -79,7 +100,7 @@ select {
     line-height: 31px;
     margin-top: 24px;
     padding: 8px 14px;
-    background-color: #EBF0F5;
+    background-color: var(--polarion-heading-bg);
 }
 
 .standard-admin-page h3 {
@@ -115,9 +136,9 @@ code-input {
     text-shadow: white 1px 1px 0.01em;
     text-align: left;
     padding-bottom: 3px;
-    background: #EBF0F5;
+    background: var(--polarion-heading-bg);
     width: auto;
-    color: #004D73;
+    color: var(--polarion-heading-text);
     padding-top: 5px;
     margin-bottom: 3px;
 }
@@ -203,7 +224,7 @@ code-input {
     text-align: left;
     vertical-align: middle;
     white-space: nowrap;
-    text-shadow: white 1px 1px 0.01em;
+    background-color: var(--polarion-button-bg);
     border: 1px solid #DEDEDE;
     -moz-border-radius: 2px;
     border-radius: 2px;
@@ -243,7 +264,7 @@ pre[class*=language-] {
     width: 100%;
     border-collapse: collapse;
     color: black;
-    text-align: center;
+    text-align: left;
 }
 
 #revisions-table thead th {
@@ -255,28 +276,37 @@ pre[class*=language-] {
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
     font-size: 8pt;
-    background: #75A8E2;
+    background: var(--polarion-table-header-bg);
     color: black;
+    text-align: center;
     border-top: 0;
-    border-bottom: 3px solid #CCD8E5;
-    border-right: 1px solid #CCD8E5;
+    border-bottom: 3px solid var(--polarion-table-border);
+    border-right: 1px solid var(--polarion-table-border);
     padding: 2px 5px 2px 5px;
 }
 
 #revisions-table td {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 11px;
-    background: #E9F3FA;
+    background: var(--polarion-table-row-alt);
     padding: 0 5px;
-    border: 1px solid #C0DAEA;
+    border: 1px solid var(--polarion-table-cell-border);
 }
 
 #revisions-table tr:nth-child(even) td {
-    background: #E9F3FA;
+    background: var(--polarion-table-row-alt);
 }
 
 #revisions-table tr:nth-child(odd) td {
     background: white;
+}
+
+#revisions-table tr:hover td {
+    background: var(--polarion-table-row-hover);
+}
+
+#revisions-table td:first-child {
+    text-align: right;
 }
 
 #revisions-table .empty-message {
@@ -287,11 +317,11 @@ pre[class*=language-] {
     margin: 0;
     padding: 0;
     border: none;
+    background: none;
 }
 
 .revert-to-revision-button:hover {
     cursor: pointer;
-    background: #FFC328;
 }
 
 .revision-number {
