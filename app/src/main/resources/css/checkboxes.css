@@ -1,0 +1,40 @@
+/*
+ * Neutral 2606 checkboxes — render with Polarion's own checkbox images
+ * (/polarion/ria/images/checkbox/*) instead of the browser's native blue.
+ *
+ * Single source for every extension. SCOPED to our own UI wrappers
+ * (.modal__container popups, .standard-admin-page admin pages, .form-wrapper
+ * document-properties side panels) so the rule is safe to inject straight into
+ * the Polarion document page (popups / side panels) without ever restyling
+ * Polarion's own checkboxes.
+ *
+ * Loaded by: common.css (@import) for admin pages; injected by each extension's
+ * popup/side-panel for the document-view contexts.
+ */
+.modal__container input[type="checkbox"],
+.standard-admin-page input[type="checkbox"],
+.form-wrapper input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    margin: 0 4px 0 0;
+    vertical-align: middle;
+    cursor: pointer;
+    background: url(/polarion/ria/images/checkbox/unchecked.png) no-repeat center;
+    background-size: 15px 15px;
+}
+
+.modal__container input[type="checkbox"]:checked,
+.standard-admin-page input[type="checkbox"]:checked,
+.form-wrapper input[type="checkbox"]:checked {
+    background-image: url(/polarion/ria/images/checkbox/checked.png);
+}
+
+/* Keep the checkbox vertically centered with its label text. */
+.modal__container label:has(input[type="checkbox"]),
+.standard-admin-page label:has(input[type="checkbox"]),
+.form-wrapper label:has(input[type="checkbox"]) {
+    display: inline-flex;
+    align-items: center;
+}
