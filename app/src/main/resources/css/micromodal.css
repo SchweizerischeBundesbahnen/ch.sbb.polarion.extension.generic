@@ -106,14 +106,16 @@
 }
 
 .modal__btn-primary {
-  background-color: #007993;
+  /* Fallback to the literal accent: micromodal.css is loaded standalone in popups, where
+     common.css's :root tokens are not present. */
+  background-color: var(--polarion-accent, #007993);
   color: #fff;
 }
 
 
 
 /**************************\
-  Demo Animation Style
+  Modal Animation Styles
 \**************************/
 @keyframes mmfadeIn {
   from { opacity: 0; }
