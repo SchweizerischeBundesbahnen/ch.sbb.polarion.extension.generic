@@ -67,8 +67,10 @@
         create: function (config) {
             // Stable left-to-right order across re-renders. Each button keeps the order it was
             // registered with (config.order — the config-execution order); re-injection inserts
-            // before the first already-present button with a higher order, so the visual order is
-            // independent of which extension's observer happens to re-fire first.
+            // before the first already-present button with a *higher* order. Buttons with distinct
+            // orders keep their position regardless of which extension's observer re-fires first;
+            // buttons sharing an order (e.g. callers that omit it → default 0) tie-break by
+            // observer-fire order, so distinct orders are required for full determinism.
             const myOrder = (typeof config.order === 'number') ? config.order : 0;
             const orderByMarker = top.__genericDleToolbarOrder || (top.__genericDleToolbarOrder = {});
             orderByMarker[config.markerId] = myOrder;
