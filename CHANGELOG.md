@@ -1,5 +1,19 @@
 # Changelog
 
+## [15.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.0.1...v15.1.0) (2026-06-23)
+
+
+### Features
+
+* add universal self-healing DLE-toolbar button injector ([#467](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/467)) ([cf55a98](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/cf55a981537bc39792278c1f9206f52256c8a51e)), closes [#466](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/466)
+* implement Polarion 2606 themed checkbox styles ([#465](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/465)) ([fcf3cc5](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/fcf3cc570ecc58cc1d4b2ff9dcdf773ffbb69d3d)), closes [#464](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/464)
+
+
+### Bug Fixes
+
+* **deps:** update swagger.version to v2.2.51 ([#458](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/458)) ([fcb87ef](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/fcb87ef34b677380db6df73f4639f41843fd22a9))
+* ensure stable button ordering in DLE-toolbar injector ([#468](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/468)) ([d4889b7](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d4889b7660b5af5224ccb4fabb664069cc844b9b)), closes [#466](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/466)
+
 ## [15.0.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.0.0...v15.0.1) (2026-06-08)
 
 
