@@ -57,6 +57,8 @@ describe('ConfigurationsPane', function () {
     });
 
     afterEach(function () {
+        // Tear down the dropdown so its body-level portal and global listeners don't leak across tests.
+        configPane.configurationsSelect.destroy();
         delete global.window;
         delete global.document;
         delete global.Event;
@@ -94,5 +96,12 @@ describe('ConfigurationsPane', function () {
         configPane.getSelectedConfiguration = sinon.stub().returns('testConfig');
         configPane.deleteConfiguration();
         expect(ctxMock.callAsync.calledOnce).to.be.true;
+    });
+
+    it('should remove the dropdown portal on destroy', function () {
+        const before = document.querySelectorAll('.sd-portal').length;
+        expect(before).to.be.greaterThan(0);
+        configPane.configurationsSelect.destroy();
+        expect(document.querySelectorAll('.sd-portal').length).to.equal(before - 1);
     });
 });

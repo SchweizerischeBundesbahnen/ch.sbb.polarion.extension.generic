@@ -272,6 +272,18 @@ export default class SearchableDropdown {
             }
         });
 
+        // Keyboard navigation. When searchable the focus is on the search box; otherwise it stays on
+        // the trigger — so the trigger also handles keys, both to open the closed popup and to drive
+        // an open one (arrows/enter/escape) when there is no search box.
+        this.trigger.addEventListener('keydown', e => {
+            if (this.isOpen) {
+                this._handleKeydown(e);
+            } else if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this._open();
+            }
+        });
+
         if (this.searchable) {
             this.searchInput.addEventListener('input', () => {
                 const query = this.searchInput.value.toLowerCase();
@@ -282,35 +294,39 @@ export default class SearchableDropdown {
                 this._renderOptions(filtered);
             });
 
-            this.searchInput.addEventListener('keydown', e => {
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    this._handleArrowDown();
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    this._handleArrowUp();
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    this._handleEnter();
-                } else if (e.key === 'Escape') {
-                    this._close();
-                }
-            });
+            this.searchInput.addEventListener('keydown', e => this._handleKeydown(e));
         }
 
         // Clicking outside of the component closes the popup. The popup lives in a body-level
-        // portal, so it must be checked separately from the container.
-        document.addEventListener('mousedown', e => {
+        // portal, so it must be checked separately from the container. Stored on the instance so
+        // destroy() can unbind it.
+        this._outsideClickHandler = e => {
             if (!this.container.contains(e.target) && !this.portal.contains(e.target)) {
                 this._close();
             }
-        });
+        };
+        document.addEventListener('mousedown', this._outsideClickHandler);
 
         // Keep the trigger in sync when the underlying <select> value is changed externally
         // (e.g. a consumer sets select.value and dispatches 'change'). syncFromElement never
         // dispatches, so this cannot loop.
         if (this.isSelect) {
             this.originalElement.addEventListener('change', () => this.syncFromElement());
+        }
+    }
+
+    _handleKeydown(e) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            this._handleArrowDown();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this._handleArrowUp();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            this._handleEnter();
+        } else if (e.key === 'Escape') {
+            this._close();
         }
     }
 
@@ -436,8 +452,12 @@ export default class SearchableDropdown {
         }
         window.addEventListener('scroll', this._repositionHandler, true);
         window.addEventListener('resize', this._repositionHandler);
+        // Move focus so keyboard navigation works: to the search box if present, otherwise to the
+        // trigger itself (the trigger's mousedown preventDefault suppressed the click-focus).
         if (this.searchable) {
             this.searchInput.focus();
+        } else {
+            this.trigger.focus();
         }
     }
 
@@ -463,16 +483,28 @@ export default class SearchableDropdown {
     // Position the body-level portal under (or above) the trigger, matching the trigger's width so
     // the popup's min-width (trigger width + 35px) resolves correctly.
     _position() {
+        const gap = 4;
         const rect = this.trigger.getBoundingClientRect();
         this.portal.style.position = 'fixed';
-        this.portal.style.left = rect.left + 'px';
+        // Keep the portal the trigger's width so the popup's min-width (trigger + 35px) resolves.
         this.portal.style.width = rect.width + 'px';
-
         this.optionsEl.classList.remove('dropup');
+        // Default: popup aligned to the trigger's left edge, opening downward.
+        this.portal.style.left = rect.left + 'px';
         this.portal.style.top = rect.bottom + 'px';
 
+        const popupWidth = this.optionsEl.offsetWidth;
         const popupHeight = this.optionsEl.offsetHeight;
+        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
         const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+        // Horizontal: the popup can be wider than the trigger; if it would overflow the right edge,
+        // shift it left so its right edge fits the viewport (like Polarion's native combo).
+        if (rect.left + popupWidth > viewportWidth - gap) {
+            this.portal.style.left = Math.max(gap, viewportWidth - popupWidth - gap) + 'px';
+        }
+
+        // Vertical: flip above the trigger when it wouldn't fit below.
         if (rect.bottom + popupHeight > viewportHeight && rect.top - popupHeight > 0) {
             this.optionsEl.classList.add('dropup');
             this.portal.style.top = rect.top + 'px';
@@ -555,6 +587,32 @@ export default class SearchableDropdown {
                 : this.items;
         }
         this.restoreSelection();
+    }
+
+    // Tear down the instance: remove the body-level portal, disconnect observers, and unbind the
+    // global listeners. Call this when a consumer rebuilds/replaces a pane that owns dropdowns so
+    // portals and document/window listeners don't accumulate.
+    destroy() {
+        this._close();
+        if (this.portal) {
+            this.portal.remove();
+        }
+        if (this._visibilityObserver) {
+            this._visibilityObserver.disconnect();
+        }
+        if (this._optionsObserver) {
+            this._optionsObserver.disconnect();
+        }
+        if (this._outsideClickHandler) {
+            document.removeEventListener('mousedown', this._outsideClickHandler);
+        }
+        if (this._repositionHandler) {
+            window.removeEventListener('scroll', this._repositionHandler, true);
+            window.removeEventListener('resize', this._repositionHandler);
+        }
+        if (this.originalElement && this.originalElement._searchableDropdown === this) {
+            delete this.originalElement._searchableDropdown;
+        }
     }
 
     // Sync the trigger display to the underlying <select>'s current value (no change event fired).
@@ -709,8 +767,14 @@ export default class SearchableDropdown {
         if (this.multiselect) {
             return this.items.filter(i => i.selected).map(i => i.label);
         }
-        const selected = this.items.find(i => i.selected);
-        return selected ? selected.label : '';
+        if (this.buildMode) {
+            const selected = this.items.find(i => i.selected);
+            return selected ? selected.label : '';
+        }
+        // Element mode (single) doesn't maintain items[].selected — derive the label from the live
+        // value so getSelectedText() and getSelectedValue() never disagree.
+        const item = this.items.find(i => i.value === this.value);
+        return item ? item.label : '';
     }
 
     selectValue(value) {
