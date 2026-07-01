@@ -1,40 +1,74 @@
 export default class SearchableDropdown {
     static COOKIE_PREFIX = 'searchable_dropdown_';
     static COOKIE_EXPIRY_DAYS = 30;
-    static BLUR_DELAY_MS = 100;
 
     constructor({
-                    element,
+                    element = null,
+                    selectContainer = null,
+                    label = null,
+                    changeListener = null,
+                    multiselect = false,
                     items = [],
-                    placeholder = 'Search...',
+                    placeholder = '',
                     searchable = true,
-                    rememberSelection = true
+                    rememberSelection = true,
+                    preserveOptionClasses = false
                 }) {
-        if (!element) {
-            throw new Error('SearchableDropdown: element is required');
+        if (!element && !selectContainer) {
+            throw new Error('SearchableDropdown: element or selectContainer is required');
         }
 
-        this.originalElement =
-            typeof element === 'string'
-                ? document.querySelector(element)
-                : element;
+        // Two construction modes:
+        //  - "select" mode: wrap an existing native <select> (element) — the <select> stays the
+        //    source of truth, is visually hidden, and the dropdown mirrors it.
+        //  - "build" mode: render into a provided container <div> (selectContainer) and let the
+        //    consumer populate it via addOption()/selectValue()/... This makes SearchableDropdown a
+        //    drop-in replacement for the legacy CustomSelect (same API surface), so a single
+        //    component covers both the native-<select> case and the programmatically-built case,
+        //    including multi-select.
+        this.buildMode = !element && !!selectContainer;
 
-        if (!this.originalElement) {
-            throw new Error('SearchableDropdown: element not found');
+        if (this.buildMode) {
+            this.originalElement = null;
+            this.container =
+                typeof selectContainer === 'string'
+                    ? document.querySelector(selectContainer)
+                    : selectContainer;
+            if (!this.container) {
+                throw new Error('SearchableDropdown: selectContainer not found');
+            }
+            this.isSelect = false;
+            // Items in build mode carry their own selection state.
+            this.items = items.map(i => ({selected: false, className: '', ...i}));
+        } else {
+            this.originalElement =
+                typeof element === 'string'
+                    ? document.querySelector(element)
+                    : element;
+            if (!this.originalElement) {
+                throw new Error('SearchableDropdown: element not found');
+            }
+            this.isSelect = this.originalElement.tagName === 'SELECT';
+            this.items = this.isSelect
+                ? this._extractItemsFromSelect(this.originalElement)
+                : items;
         }
 
-        this.isSelect = this.originalElement.tagName === 'SELECT';
-        this.rememberSelection = rememberSelection && !!this.originalElement.id;
-
-        this.items = this.isSelect
-            ? this._extractItemsFromSelect(this.originalElement)
-            : items;
+        this.multiselect = multiselect;
+        this.label = label;
+        this.changeListener = changeListener;
+        this.rememberSelection =
+            rememberSelection && !this.buildMode && !!this.originalElement.id;
 
         this.placeholder = placeholder;
         this.searchable = searchable;
+        // Mirror each source option's CSS class onto the rendered option (and, in select mode, the
+        // trigger when selected) — e.g. a global-scope config is marked with the `parent` class,
+        // which renders a small italic "global" marker. Always on in build mode so classes added
+        // via addOption(...).classList surface.
+        this.preserveOptionClasses = preserveOptionClasses || this.buildMode;
         this.isOpen = false;
         this.activeIndex = -1;
-        this._blurTimeoutId = null;
 
         this._createContainer();
         this._render();
@@ -75,11 +109,19 @@ export default class SearchableDropdown {
                 return style.display !== 'none'; // Skip not visible items
             }).map(option => ({
                 value: option.value,
-                label: option.text
+                label: option.text,
+                className: option.className,
+                selected: option.selected
             }));
     }
 
     _createContainer() {
+        if (this.buildMode) {
+            // Render straight into the consumer-provided container.
+            this.container.classList.add('searchable-dropdown');
+            return;
+        }
+
         this.container = document.createElement('div');
         this.container.className = 'searchable-dropdown';
 
@@ -88,175 +130,266 @@ export default class SearchableDropdown {
             this.originalElement.nextSibling
         );
 
+        // Let ExtensionContext.setSelector/setValue sync this dropdown on programmatic value changes
+        this.originalElement._searchableDropdown = this;
+
+        // Width is configurable from the consumer side: inherit an explicit width from the original
+        // element (e.g. <select style="width:142px">, or width:100%). When none is set, the width
+        // falls back to the CSS default (.searchable-dropdown), which consumers can override per context.
+        if (this.originalElement.style.width) {
+            this.container.style.width = this.originalElement.style.width;
+        }
+
         if (this.isSelect) {
-            this.originalElement.style.display = 'none';
+            // Mirror the element's current visibility onto the container...
+            this.container.style.display = this.originalElement.style.display || '';
+            this.container.style.visibility = this.originalElement.style.visibility || '';
+
+            // ...then visually hide the native <select> WITHOUT touching display/visibility,
+            // so consumer-driven display/visibility changes (displayIf, visibleIf, inline
+            // onchange handlers) stay observable and can be mirrored onto the container.
+            this.originalElement.style.position = 'absolute';
+            this.originalElement.style.width = '1px';
+            this.originalElement.style.height = '1px';
+            this.originalElement.style.overflow = 'hidden';
+            this.originalElement.style.opacity = '0';
+            this.originalElement.style.pointerEvents = 'none';
+
+            this._visibilityObserver = new MutationObserver(() => {
+                this.container.style.display = this.originalElement.style.display || '';
+                this.container.style.visibility = this.originalElement.style.visibility || '';
+            });
+            this._visibilityObserver.observe(this.originalElement, {
+                attributes: true,
+                attributeFilter: ['style']
+            });
+
+            // Keep in sync when the <select>'s options are (re)populated dynamically
+            this._optionsObserver = new MutationObserver(() => {
+                this.items = this._extractItemsFromSelect(this.originalElement);
+                this.syncFromElement();
+                if (this.isOpen) {
+                    this._renderOptions(this.items);
+                }
+            });
+            this._optionsObserver.observe(this.originalElement, { childList: true });
         }
     }
 
     _render() {
-        this.input = document.createElement('input');
-        this.input.type = 'text';
-        this.input.placeholder = this.placeholder;
-
-        if (!this.searchable) {
-            this.input.readOnly = true;
-            this.input.classList.add('non-searchable');
+        // Trigger — the closed combobox. Single-select uses a read-only input; multi-select uses a
+        // div that renders the selected values as removable chips and grows in height to show them.
+        if (this.multiselect) {
+            this.trigger = document.createElement('div');
+            this.trigger.className = 'sd-trigger sd-trigger-multi';
+            this.trigger.tabIndex = 0;
+        } else {
+            this.trigger = document.createElement('input');
+            this.trigger.type = 'text';
+            this.trigger.className = 'sd-trigger';
+            this.trigger.placeholder = this.placeholder;
+            this.trigger.readOnly = true;
+        }
+        if (this.buildMode && this.container.id) {
+            this.trigger.id = this.container.id + '_sd-trigger';
+            if (this.label && !this.multiselect) {
+                this.label.htmlFor = this.trigger.id;
+            }
         }
 
+        // Popup menu (opens on click)
         this.optionsEl = document.createElement('div');
         this.optionsEl.className = 'options';
 
-        this.container.appendChild(this.input);
-        this.container.appendChild(this.optionsEl);
+        if (this.searchable) {
+            // Search row on top of the popup: search box + erase icon
+            // (mirrors Polarion's JComboBox-SearchBox / JComboBox-EraseIcon)
+            const searchRow = document.createElement('div');
+            searchRow.className = 'search-row';
 
-        if (this.isSelect && this.originalElement.value) {
+            this.searchInput = document.createElement('input');
+            this.searchInput.type = 'text';
+            this.searchInput.className = 'search-box';
+            // size=1 keeps the input's intrinsic width tiny so it doesn't blow up the
+            // popup's max-content width; flex:1 then stretches it to the list width.
+            this.searchInput.size = 1;
+
+            this.eraseIcon = document.createElement('img');
+            this.eraseIcon.className = 'erase';
+            this.eraseIcon.src = '/polarion/ria/images/search_combo_erase.png';
+            this.eraseIcon.alt = '';
+            this.eraseIcon.addEventListener('mousedown', e => {
+                e.preventDefault();
+                this.searchInput.value = '';
+                this.activeIndex = -1;
+                this._renderOptions(this.items);
+                this.searchInput.focus();
+            });
+
+            searchRow.appendChild(this.searchInput);
+            searchRow.appendChild(this.eraseIcon);
+            this.optionsEl.appendChild(searchRow);
+        }
+
+        // Scrollable items list
+        this.itemsEl = document.createElement('div');
+        this.itemsEl.className = 'items';
+        this.optionsEl.appendChild(this.itemsEl);
+
+        this.container.appendChild(this.trigger);
+
+        // The popup is rendered into a portal appended to <body> (position:fixed) rather than
+        // nested in the container. This lets it escape any ancestor overflow clipping (narrow side
+        // panels, scrollable modals) and its width is driven in JS from the trigger, so it always
+        // shows in full. Hidden until opened.
+        this.portal = document.createElement('div');
+        this.portal.className = 'sd-portal';
+        this.portal.style.display = 'none';
+        this.portal.appendChild(this.optionsEl);
+        document.body.appendChild(this.portal);
+
+        if (this.multiselect) {
+            this._updateTriggerFromSelection();
+        } else if (!this.buildMode && this.isSelect && this.originalElement.value) {
             const selected = this.items.find(
                 item => item.value === this.originalElement.value
             );
             if (selected) {
-                this.input.value = selected.label;
+                this.trigger.value = selected.label;
             }
         }
+        this._applyTriggerClass();
     }
 
     _bindEvents() {
-        if (this.searchable) {
-            // Add filtering logic, but only for dropdowns which have this logic enabled
-            this.input.addEventListener('input', () => {
-                const query = this.input.value.toLowerCase();
-                const filtered = this.items.filter(item =>
-                    item.label.toLowerCase().includes(query)
-                );
-                this._renderOptions(filtered);
-                this._open();
-            });
-        }
-
-        // Sequential clicks on input field should trigger open/close logic
-        this.input.addEventListener('mousedown', e => {
+        // Clicking the trigger opens/closes the popup
+        this.trigger.addEventListener('mousedown', e => {
             e.preventDefault(); // critical: prevents focus-triggered reopen
-
             if (this.isOpen) {
                 this._close();
             } else {
                 this._open();
-                this.input.focus();
             }
         });
 
-        // We should handle blur events to validate user input. If entered value doesn't correspond any available option,
-        // dropdown selection will be reset
-        this.input.addEventListener('blur', () => {
-            // Should be timed out, otherwise disturbs item selection via mouse
-            this._blurTimeoutId = setTimeout(() => {
-                this._blurTimeoutId = null;
-                if (this.searchable) {
-                    const text = this.input.value.trim();
-                    if (!text) {
-                        this.selectItem(null);
-                        return;
-                    }
-                    const match = this.items.find(
-                        item => item.label === text
-                    );
-                    this.selectItem(match);
+        if (this.searchable) {
+            this.searchInput.addEventListener('input', () => {
+                const query = this.searchInput.value.toLowerCase();
+                const filtered = this.items.filter(item =>
+                    item.label.toLowerCase().includes(query)
+                );
+                this.activeIndex = -1;
+                this._renderOptions(filtered);
+            });
+
+            this.searchInput.addEventListener('keydown', e => {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this._handleArrowDown();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this._handleArrowUp();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this._handleEnter();
+                } else if (e.key === 'Escape') {
+                    this._close();
                 }
-                this._close();
-            }, SearchableDropdown.BLUR_DELAY_MS);
-        });
+            });
+        }
 
-        // Better UX - add possibility to navigate the list and select items via keyboard
-        this.input.addEventListener('keydown', e => {
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                this._handleArrowDown();
-            }
-
-            if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                this._handleArrowUp();
-            }
-
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this._handleEnter();
-            }
-
-            if (e.key === 'Escape') {
-                this._close();
-            }
-        });
-
-        // Focusing input element should automatically open dropdown's list
-        this.input.addEventListener('focus', () => {
-            this._open();
-        });
-
-        // Clicking outside of component should automatically close dropdown's list
+        // Clicking outside of the component closes the popup. The popup lives in a body-level
+        // portal, so it must be checked separately from the container.
         document.addEventListener('mousedown', e => {
-            if (!this.container.contains(e.target)) {
+            if (!this.container.contains(e.target) && !this.portal.contains(e.target)) {
                 this._close();
             }
         });
+
+        // Keep the trigger in sync when the underlying <select> value is changed externally
+        // (e.g. a consumer sets select.value and dispatches 'change'). syncFromElement never
+        // dispatches, so this cannot loop.
+        if (this.isSelect) {
+            this.originalElement.addEventListener('change', () => this.syncFromElement());
+        }
     }
 
     _renderOptions(list) {
-        this.optionsEl.innerHTML = '';
+        this.itemsEl.innerHTML = '';
         this._visibleItems = list;
 
         list.forEach((item, index) => {
             const option = document.createElement('div');
             option.className = 'option';
-            option.textContent = item.label;
 
-            if (item.value === this.value) {
-                option.classList.add('selected');
+            if (this.multiselect) {
+                option.classList.add('multiselect-option');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = !!item.selected;
+                checkbox.tabIndex = -1;
+                option.appendChild(checkbox);
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'option-label';
+                labelSpan.textContent = item.label;
+                option.appendChild(labelSpan);
+            } else {
+                option.textContent = item.label;
+            }
+
+            if (this.preserveOptionClasses && item.className) {
+                option.classList.add(...item.className.split(/\s+/).filter(Boolean));
             }
 
             if (index === this.activeIndex) {
                 option.classList.add('active');
             }
 
-            option.addEventListener('mousedown', () => {
+            // Highlight follows the mouse — only one option is highlighted at a time
+            option.addEventListener('mouseover', () => {
+                this.activeIndex = index;
+                this._paintActive();
+            });
+
+            option.addEventListener('mousedown', e => {
+                e.preventDefault();
+                // Stop the event before it reaches the document-level outside-click handler:
+                // selectItem() may re-render the list (multi-select), detaching this option, after
+                // which portal.contains(e.target) would be false and wrongly close the popup.
+                e.stopPropagation();
                 this.selectItem(item);
             });
 
-            this.optionsEl.appendChild(option);
+            this.itemsEl.appendChild(option);
         });
     }
 
-    _handleArrowDown() {
-        if (!this.isOpen) {
-            this._open();
-            this.activeIndex = 0;
-        } else {
-            this.activeIndex = (this.activeIndex + 1) % this._visibleItems.length;
+    _paintActive() {
+        const options = this.itemsEl.children;
+        for (let i = 0; i < options.length; i++) {
+            options[i].classList.toggle('active', i === this.activeIndex);
         }
+    }
 
+    _handleArrowDown() {
+        if (!this._visibleItems || this._visibleItems.length === 0) {
+            return;
+        }
+        this.activeIndex = (this.activeIndex + 1) % this._visibleItems.length;
         this._refreshActive();
     }
 
     _handleArrowUp() {
-        if (!this.isOpen) {
-            this._open();
-            this.activeIndex = this._visibleItems.length - 1;
-        } else {
-            const visibleLength = this._visibleItems.length;
-            if (this.activeIndex === -1) {
-                this.activeIndex = visibleLength - 1;
-            } else {
-                this.activeIndex = (this.activeIndex - 1 + visibleLength) % visibleLength;
-            }
+        if (!this._visibleItems || this._visibleItems.length === 0) {
+            return;
         }
-
+        this.activeIndex = this.activeIndex <= 0
+            ? this._visibleItems.length - 1
+            : this.activeIndex - 1;
         this._refreshActive();
     }
 
     _handleEnter() {
-        if (!this.isOpen) {
-            return;
-        }
-
         const item = this._visibleItems[this.activeIndex];
         if (item) {
             this.selectItem(item);
@@ -269,7 +402,7 @@ export default class SearchableDropdown {
     }
 
     _scrollActiveIntoView() {
-        const active = this.optionsEl.querySelector('.option.active');
+        const active = this.itemsEl.querySelector('.option.active');
         if (active) {
             active.scrollIntoView({ block: 'nearest' });
         }
@@ -279,37 +412,128 @@ export default class SearchableDropdown {
         if (this.isOpen) {
             return;
         }
-
         this.isOpen = true;
-
+        this.container.classList.add('open');
+        // Highlight the currently selected item on open (single-select only, and only if something
+        // is actually selected). The highlight then follows the mouse/keyboard. Multi-select shows
+        // its state via checkboxes, so nothing is pre-highlighted.
+        this.activeIndex = (!this.multiselect && this.trigger.value)
+            ? this.items.findIndex(item => item.value === this.value)
+            : -1;
+        if (this.searchable) {
+            this.searchInput.value = '';
+        }
         this._renderOptions(this.items);
-        this.activeIndex = this._visibleItems.findIndex(item => item.value === this.value);
         this._show();
-        this._scrollActiveIntoView();
+        // Reposition the portal while open if the page scrolls or resizes (capture phase catches
+        // scrolling in nested containers such as the document side panel).
+        if (!this._repositionHandler) {
+            this._repositionHandler = () => {
+                if (this.isOpen) {
+                    this._position();
+                }
+            };
+        }
+        window.addEventListener('scroll', this._repositionHandler, true);
+        window.addEventListener('resize', this._repositionHandler);
+        if (this.searchable) {
+            this.searchInput.focus();
+        }
     }
 
     _close() {
         if (!this.isOpen) {
             return;
         }
-
         this.isOpen = false;
+        this.container.classList.remove('open');
         this._hide();
+        if (this._repositionHandler) {
+            window.removeEventListener('scroll', this._repositionHandler, true);
+            window.removeEventListener('resize', this._repositionHandler);
+        }
         this.activeIndex = -1;
     }
 
     _show() {
-        this.optionsEl.style.display = 'block';
+        this.portal.style.display = 'block';
+        this._position();
+    }
 
-        let boundingRect = this.optionsEl.getBoundingClientRect();
-        if (boundingRect.bottom > (window.innerHeight || document.documentElement.clientHeight)) {
+    // Position the body-level portal under (or above) the trigger, matching the trigger's width so
+    // the popup's min-width (trigger width + 35px) resolves correctly.
+    _position() {
+        const rect = this.trigger.getBoundingClientRect();
+        this.portal.style.position = 'fixed';
+        this.portal.style.left = rect.left + 'px';
+        this.portal.style.width = rect.width + 'px';
+
+        this.optionsEl.classList.remove('dropup');
+        this.portal.style.top = rect.bottom + 'px';
+
+        const popupHeight = this.optionsEl.offsetHeight;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        if (rect.bottom + popupHeight > viewportHeight && rect.top - popupHeight > 0) {
             this.optionsEl.classList.add('dropup');
+            this.portal.style.top = rect.top + 'px';
         }
     }
 
     _hide() {
-        this.optionsEl.style.display = 'none';
+        this.portal.style.display = 'none';
         this.optionsEl.classList.remove('dropup');
+    }
+
+    _fireChangeListener() {
+        if (typeof this.changeListener === 'function') {
+            this.changeListener(this);
+        }
+    }
+
+    _updateTriggerFromSelection() {
+        if (this.multiselect) {
+            this._renderChips();
+            return;
+        }
+        const selected = this.items.filter(i => i.selected);
+        this.trigger.value = selected.length ? selected[0].label : '';
+        this._applyTriggerClass();
+    }
+
+    // Multi-select trigger content: one removable chip per selected value (empty → placeholder).
+    _renderChips() {
+        this.trigger.innerHTML = '';
+        const selected = this.items.filter(i => i.selected);
+        if (selected.length === 0) {
+            const placeholder = document.createElement('span');
+            placeholder.className = 'sd-placeholder';
+            placeholder.textContent = this.placeholder;
+            this.trigger.appendChild(placeholder);
+            return;
+        }
+        selected.forEach(item => {
+            const chip = document.createElement('span');
+            chip.className = 'sd-chip';
+
+            const label = document.createElement('span');
+            label.className = 'sd-chip-label';
+            label.textContent = item.label;
+            chip.appendChild(label);
+
+            const remove = document.createElement('span');
+            remove.className = 'sd-chip-remove';
+            remove.textContent = '×';
+            remove.title = 'Remove';
+            remove.addEventListener('mousedown', e => {
+                e.preventDefault();
+                // Don't let the trigger's open/close handler fire when removing a chip.
+                e.stopPropagation();
+                this.selectItem(item);
+            });
+            chip.appendChild(remove);
+
+            this.trigger.appendChild(chip);
+        });
     }
 
     /* ---------- Public API ---------- */
@@ -325,20 +549,77 @@ export default class SearchableDropdown {
     }
 
     refresh() {
-        this.items = this.isSelect
-            ? this._extractItemsFromSelect(this.originalElement)
-            : this.items;
+        if (!this.buildMode) {
+            this.items = this.isSelect
+                ? this._extractItemsFromSelect(this.originalElement)
+                : this.items;
+        }
         this.restoreSelection();
     }
 
+    // Sync the trigger display to the underlying <select>'s current value (no change event fired).
+    // Called by ExtensionContext.setSelector/setValue after a programmatic value change.
+    syncFromElement() {
+        if (this.buildMode) {
+            return;
+        }
+        if (this.multiselect) {
+            this.items = this._extractItemsFromSelect(this.originalElement);
+            this._updateTriggerFromSelection();
+            return;
+        }
+        if (this.isSelect && this.originalElement.selectedIndex === -1 && this.originalElement.options.length > 0) {
+            // Native single-select left blank (value cleared) — keep the first option selected.
+            this.originalElement.selectedIndex = 0;
+        }
+        const value = this.isSelect ? this.originalElement.value : this.trigger.value;
+        const item = this.items.find(i => i.value === value);
+        this.trigger.value = item ? item.label : '';
+        this._applyTriggerClass();
+    }
+
+    _applyTriggerClass() {
+        // The multi-select trigger is a chip container, not a value input — don't rewrite its class.
+        if (this.multiselect || !this.preserveOptionClasses) {
+            return;
+        }
+        const selected = this.buildMode
+            ? this.items.find(i => i.selected)
+            : this.items.find(i => i.value === this.value);
+        this.trigger.className = 'sd-trigger' + (selected && selected.className ? ' ' + selected.className : '');
+    }
+
     selectItem(item, preventClosing = false) {
-        // Cancel any pending blur timeout to prevent it from overwriting this selection
-        if (this._blurTimeoutId) {
-            clearTimeout(this._blurTimeoutId);
-            this._blurTimeoutId = null;
+        if (this.multiselect) {
+            if (item) {
+                item.selected = !item.selected;
+                // Mirror the toggle onto the native <select multiple> so it stays the source of
+                // truth for consumers that read select.selectedOptions.
+                if (this.isSelect) {
+                    const option = Array.from(this.originalElement.options)
+                        .find(o => o.value === item.value);
+                    if (option) {
+                        option.selected = item.selected;
+                    }
+                    this.originalElement.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+            this._updateTriggerFromSelection();
+            // Keep the popup open and reflect the toggled checkbox.
+            this._renderOptions(this._visibleItems || this.items);
+            this._saveSelection(null);
+            this._fireChangeListener();
+            return;
         }
 
-        this.input.value = item ? item.label : "";
+        if (this.buildMode) {
+            this.items.forEach(i => i.selected = !!item && i.value === item.value);
+            this._updateTriggerFromSelection();
+        } else {
+            this.trigger.value = item ? item.label : '';
+            this._applyTriggerClass();
+        }
+
         if (!preventClosing) {
             this._close();
         }
@@ -351,27 +632,148 @@ export default class SearchableDropdown {
         }
 
         this._saveSelection(item ? item.value : null);
+        this._fireChangeListener();
+    }
+
+    /* ---------- Build-mode API (drop-in for CustomSelect) ---------- */
+
+    // Append a selectable option. Returns lightweight handles whose classList mutations are
+    // mirrored onto the rendered option — this preserves the CustomSelect contract where callers do
+    // `addOption(...).label.classList.add('parent')` to mark a global-scope config.
+    addOption(value, text) {
+        const item = {
+            value,
+            label: text !== undefined && text !== null ? text : value,
+            className: '',
+            selected: false
+        };
+        this.items.push(item);
+        // Single-select defaults to the first option (no empty/placeholder state), matching a
+        // native <select>. A later selectValue() overrides it.
+        if (!this.multiselect && this.items.length === 1) {
+            item.selected = true;
+            this._updateTriggerFromSelection();
+        }
+        if (this.isOpen) {
+            this._renderOptions(this.items);
+        }
+        const proxy = this._optionClassHandle(item);
+        return { checkbox: proxy, label: proxy };
+    }
+
+    _optionClassHandle(item) {
+        const mutate = (transform) => {
+            const classes = new Set((item.className || '').split(/\s+/).filter(Boolean));
+            transform(classes);
+            item.className = [...classes].join(' ');
+            if (this.isOpen) {
+                this._renderOptions(this._visibleItems || this.items);
+            }
+            this._applyTriggerClass();
+        };
+        return {
+            classList: {
+                add: (cls) => mutate(classes => classes.add(cls)),
+                remove: (cls) => mutate(classes => classes.delete(cls)),
+                toggle: (cls) => mutate(classes => classes.has(cls) ? classes.delete(cls) : classes.add(cls))
+            }
+        };
+    }
+
+    empty() {
+        this.items = [];
+        this.activeIndex = -1;
+        this.trigger.value = '';
+        this._applyTriggerClass();
+        if (this.isOpen) {
+            this._renderOptions(this.items);
+        }
+    }
+
+    containsOption(optionValue) {
+        return this.items.some(i => i.value === optionValue);
+    }
+
+    getSelectedValue() {
+        if (this.multiselect) {
+            return this.items.filter(i => i.selected).map(i => i.value);
+        }
+        if (this.buildMode) {
+            const selected = this.items.find(i => i.selected);
+            return selected ? selected.value : '';
+        }
+        return this.isSelect ? this.originalElement.value : this.trigger.value;
+    }
+
+    getSelectedText() {
+        if (this.multiselect) {
+            return this.items.filter(i => i.selected).map(i => i.label);
+        }
+        const selected = this.items.find(i => i.selected);
+        return selected ? selected.label : '';
+    }
+
+    selectValue(value) {
+        if (this.buildMode) {
+            this.items.forEach(i => i.selected = i.value === value);
+            // Single-select never stays empty — if the value matched nothing, fall back to the
+            // first option (like a native <select>).
+            if (!this.multiselect && this.items.length > 0 && !this.items.some(i => i.selected)) {
+                this.items[0].selected = true;
+            }
+            this._updateTriggerFromSelection();
+            if (this.isOpen) {
+                this._renderOptions(this._visibleItems || this.items);
+            }
+            this._fireChangeListener();
+        } else if (this.isSelect) {
+            this.originalElement.value = value;
+            // Native single-select: if the value didn't match any option, keep the first selected
+            // rather than leaving the control blank.
+            if (!this.multiselect && this.originalElement.selectedIndex === -1 && this.originalElement.options.length > 0) {
+                this.originalElement.selectedIndex = 0;
+            }
+            this.syncFromElement();
+        }
+    }
+
+    selectMultipleValues(values) {
+        this.items.forEach(i => i.selected = !!values && values.includes(i.value));
+        this._updateTriggerFromSelection();
+        if (this.isOpen) {
+            this._renderOptions(this._visibleItems || this.items);
+        }
+        this._fireChangeListener();
     }
 
     get id() {
-        return this.originalElement.id;
+        return this.buildMode
+            ? (this.container ? this.container.id : undefined)
+            : this.originalElement.id;
     }
 
     get value() {
+        if (this.buildMode || this.multiselect) {
+            return this.getSelectedValue();
+        }
         return this.isSelect
             ? this.originalElement.value
-            : this.input.value;
+            : this.trigger.value;
     }
 
     set value(val) {
+        if (this.buildMode) {
+            this.selectValue(val);
+            return;
+        }
         if (this.isSelect) {
             const item = this.items.find(i => i.value === val);
             if (item) {
                 this.originalElement.value = val;
-                this.input.value = item.label;
+                this.trigger.value = item.label;
             }
         } else {
-            this.input.value = val;
+            this.trigger.value = val;
         }
     }
 }

@@ -1,78 +1,248 @@
 .searchable-dropdown {
     position: relative;
-    width: auto;
-    min-width: 250px;
+    display: inline-block;
+    /* Default width; overridden inline when the original element has an explicit width,
+       and overridable per-context by consumers via CSS (e.g. .comparison .searchable-dropdown). */
+    width: 130px;
     font-family: "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif;
 }
 
-/* Input styled as select */
-.searchable-dropdown input {
+/* Trigger — the closed combobox (Polarion JSSelector-Combo) */
+.searchable-dropdown > input.sd-trigger {
     width: 100%;
+    height: 23px;
     box-sizing: border-box;
-    padding: 2px 2rem 4px .4rem;
-    border: 1px solid #ccc;
+    padding: 2px 2rem 2px .5rem;
+    border: 1px solid #c9c9c9;
     border-radius: 2px;
     background-color: #fff;
     cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
 }
 
-.searchable-dropdown input.non-searchable {
+/* Open state — Polarion JSSelector-ComboOpen (blue border + shadow) */
+.searchable-dropdown.open > .sd-trigger {
+    border-color: #1491EB;
+    box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.3);
+    outline: none;
+}
+
+/* Multi-select trigger: renders selected values as chips and grows in height (wrapping) so all
+   selections stay visible instead of being truncated into a single comma-joined line. */
+.searchable-dropdown > .sd-trigger-multi {
+    width: 100%;
+    min-height: 23px;
+    box-sizing: border-box;
+    padding: 1px 2rem 1px 3px;
+    border: 1px solid #c9c9c9;
+    border-radius: 2px;
+    background-color: #fff;
     cursor: pointer;
-    caret-color: transparent;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    /* Uniform spacing between chips (row and column). */
+    gap: 4px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
 }
 
-/* Arrow container */
+.searchable-dropdown > .sd-trigger-multi .sd-placeholder {
+    color: #7c7c7c;
+    padding-left: 3px;
+}
+
+.searchable-dropdown .sd-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0 3px 0 5px;
+    background: #ebf7f8;
+    border: 1px solid #b6dfe3;
+    border-radius: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 17px;
+}
+
+.searchable-dropdown .sd-chip-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.searchable-dropdown .sd-chip-remove {
+    cursor: pointer;
+    color: #5c8a90;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.searchable-dropdown .sd-chip-remove:hover {
+    color: #1a1a1a;
+}
+
+/* Arrow on the trigger — Polarion combo_box_old.png */
 .searchable-dropdown::after {
     content: '';
     position: absolute;
-    right: 12px;
-    top: 40%;
-    width: 6px;
-    height: 6px;
-    background: transparent url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAOUlEQVR4nGNgwAOKGRgY/qNhkBgDCwMDw0UkwasMDAysMF22DAwM/6ASjuhGLmVgYFiCzS5JKAYDACJtDIY1VpdwAAAAAElFTkSuQmCC") no-repeat;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: transparent url("/polarion/ria/images/combo_box_old.png") center / contain no-repeat;
+    pointer-events: none;
 }
 
-.searchable-dropdown.open::after {
-    transform: rotate(180deg);
+/* The popup is portalled into <body> (see SearchableDropdown._render) so it can't be clipped by
+   an ancestor's overflow (narrow side panels, scrollable modals). The portal is fixed-positioned
+   in JS under the trigger, and given the trigger's width so the popup min-width (trigger + 35px)
+   resolves. All popup-internal styling therefore hangs off .sd-portal, not .searchable-dropdown. */
+.sd-portal {
+    position: fixed;
+    /* Very high so the body-level popup always renders above modals/overlays it may open from. */
+    z-index: 2147483000;
+    font-family: "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif;
 }
 
-/* Dropdown list */
-.searchable-dropdown .options {
+/* Popup menu (Polarion JComboBox-ItemsContainer) */
+.sd-portal .options {
     position: absolute;
-    top: calc(100% + 2px);
+    top: 100%;
     left: 0;
-    right: 0;
+    /* Popup width is driven by the longest option, but never narrower than the trigger + 35px */
+    min-width: calc(100% + 35px);
+    width: max-content;
     background: #fff;
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    max-height: 180px;
-    overflow-y: auto;
-    display: none;
-    z-index: 1000;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #CCCCD4;
+    border-radius: 2px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.searchable-dropdown .options.dropup {
-    bottom: calc(100% + 2px);
+.sd-portal .options.dropup {
+    bottom: 100%;
     top: auto;
 }
 
-/* Option item */
-.searchable-dropdown .option {
-    padding: 8px 10px;
+/* Search row on top of the popup: search box + erase icon.
+   width:0 + min-width:100% keeps the search input OUT of the popup's max-content width
+   calculation (otherwise the input's intrinsic width would inflate the popup to a fixed,
+   too-wide size); the row then stretches to whatever width the option list resolves to. */
+.sd-portal .search-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    box-sizing: border-box;
+    width: 0;
+    min-width: 100%;
+}
+
+.sd-portal .search-box {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    border: 1px solid #1491EB;
+    border-radius: 2px;
+    background-color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    color: #1a1a1a;
+    outline: none;
+}
+
+/* Erase (clear search) icon — Polarion search_combo_erase.png */
+.sd-portal .erase {
+    flex: none;
+    width: 12px;
+    height: 12px;
     cursor: pointer;
 }
 
-.searchable-dropdown .option:hover {
-    background-color: #DAECF0;
+/* Scrollable items list */
+.sd-portal .items {
+    max-height: 180px;
+    overflow-y: auto;
 }
 
-.searchable-dropdown .option.active {
-    background-color: #DAECF0;
-}
-
-.searchable-dropdown .option.selected {
+/* Option item */
+.sd-portal .option {
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
     font-weight: 600;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Highlight — exact Polarion .polarion-JComboBox-ItemOver colour.
+   Only one option is highlighted at a time (follows mouse/keyboard), managed via the .active class. */
+.sd-portal .option.active {
+    background-color: #ebf7f8;
+}
+
+/* Multi-select option: a checkbox in front of the label (toggles without closing the popup). */
+.sd-portal .option.multiselect-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sd-portal .option.multiselect-option input[type="checkbox"] {
+    flex: none;
+    margin: 0;
+    /* Let clicks fall through to the option row so a single handler toggles selection
+       (avoids a double-toggle between the native checkbox and our handler). */
+    pointer-events: none;
+    /* Polarion-styled checkbox (the portal lives in <body>, outside the wrappers checkboxes.css
+       scopes to, so replicate the image styling here — only for in-list multi-select checkboxes). */
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background: url(/polarion/ria/images/checkbox/unchecked.png) no-repeat center;
+    background-size: 15px 15px;
+}
+
+.sd-portal .option.multiselect-option input[type="checkbox"]:checked {
+    background-image: url(/polarion/ria/images/checkbox/checked.png);
+}
+
+.sd-portal .option.multiselect-option .option-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* preserveOptionClasses: options inherit the source <option>'s class.
+   .parent = a config inherited from a broader (e.g. global) scope. The name is
+   shown in normal text and a small italic "global" marker is appended on the
+   right — matching Polarion's original config selector (was configurations.css
+   .parent::after). The trigger is an <input>, which can't render ::after, so the
+   selected value there shows just the config name. */
+.sd-portal .option.parent {
+    display: flex;
+    align-items: baseline;
+    overflow: visible;
+}
+
+.sd-portal .option.parent::after {
+    content: "global";
+    margin-left: auto;
+    padding-left: 16px;
+    font-size: 10px;
+    font-style: italic;
 }

@@ -1,4 +1,4 @@
-import CustomSelect from "./CustomSelect.js";
+import SearchableDropdown from "./SearchableDropdown.js";
 
 export default class ConfigurationsPane {
 
@@ -60,11 +60,19 @@ export default class ConfigurationsPane {
         this.preDeleteCallback = preDeleteCallback;
         this.newConfigurationCallback = newConfigurationCallback;
 
-        this.configurationsSelect = new CustomSelect({
-            selectContainer: document.getElementById("configurations-select"),
-            label: document.getElementById("configurations-label"),
-            changeListener: (selectedCheckbox) => this.configurationChanged(selectedCheckbox)
+        this.configSelectElement = document.getElementById("configurations-select");
+        const configLabel = document.getElementById("configurations-label");
+        if (configLabel) {
+            configLabel.htmlFor = "configurations-select";
+        }
+        this.configurationsSelect = new SearchableDropdown({
+            element: this.configSelectElement,
+            preserveOptionClasses: true,
+            rememberSelection: false
         });
+        // Native <select> change (user pick or programmatic dispatch) drives the config logic
+        this.configSelectElement.addEventListener('change', () =>
+            this.configurationChanged(this.configSelectElement.selectedOptions[0] || null));
     }
 
     loadConfigurationNames() {
@@ -75,7 +83,7 @@ export default class ConfigurationsPane {
             url: `/polarion/${this.ctx.extension}/rest/internal/settings/${this.ctx.setting}/names?scope=${this.ctx.scope}`,
             contentType: 'application/json',
             onOk: (responseText) => {
-                this.configurationsSelect.empty();
+                this.configSelectElement.innerHTML = "";
 
                 const previouslySelectedValue = this.ctx.getCookie(ConfigurationsPane.SELECTED_CONFIGURATION_COOKIE + this.ctx.setting);
                 let preselectDefault = true;
@@ -86,21 +94,25 @@ export default class ConfigurationsPane {
                     if (name.name === previouslySelectedValue) {
                         preselectDefault = false;
                     }
-                    const addedOption = this.configurationsSelect.addOption(name.name);
-                    if (name.scope !== this.ctx.scope) {
-                        addedOption.checkbox.classList.add('parent');
-                        addedOption.label.classList.add('parent');
+                    const option = document.createElement('option');
+                    option.value = name.name;
+                    option.textContent = name.name;
+                    if (name.scope !== this.ctx.scope) { // inherited from a broader (e.g. global) scope
+                        option.classList.add('parent');
                     }
+                    this.configSelectElement.appendChild(option);
                 }
 
                 const hasNames = names.length > 0
                 this.ctx.disableIf('configurations-button-edit', !hasNames);
                 this.ctx.disableIf('configurations-button-delete', !hasNames);
                 if (hasNames) {
-                    this.configurationsSelect.selectValue(previouslySelectedValue && !preselectDefault ? previouslySelectedValue : defaultValue);
+                    this.configSelectElement.value = previouslySelectedValue && !preselectDefault ? previouslySelectedValue : defaultValue;
+                    this.configSelectElement.dispatchEvent(new Event('change'));
                     this.setContentAreaEnabled(true);
                 } else {
-                    this.configurationsSelect.setSelectedOptionValue('');
+                    this.configSelectElement.value = "";
+                    this.configurationChanged(null);
                 }
             },
             onError: () => document.getElementById("configurations-load-error").style.display = "block"
@@ -137,7 +149,7 @@ export default class ConfigurationsPane {
         this.editConfigurationPane.style.display = "none";
         this.configurationsPane.style.display = "block";
         this.setContentAreaEnabled(true);
-        this.configurationsSelect.handleChange();
+        this.configSelectElement.dispatchEvent(new Event('change'));
     }
 
     saveConfiguration() {
@@ -194,10 +206,10 @@ export default class ConfigurationsPane {
     }
 
     nameClashes(newValue, oldValue) {
-        for (let checkbox of this.configurationsSelect.getAllCheckboxes()) {
-            if (!checkbox.classList.contains('parent')) { // Projects scope configurations can override ones from global scope
-                if (checkbox.value !== oldValue) { // Ignore persisted name of the option to be renamed itself
-                    if (checkbox.value === newValue) {
+        for (let option of Array.from(this.configSelectElement.options)) {
+            if (!option.classList.contains('parent')) { // Projects scope configurations can override ones from global scope
+                if (option.value !== oldValue) { // Ignore persisted name of the option to be renamed itself
+                    if (option.value === newValue) {
                         return true;
                     }
                 }
@@ -260,7 +272,7 @@ export default class ConfigurationsPane {
     }
 
     getSelectedConfiguration() {
-        return this.configurationsSelect.getSelectedValue();
+        return this.configSelectElement.value;
     }
 
     loadConfigurationContent(configurationName) {

@@ -5,7 +5,7 @@
 <div class="input-group common-configuration-panel">
     <div id="configurations-pane">
         <label id="configurations-label"><span class="configuration-label-capitalized">Configuration</span>:</label>
-        <div id="configurations-select"></div>
+        <select id="configurations-select"></select>
         <div class="action-buttons">
             <button id="configurations-button-edit" class="toolbar-button" onclick="Configurations.editConfiguration()">
                 <img class="button-image" src="/polarion/ria/images/actions/edit.gif?bundle=<%= bundleTimestamp %>">Rename
