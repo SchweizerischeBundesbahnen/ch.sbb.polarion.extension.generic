@@ -413,7 +413,9 @@ export default class SearchableDropdown {
     }
 
     _refreshActive() {
-        this._renderOptions(this._visibleItems);
+        // Keyboard navigation only moves the highlight — repaint the .active class on the existing
+        // option nodes instead of rebuilding the whole list on every Arrow key.
+        this._paintActive();
         this._scrollActiveIntoView();
     }
 
