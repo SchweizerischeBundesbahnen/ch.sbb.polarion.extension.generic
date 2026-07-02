@@ -122,6 +122,7 @@ export default class SearchableDropdown {
                 label: option.text,
                 className: option.className,
                 selected: option.selected,
+                disabled: option.disabled,
                 // Optional per-option icon: <option data-icon="/polarion/…/icon.svg">Label</option>
                 icon: option.getAttribute('data-icon') || ''
             }));
@@ -184,10 +185,11 @@ export default class SearchableDropdown {
             this._visibilityObserver = new MutationObserver(() => {
                 this.container.style.display = this.originalElement.style.display || '';
                 this.container.style.visibility = this.originalElement.style.visibility || '';
+                this._syncDisabled();
             });
             this._visibilityObserver.observe(this.originalElement, {
                 attributes: true,
-                attributeFilter: ['style']
+                attributeFilter: ['style', 'disabled']
             });
 
             // Keep in sync when the <select>'s options are (re)populated dynamically
@@ -199,6 +201,22 @@ export default class SearchableDropdown {
                 }
             });
             this._optionsObserver.observe(this.originalElement, { childList: true });
+
+            // Reflect the <select>'s initial disabled state onto the container.
+            this._syncDisabled();
+        }
+    }
+
+    // Mirror the wrapped <select>'s disabled state onto the container (dimmed + non-interactive via
+    // the .disabled CSS class). Driven by the visibility MutationObserver when the attribute toggles.
+    _syncDisabled() {
+        if (!this.isSelect) {
+            return;
+        }
+        const disabled = this.originalElement.disabled;
+        this.container.classList.toggle('disabled', disabled);
+        if (disabled && this.isOpen) {
+            this._close();
         }
     }
 
@@ -421,6 +439,12 @@ export default class SearchableDropdown {
                 option.classList.add(...item.className.split(/\s+/).filter(Boolean));
             }
 
+            if (item.disabled) {
+                // Dimmed + non-interactive (CSS pointer-events:none); keyboard nav skips it and
+                // selectItem() ignores it.
+                option.classList.add('disabled');
+            }
+
             if (index === this.activeIndex) {
                 option.classList.add('active');
             }
@@ -459,11 +483,24 @@ export default class SearchableDropdown {
         return icon;
     }
 
+    // Next selectable (non-disabled) index in the given direction, wrapping around. Returns the
+    // current index if every option is disabled.
+    _nextEnabledIndex(start, direction) {
+        const count = this._visibleItems.length;
+        for (let step = 1; step <= count; step++) {
+            const idx = (((start + direction * step) % count) + count) % count;
+            if (!this._visibleItems[idx].disabled) {
+                return idx;
+            }
+        }
+        return this.activeIndex;
+    }
+
     _handleArrowDown() {
         if (!this._visibleItems || this._visibleItems.length === 0) {
             return;
         }
-        this.activeIndex = (this.activeIndex + 1) % this._visibleItems.length;
+        this.activeIndex = this._nextEnabledIndex(this.activeIndex, 1);
         this._refreshActive();
     }
 
@@ -471,9 +508,7 @@ export default class SearchableDropdown {
         if (!this._visibleItems || this._visibleItems.length === 0) {
             return;
         }
-        this.activeIndex = this.activeIndex <= 0
-            ? this._visibleItems.length - 1
-            : this.activeIndex - 1;
+        this.activeIndex = this._nextEnabledIndex(this.activeIndex, -1);
         this._refreshActive();
     }
 
@@ -500,6 +535,11 @@ export default class SearchableDropdown {
 
     _open() {
         if (this.isOpen) {
+            return;
+        }
+        // A disabled control doesn't open (CSS also sets pointer-events:none; this guards the
+        // programmatic/keyboard paths).
+        if (this.isSelect && this.originalElement.disabled) {
             return;
         }
         this.isOpen = true;
@@ -738,6 +778,9 @@ export default class SearchableDropdown {
     }
 
     selectItem(item, preventClosing = false) {
+        if (item && item.disabled) {
+            return;
+        }
         if (this.multiselect) {
             if (item) {
                 item.selected = !item.selected;

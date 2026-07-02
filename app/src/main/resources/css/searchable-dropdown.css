@@ -32,6 +32,12 @@
     outline: none;
 }
 
+/* Disabled state — mirrors the wrapped <select>'s `disabled`: dimmed and non-interactive. */
+.searchable-dropdown.disabled {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
 /* Selected option's icon overlaid on the single-select trigger (the <input> can't hold markup);
    .has-icon makes room for it on the left. */
 .searchable-dropdown > input.sd-trigger.has-icon {
@@ -210,6 +216,13 @@
    Only one option is highlighted at a time (follows mouse/keyboard), managed via the .active class. */
 .sd-portal .option.active {
     background-color: #ebf7f8;
+}
+
+/* Disabled option (<option disabled>): dimmed and non-interactive; keyboard nav skips it. */
+.sd-portal .option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 /* Optional per-option icon (from <option data-icon="…"> or addOption(value, text, icon)). */

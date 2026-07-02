@@ -13,6 +13,7 @@ describe('SearchableDropdown', function () {
             <select id="single">
                 <option value="a">A</option>
                 <option value="b">B</option>
+                <option value="c" disabled>C</option>
             </select>
             <select id="multi" multiple>
                 <option value="a">A</option>
@@ -165,6 +166,33 @@ describe('SearchableDropdown', function () {
         const second = new SearchableDropdown({ element: select, rememberSelection: false });
         expect(second.getSelectedValue()).to.equal('a');
         second.destroy();
+    });
+
+    it('ignores a disabled option and skips it in keyboard navigation', function () {
+        const dropdown = new SearchableDropdown({ element: document.getElementById('single'), rememberSelection: false });
+        const disabledItem = dropdown.items.find(i => i.value === 'c');
+        expect(disabledItem.disabled).to.be.true;
+
+        // Selecting a disabled option is a no-op (stays on the first option).
+        dropdown.selectItem(disabledItem);
+        expect(dropdown.getSelectedValue()).to.equal('a');
+
+        // Keyboard navigation skips the disabled option (a=0, b=1, c=2 disabled → wraps to a).
+        dropdown._visibleItems = dropdown.items;
+        expect(dropdown._nextEnabledIndex(1, 1)).to.equal(0);
+        dropdown.destroy();
+    });
+
+    it('reflects the wrapped <select> disabled state onto the container', function () {
+        const select = document.getElementById('single');
+        select.disabled = true;
+        const dropdown = new SearchableDropdown({ element: select, rememberSelection: false });
+        expect(dropdown.container.classList.contains('disabled')).to.be.true;
+
+        select.disabled = false;
+        dropdown._syncDisabled();
+        expect(dropdown.container.classList.contains('disabled')).to.be.false;
+        dropdown.destroy();
     });
 
     it('re-wrapping the same <select> does not stack duplicate containers/portals', function () {

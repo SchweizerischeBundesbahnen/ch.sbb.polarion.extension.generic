@@ -453,7 +453,9 @@ in the list and on the closed single-select trigger.
 
 The popup is portalled into `document.body` so it is never clipped by an ancestor's `overflow`
 (narrow side panels, scrollable modals). It integrates with `ExtensionContext` (`setSelector` /
-`setValueById` / `displayIf`) and auto-refreshes when its `<select>` options are repopulated. Call
+`setValueById` / `displayIf`) and auto-refreshes when its `<select>` options are repopulated; it also
+mirrors the wrapped `<select>`'s `disabled` state (setting `select.disabled` dims the control and
+makes it non-interactive). Call
 `destroy()` to tear an instance down (removes the portal and container, disconnects observers, and
 unbinds global listeners); re-wrapping the same `<select>` also disposes the previous instance
 automatically, so a pane that re-initialises its dropdowns won't stack duplicates.
