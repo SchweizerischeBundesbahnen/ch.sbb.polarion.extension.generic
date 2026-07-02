@@ -1,5 +1,10 @@
 const SELECTED_CONFIGURATION_COOKIE = 'selected-configuration-';
 
+/**
+ * @deprecated Non-module legacy configuration pane. Use the ES module `ConfigurationsPane`
+ * (`js/modules/ConfigurationsPane.js`) instead, which renders the selector via SearchableDropdown.
+ * Kept only for backward compatibility.
+ */
 const Configurations = {
     configurationsPane: document.getElementById("configurations-pane"),
     editConfigurationPane: document.getElementById("edit-configuration-pane"),

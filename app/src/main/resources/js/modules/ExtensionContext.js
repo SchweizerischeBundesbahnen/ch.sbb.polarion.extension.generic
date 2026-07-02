@@ -43,7 +43,11 @@ export default class ExtensionContext {
     }
 
     setValueById(elementId, value) {
-        this.getElementById(elementId).value = value
+        const element = this.getElementById(elementId);
+        element.value = value;
+        if (element._searchableDropdown) {
+            element._searchableDropdown.syncFromElement();
+        }
     }
 
     getValue(elementId) {
@@ -73,6 +77,9 @@ export default class ExtensionContext {
     setSelector(elementId, value) {
         const selector = this.getElementById(elementId);
         selector.value = this.containsOption(selector, value) ? value : ExtensionContext.DEFAULT;
+        if (selector._searchableDropdown) {
+            selector._searchableDropdown.syncFromElement();
+        }
     }
 
     selectOptionByValue(id, optionValue) {

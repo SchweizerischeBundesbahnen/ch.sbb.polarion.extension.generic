@@ -1,3 +1,7 @@
+/**
+ * @deprecated Non-module legacy widget. Use the ES module {@link SearchableDropdown}
+ * (`js/modules/SearchableDropdown.js`) in build mode instead. Kept only for backward compatibility.
+ */
 function SbbCustomSelect({selectContainer, label, changeListener, multiselect = false}) {
     this.selectContainer = selectContainer ? selectContainer : document.createElement('div');
     this.selectContainer.classList.add('sbb-custom-select');

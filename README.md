@@ -406,6 +406,70 @@ public class PdfExporterAdminUiServlet extends GenericUiServlet {
 }
 ```
 
+### UI components (JavaScript / CSS)
+
+The generic module ships shared, Polarion-matched front-end components so every extension's UI looks
+and behaves the same. They are served by the extension's `GenericUiServlet` at
+`/polarion/<extension>/ui/generic/{js,css}/…` and imported from there:
+
+```js
+import SearchableDropdown from '../ui/generic/js/modules/SearchableDropdown.js';
+import ExtensionContext from '../ui/generic/js/modules/ExtensionContext.js';
+```
+
+#### `SearchableDropdown` — the standard dropdown
+
+`js/modules/SearchableDropdown.js` is the single dropdown component for all extensions. It renders a
+Polarion-styled combobox with a searchable, never-clipped popup and supports single- and
+multi-select. Prefer it over a raw `<select>` or any bespoke widget.
+
+- **Element mode** — wrap an existing native `<select>` (the `<select>` stays the source of truth):
+
+  ```js
+  new SearchableDropdown({ element: document.getElementById('paper-size'), rememberSelection: false });
+  ```
+
+- **Build mode** — render into a `<div>` and populate programmatically. It exposes the same API as
+  the (now deprecated) `CustomSelect` (`addOption`, `empty`, `selectValue`, `selectMultipleValues`,
+  `getSelectedValue`, `getSelectedText`, `containsOption`), so it is a drop-in replacement:
+
+  ```js
+  const dd = new SearchableDropdown({ selectContainer: document.getElementById('css-select'), label });
+  dd.addOption('A4', 'A4');            // single-select defaults to the first option added
+  dd.selectValue('A4');
+  ```
+
+Key options: `multiselect` (removable chips + in-list checkboxes; the popup stays open while
+toggling), `searchable` (default `true`), `placeholder`, `rememberSelection` (cookie; usually pass
+`false`), `preserveOptionClasses` (mirror each `<option>`'s CSS class onto the rendered option — e.g.
+the `parent` class renders a global-scope configuration with an italic `global` marker). The popup is
+portalled into `document.body` so it is never clipped by an ancestor's `overflow` (narrow side
+panels, scrollable modals). It integrates with `ExtensionContext` (`setSelector` / `setValueById` /
+`displayIf`) and auto-refreshes when its `<select>` options are repopulated.
+
+#### Shared control styling
+
+`css/common.css` (`@import` it, or link it from admin JSPs) pulls in the neutral, Polarion-matched
+styles for `checkboxes.css`, `radios.css`, `inputs.css` and `searchable-dropdown.css`, plus the
+`.toolbar-button` styling. The checkbox / radio / input rules are intentionally **scoped** to the
+UI wrappers `.modal__container` (popups), `.standard-admin-page` (admin pages) and `.form-wrapper`
+(document-properties side panels) so they never restyle Polarion's own controls — put the matching
+wrapper class on your surface.
+
+#### `ConfigurationsPane`
+
+`js/modules/ConfigurationsPane.js` renders the admin "choose a configuration" pane (backed by a
+native `<select id="configurations-select">` wrapped by `SearchableDropdown`), including the
+italic `global` marker for configurations inherited from a broader scope.
+
+#### Deprecated components
+
+The following are kept only for backward compatibility and should not be used in new code:
+
+- `js/modules/CustomSelect.js` — superseded by `SearchableDropdown` (build mode).
+- `js/custom-select.js` (non-module `SbbCustomSelect`) — superseded by `SearchableDropdown`.
+- `js/configurations.js` (non-module `Configurations`) — superseded by the `ConfigurationsPane` module.
+
 ### Custom extension configuration
 
 In order to register additional configuration properties a subclass of `ExtensionConfiguration` must be marked with the `@Discoverable`:

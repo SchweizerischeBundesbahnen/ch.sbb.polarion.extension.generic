@@ -1,0 +1,45 @@
+/*
+ * Neutral 2606 radio buttons — the counterpart to checkboxes.css.
+ *
+ * Polarion does NOT ship a radio image set (unlike checkboxes, which use
+ * /polarion/ria/images/checkbox/*.png) — it renders native radios. To keep our
+ * radios neutral and consistent with our checkboxes we draw the control with CSS
+ * (appearance:none + a bordered circle and a grey centre dot when checked).
+ *
+ * Single source for every extension. SCOPED to our own UI wrappers
+ * (.modal__container popups, .standard-admin-page admin pages, .form-wrapper
+ * document-properties side panels) so it is safe to inject into the Polarion
+ * document page without ever restyling Polarion's own radios.
+ *
+ * Loaded by: common.css (@import) for admin pages; injected by each extension's
+ * popup/side-panel for the document-view contexts (alongside checkboxes.css).
+ */
+.modal__container input[type="radio"],
+.standard-admin-page input[type="radio"],
+.form-wrapper input[type="radio"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    margin: 0 4px 0 0;
+    vertical-align: middle;
+    cursor: pointer;
+    box-sizing: border-box;
+    border: 1px solid #c9c9c9;
+    border-radius: 50%;
+    background-color: #fff;
+}
+
+.modal__container input[type="radio"]:checked,
+.standard-admin-page input[type="radio"]:checked,
+.form-wrapper input[type="radio"]:checked {
+    background-image: radial-gradient(circle, #595959 0 34%, transparent 38%);
+}
+
+/* Keep the radio vertically centered with its label text. */
+.modal__container label:has(input[type="radio"]),
+.standard-admin-page label:has(input[type="radio"]),
+.form-wrapper label:has(input[type="radio"]) {
+    display: inline-flex;
+    align-items: center;
+}
