@@ -168,6 +168,15 @@ describe('SearchableDropdown', function () {
         second.destroy();
     });
 
+    it('mirrors the <select> title tooltip onto the trigger', function () {
+        const select = document.getElementById('single');
+        select.setAttribute('title', 'Choose a size');
+        const dropdown = new SearchableDropdown({ element: select, rememberSelection: false });
+        expect(dropdown.trigger.getAttribute('title')).to.equal('Choose a size');
+        dropdown.destroy();
+        select.removeAttribute('title');
+    });
+
     it('exposes ARIA combobox/listbox semantics', function () {
         const label = document.createElement('label');
         label.setAttribute('for', 'single');

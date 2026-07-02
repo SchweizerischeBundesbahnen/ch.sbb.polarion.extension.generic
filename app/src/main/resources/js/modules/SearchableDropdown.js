@@ -86,8 +86,9 @@ export default class SearchableDropdown {
         this._createContainer();
         this._render();
         this._bindEvents();
-        // Reflect the <select>'s initial disabled state (needs the trigger created in _render).
+        // Reflect the <select>'s initial disabled state + title (need the trigger from _render).
         this._syncDisabled();
+        this._syncTitle();
     }
 
     _getCookieKey() {
@@ -191,10 +192,11 @@ export default class SearchableDropdown {
                 this.container.style.display = this.originalElement.style.display || '';
                 this.container.style.visibility = this.originalElement.style.visibility || '';
                 this._syncDisabled();
+                this._syncTitle();
             });
             this._visibilityObserver.observe(this.originalElement, {
                 attributes: true,
-                attributeFilter: ['style', 'disabled']
+                attributeFilter: ['style', 'disabled', 'title']
             });
 
             // Keep in sync when the <select>'s options are (re)populated dynamically
@@ -220,6 +222,19 @@ export default class SearchableDropdown {
         this.trigger.setAttribute('aria-disabled', disabled ? 'true' : 'false');
         if (disabled && this.isOpen) {
             this._close();
+        }
+    }
+
+    // Mirror the wrapped <select>'s title (tooltip) onto the visible trigger.
+    _syncTitle() {
+        if (!this.isSelect) {
+            return;
+        }
+        const title = this.originalElement.getAttribute('title');
+        if (title) {
+            this.trigger.setAttribute('title', title);
+        } else {
+            this.trigger.removeAttribute('title');
         }
     }
 

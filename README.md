@@ -455,7 +455,8 @@ The popup is portalled into `document.body` so it is never clipped by an ancesto
 (narrow side panels, scrollable modals). It integrates with `ExtensionContext` (`setSelector` /
 `setValueById` / `displayIf`) and auto-refreshes when its `<select>` options are repopulated; it also
 mirrors the wrapped `<select>`'s `disabled` state (setting `select.disabled` dims the control and
-makes it non-interactive) and its `<option disabled>` options (dimmed, non-selectable). It exposes
+makes it non-interactive), its `<option disabled>` options (dimmed, non-selectable), and its `title`
+tooltip. It exposes
 full ARIA combobox/listbox semantics (`role`, `aria-expanded`, `aria-activedescendant`, per-option
 `aria-selected`/`aria-disabled`, and an `aria-label` derived from the associated `<label>`) so screen
 readers announce and navigate it like a native `<select>`. Call
