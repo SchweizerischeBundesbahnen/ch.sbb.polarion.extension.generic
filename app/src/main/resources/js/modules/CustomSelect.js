@@ -1,3 +1,10 @@
+/**
+ * @deprecated Use {@link SearchableDropdown} in build mode instead
+ * (`new SearchableDropdown({selectContainer, label, multiselect})`). SearchableDropdown exposes the
+ * same API (addOption/empty/selectValue/selectMultipleValues/getSelectedValue/getSelectedText/
+ * containsOption) plus a Polarion-styled, searchable, never-clipped popup and multi-select chips.
+ * Kept only for backward compatibility with not-yet-migrated extensions.
+ */
 export default class CustomSelect {
     constructor({selectContainer, label, changeListener, multiselect = false}) {
         this.selectContainer = selectContainer ? selectContainer : window.document.createElement('div');

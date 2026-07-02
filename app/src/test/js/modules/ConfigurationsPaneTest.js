@@ -1,5 +1,4 @@
 import ConfigurationsPane from '../../../main/resources/js/modules/ConfigurationsPane.js';
-import CustomSelect from '../../../main/resources/js/modules/CustomSelect.js';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { JSDOM } from 'jsdom';
@@ -16,7 +15,7 @@ describe('ConfigurationsPane', function () {
                 <div id="edit-configuration-pane"></div>
                 <input id="new-configuration-input"/>
                 <input id="edit-configuration-input"/>
-                <div id="configurations-select"></div>
+                <select id="configurations-select"></select>
                 <div id="configurations-label"></div>
                 <div id="configurations-load-error" style="display:none"></div>
                 <div id="configuration-save-error" style="display:none"></div>
@@ -30,6 +29,10 @@ describe('ConfigurationsPane', function () {
 
         global.window = window;
         global.document = document;
+        // jsdom's dispatchEvent requires an Event from the same realm as the element,
+        // so expose the window's Event constructor as the global one the modules use.
+        global.Event = window.Event;
+        global.MutationObserver = window.MutationObserver;
 
         ctxMock = {
             onClick: sinon.spy(),
@@ -41,13 +44,6 @@ describe('ConfigurationsPane', function () {
             scope: 'testScope',
             readAndFillRevisions: sinon.spy()
         };
-
-        sinon.stub(CustomSelect.prototype, 'addOption').returns({ checkbox: {}, label: {} });
-        sinon.stub(CustomSelect.prototype, 'empty');
-        sinon.stub(CustomSelect.prototype, 'selectValue');
-        sinon.stub(CustomSelect.prototype, 'getSelectedValue').returns('testConfig');
-        sinon.stub(CustomSelect.prototype, 'getAllCheckboxes').returns([]);
-        sinon.stub(CustomSelect.prototype, 'handleChange');
 
         preDelete = {
             then: (callback) => {
@@ -61,8 +57,12 @@ describe('ConfigurationsPane', function () {
     });
 
     afterEach(function () {
+        // Tear down the dropdown so its body-level portal and global listeners don't leak across tests.
+        configPane.configurationsSelect.destroy();
         delete global.window;
         delete global.document;
+        delete global.Event;
+        delete global.MutationObserver;
         sinon.restore();
     });
 
@@ -96,5 +96,12 @@ describe('ConfigurationsPane', function () {
         configPane.getSelectedConfiguration = sinon.stub().returns('testConfig');
         configPane.deleteConfiguration();
         expect(ctxMock.callAsync.calledOnce).to.be.true;
+    });
+
+    it('should remove the dropdown portal on destroy', function () {
+        const before = document.querySelectorAll('.sd-portal').length;
+        expect(before).to.be.greaterThan(0);
+        configPane.configurationsSelect.destroy();
+        expect(document.querySelectorAll('.sd-portal').length).to.equal(before - 1);
     });
 });

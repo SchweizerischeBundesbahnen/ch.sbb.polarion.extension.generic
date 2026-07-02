@@ -1,0 +1,59 @@
+/*
+ * Unified text-input styling — the Polarion look (border #c9c9c9, 23px height,
+ * 13px Segoe, blue focus #1491EB), matching our combobox trigger and Polarion's
+ * own inputs. Single source for every extension.
+ *
+ * SCOPED to our UI wrappers (.modal__container popups, .standard-admin-page admin
+ * pages, .form-wrapper document-properties side panels) so it never restyles
+ * Polarion's own inputs. The combobox's own inputs (.sd-trigger / .search-box)
+ * are excluded — they have their dedicated styling in searchable-dropdown.css.
+ *
+ * Loaded by: common.css (@import) for admin pages; injected/linked by each
+ * extension's popup/side-panel for the document-view contexts.
+ */
+.modal__container input[type="text"]:not(.sd-trigger):not(.search-box),
+.modal__container input[type="number"],
+.modal__container input[type="password"],
+.modal__container input[type="search"],
+.standard-admin-page input[type="text"]:not(.sd-trigger):not(.search-box),
+.standard-admin-page input[type="number"],
+.standard-admin-page input[type="password"],
+.standard-admin-page input[type="search"],
+.form-wrapper input[type="text"]:not(.sd-trigger):not(.search-box),
+.form-wrapper input[type="number"],
+.form-wrapper input[type="password"],
+.form-wrapper input[type="search"],
+.modal__container input:not([type]):not(.sd-trigger):not(.search-box),
+.standard-admin-page input:not([type]):not(.sd-trigger):not(.search-box),
+.form-wrapper input:not([type]):not(.sd-trigger):not(.search-box) {
+    box-sizing: border-box;
+    height: 23px;
+    border: 1px solid #c9c9c9;
+    /* Square corners to match Polarion's own text inputs (its inputs are not rounded). */
+    border-radius: 0;
+    padding: 2px 6px;
+    background-color: #fff;
+    font-family: "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.modal__container input[type="text"]:not(.sd-trigger):not(.search-box):focus,
+.modal__container input[type="number"]:focus,
+.modal__container input[type="password"]:focus,
+.modal__container input[type="search"]:focus,
+.standard-admin-page input[type="text"]:not(.sd-trigger):not(.search-box):focus,
+.standard-admin-page input[type="number"]:focus,
+.standard-admin-page input[type="password"]:focus,
+.standard-admin-page input[type="search"]:focus,
+.form-wrapper input[type="text"]:not(.sd-trigger):not(.search-box):focus,
+.form-wrapper input[type="number"]:focus,
+.form-wrapper input[type="password"]:focus,
+.form-wrapper input[type="search"]:focus,
+.modal__container input:not([type]):not(.sd-trigger):not(.search-box):focus,
+.standard-admin-page input:not([type]):not(.sd-trigger):not(.search-box):focus,
+.form-wrapper input:not([type]):not(.sd-trigger):not(.search-box):focus {
+    border-color: #1491EB;
+    outline: none;
+}
