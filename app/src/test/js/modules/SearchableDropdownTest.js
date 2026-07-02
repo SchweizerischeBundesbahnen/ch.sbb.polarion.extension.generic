@@ -10,6 +10,10 @@ describe('SearchableDropdown', function () {
         <html lang="en">
         <body>
             <div id="build-container"></div>
+            <select id="single">
+                <option value="a">A</option>
+                <option value="b">B</option>
+            </select>
             <select id="multi" multiple>
                 <option value="a">A</option>
                 <option value="b">B</option>
@@ -136,6 +140,41 @@ describe('SearchableDropdown', function () {
         expect(dropdown.trigger.querySelectorAll('.sd-chip').length).to.equal(0);
         expect(dropdown.getSelectedValue()).to.deep.equal([]);
         dropdown.destroy();
+    });
+
+    it('single-select keeps the first option by default', function () {
+        const dropdown = new SearchableDropdown({ element: document.getElementById('single'), rememberSelection: false });
+        expect(dropdown.getSelectedValue()).to.equal('a');
+        dropdown.destroy();
+    });
+
+    it('allowEmpty leaves a native single-select unselected (shows placeholder)', function () {
+        const select = document.getElementById('single');
+        const dropdown = new SearchableDropdown({ element: select, allowEmpty: true, placeholder: 'Select...', rememberSelection: false });
+        expect(select.selectedIndex).to.equal(-1);
+        expect(dropdown.getSelectedValue()).to.equal('');
+        dropdown.destroy();
+    });
+
+    it('destroy() restores selectedIndex so allowEmpty does not leak to a re-wrap', function () {
+        const select = document.getElementById('single');
+        // First instance clears the selection (allowEmpty); re-wrapping without allowEmpty must see
+        // the first option again, not the -1 left behind.
+        new SearchableDropdown({ element: select, allowEmpty: true, placeholder: 'Select...', rememberSelection: false });
+        expect(select.selectedIndex).to.equal(-1);
+        const second = new SearchableDropdown({ element: select, rememberSelection: false });
+        expect(second.getSelectedValue()).to.equal('a');
+        second.destroy();
+    });
+
+    it('re-wrapping the same <select> does not stack duplicate containers/portals', function () {
+        const select = document.getElementById('multi');
+        new SearchableDropdown({ element: select, rememberSelection: false });
+        new SearchableDropdown({ element: select, rememberSelection: false });
+        new SearchableDropdown({ element: select, rememberSelection: false });
+        expect(document.querySelectorAll('.searchable-dropdown').length).to.equal(1);
+        expect(document.querySelectorAll('.sd-portal').length).to.equal(1);
+        select._searchableDropdown.destroy();
     });
 
     it('destroy() removes the body-level portal', function () {

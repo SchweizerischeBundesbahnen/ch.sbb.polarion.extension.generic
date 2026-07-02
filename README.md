@@ -440,12 +440,23 @@ multi-select. Prefer it over a raw `<select>` or any bespoke widget.
   ```
 
 Key options: `multiselect` (removable chips + in-list checkboxes; the popup stays open while
-toggling), `searchable` (default `true`), `placeholder`, `rememberSelection` (cookie; usually pass
-`false`), `preserveOptionClasses` (mirror each `<option>`'s CSS class onto the rendered option — e.g.
-the `parent` class renders a global-scope configuration with an italic `global` marker). The popup is
-portalled into `document.body` so it is never clipped by an ancestor's `overflow` (narrow side
-panels, scrollable modals). It integrates with `ExtensionContext` (`setSelector` / `setValueById` /
-`displayIf`) and auto-refreshes when its `<select>` options are repopulated.
+toggling), `searchable` (default `true`), `placeholder`, `allowEmpty` (default `false` — a
+single-select then does **not** auto-select the first option; it stays unselected and shows the
+`placeholder` until the user picks, e.g. `{ allowEmpty: true, placeholder: 'Select…' }`),
+`rememberSelection` (cookie; usually pass `false`), `preserveOptionClasses` (mirror each `<option>`'s
+CSS class onto the rendered option — e.g. the `parent` class renders a global-scope configuration
+with an italic `global` marker).
+
+Per-option **icons**: give a source `<option>` a `data-icon="…"` (element mode) or pass a third
+argument to `addOption(value, text, icon)` (build mode); the icon is shown to the left of the label
+in the list and on the closed single-select trigger.
+
+The popup is portalled into `document.body` so it is never clipped by an ancestor's `overflow`
+(narrow side panels, scrollable modals). It integrates with `ExtensionContext` (`setSelector` /
+`setValueById` / `displayIf`) and auto-refreshes when its `<select>` options are repopulated. Call
+`destroy()` to tear an instance down (removes the portal and container, disconnects observers, and
+unbinds global listeners); re-wrapping the same `<select>` also disposes the previous instance
+automatically, so a pane that re-initialises its dropdowns won't stack duplicates.
 
 #### Shared control styling
 
