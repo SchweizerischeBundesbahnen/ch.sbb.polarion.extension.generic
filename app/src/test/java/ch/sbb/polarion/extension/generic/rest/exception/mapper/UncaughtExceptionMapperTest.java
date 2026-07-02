@@ -26,8 +26,6 @@ class UncaughtExceptionMapperTest {
                     "message must be the generic message followed by a correlation error id, but was: " + entity.getMessage());
             assertFalse(entity.getMessage().contains("com.polarion"), "must not leak class names");
             assertFalse(entity.getMessage().contains("/repo/"), "must not leak repository paths");
-        } catch (Exception e) {
-            fail("Exception thrown: " + e.getMessage());
         }
     }
 

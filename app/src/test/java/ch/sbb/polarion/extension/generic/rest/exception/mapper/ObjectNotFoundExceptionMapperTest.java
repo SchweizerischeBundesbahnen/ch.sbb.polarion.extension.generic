@@ -17,8 +17,6 @@ class ObjectNotFoundExceptionMapperTest {
             ErrorEntity entity = (ErrorEntity) response.getEntity();
             assertNotNull(entity);
             assertEquals("test message", entity.getMessage());
-        } catch (Exception e) {
-            fail("Exception thrown: " + e.getMessage());
         }
     }
 

@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -733,8 +734,8 @@ class BundleJarsPrioritizingRunnableTest {
                 .stringList(List.of("a", "b", "c"))
                 .integerSet(Set.of(1, 2, 3))
                 .nestedMap(Map.of("key1", "value1", "key2", 123))
-                .localDate(LocalDate.of(2024, 6, 15))
-                .localDateTime(LocalDateTime.of(2024, 6, 15, 10, 30, 0))
+                .localDate(LocalDate.of(2024, Month.JUNE, 15))
+                .localDateTime(LocalDateTime.of(2024, Month.JUNE, 15, 10, 30, 0))
                 .nestedObject(nested1)
                 .nestedObjectList(List.of(nested1, nested2))
                 .build();
@@ -765,8 +766,8 @@ class BundleJarsPrioritizingRunnableTest {
             assertTrue(received.isBooleanField());
             assertEquals(List.of("a", "b", "c"), received.getStringList());
             assertEquals(Set.of(1, 2, 3), received.getIntegerSet());
-            assertEquals(LocalDate.of(2024, 6, 15), received.getLocalDate());
-            assertEquals(LocalDateTime.of(2024, 6, 15, 10, 30, 0), received.getLocalDateTime());
+            assertEquals(LocalDate.of(2024, Month.JUNE, 15), received.getLocalDate());
+            assertEquals(LocalDateTime.of(2024, Month.JUNE, 15, 10, 30, 0), received.getLocalDateTime());
 
             assertNotNull(received.getNestedObject());
             assertEquals("nested1", received.getNestedObject().getName());

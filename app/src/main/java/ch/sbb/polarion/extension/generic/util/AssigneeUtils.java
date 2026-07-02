@@ -44,20 +44,21 @@ public class AssigneeUtils {
             return;
         }
         IPObjectList<IUser> allowedAssignees = workItem.getAllowedAssignees();
-        if (value instanceof IUser iUser) {
-            resultSet.add(iUser);
-        } else if (value instanceof String assigneeString) {
-            String[] assigneeEntries = assigneeString.split(Pattern.quote(StringCSVToListConverter.SEPARATOR));
-            for (String assigneeEntry : assigneeEntries) {
-                resultSet.add(allowedAssignees.stream().filter(a -> Arrays.asList(a.getId(), a.getLoginName(), a.getName()).contains(assigneeEntry))
-                        .findFirst().orElseThrow(() -> new IllegalArgumentException("Cannot find allowed assignee '%s'".formatted(assigneeEntry))));
+        switch (value) {
+            case IUser iUser -> resultSet.add(iUser);
+            case String assigneeString -> {
+                String[] assigneeEntries = assigneeString.split(Pattern.quote(StringCSVToListConverter.SEPARATOR));
+                for (String assigneeEntry : assigneeEntries) {
+                    resultSet.add(allowedAssignees.stream().filter(a -> Arrays.asList(a.getId(), a.getLoginName(), a.getName()).contains(assigneeEntry))
+                            .findFirst().orElseThrow(() -> new IllegalArgumentException("Cannot find allowed assignee '%s'".formatted(assigneeEntry))));
+                }
             }
-        } else if (value instanceof List list) {
-            for (Object listValue : list) {
-                parseAssigneeInput(workItem, listValue, resultSet);
+            case List list -> {
+                for (Object listValue : list) {
+                    parseAssigneeInput(workItem, listValue, resultSet);
+                }
             }
-        } else {
-            throw new IllegalArgumentException("Unsupported assignee value '%s'".formatted(String.valueOf(value)));
+            default -> throw new IllegalArgumentException("Unsupported assignee value '%s'".formatted(String.valueOf(value)));
         }
     }
 }

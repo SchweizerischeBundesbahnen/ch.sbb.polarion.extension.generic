@@ -18,8 +18,6 @@ class NotAuthorizedExceptionMapperTest {
             ErrorEntity entity = (ErrorEntity) response.getEntity();
             assertNotNull(entity);
             assertEquals("test message", entity.getMessage());
-        } catch (Exception e) {
-            fail("Exception thrown: " + e.getMessage());
         }
     }
 
@@ -30,8 +28,6 @@ class NotAuthorizedExceptionMapperTest {
             ErrorEntity entity = (ErrorEntity) response.getEntity();
             assertNotNull(entity);
             assertEquals("unauthorized message", entity.getMessage());
-        } catch (Exception e) {
-            fail("Exception thrown: " + e.getMessage());
         }
     }
 

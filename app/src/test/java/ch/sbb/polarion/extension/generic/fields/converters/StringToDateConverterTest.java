@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
@@ -25,7 +26,7 @@ class StringToDateConverterTest {
         ConverterContext context = ConverterContext.builder().build();
         FieldMetadata metadata = FieldMetadata.builder().build();
         // basic date
-        assertEquals(getDate(LocalDate.of(1985, 1, 24)),
+        assertEquals(getDate(LocalDate.of(1985, Month.JANUARY, 24)),
                 converter.convert("1985-01-24", context, metadata));
 
         // acceptable basic dates are yyyy-MM-dd only
@@ -41,7 +42,7 @@ class StringToDateConverterTest {
         assertThrows(DateTimeParseException.class, () -> converter.convert("14 25", context, metadata));
 
         // ISO dateTime format
-        Date fullDate = getDate(LocalDateTime.of(1985, 1, 24, 10, 27, 45));
+        Date fullDate = getDate(LocalDateTime.of(1985, Month.JANUARY, 24, 10, 27, 45));
         assertEquals(fullDate, converter.convert("1985-01-24T10:27:45", context, metadata));
 
         // yyyy-MM-ddTHH:mm:ss is the only ISO dateTime format supported

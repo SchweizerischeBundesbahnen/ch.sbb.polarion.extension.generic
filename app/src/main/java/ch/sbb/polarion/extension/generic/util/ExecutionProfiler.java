@@ -319,8 +319,8 @@ public class ExecutionProfiler {
     protected String createTimeline(double startPercent, double endPercent) {
         int start = (int) Math.round(startPercent / 100.0 * BAR_WIDTH);
         int end = (int) Math.round(endPercent / 100.0 * BAR_WIDTH);
-        start = Math.max(0, Math.min(start, BAR_WIDTH));
-        end = Math.max(start, Math.min(end, BAR_WIDTH));
+        start = Math.clamp(start, 0, BAR_WIDTH);
+        end = Math.clamp(end, start, BAR_WIDTH);
 
         return "\u00B7".repeat(start) + "\u2588".repeat(end - start) + "\u00B7".repeat(BAR_WIDTH - end);
     }
