@@ -11,14 +11,12 @@ class IllegalArgumentExceptionMapperTest {
 
     @Test
     void testResponse() {
-        assertDoesNotThrow(() -> {
-            try (Response response = new IllegalArgumentExceptionMapper().toResponse(new IllegalArgumentException("test message"))) {
-                assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-                ErrorEntity entity = (ErrorEntity) response.getEntity();
-                assertNotNull(entity);
-                assertEquals("test message", entity.getMessage());
-            }
-        });
+        try (Response response = new IllegalArgumentExceptionMapper().toResponse(new IllegalArgumentException("test message"))) {
+            assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+            ErrorEntity entity = (ErrorEntity) response.getEntity();
+            assertNotNull(entity);
+            assertEquals("test message", entity.getMessage());
+        }
     }
 
 }

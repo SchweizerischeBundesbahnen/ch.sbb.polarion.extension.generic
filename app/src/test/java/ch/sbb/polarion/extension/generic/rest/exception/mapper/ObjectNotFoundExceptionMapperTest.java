@@ -12,14 +12,12 @@ class ObjectNotFoundExceptionMapperTest {
 
     @Test
     void testResponse() {
-        assertDoesNotThrow(() -> {
-            try (Response response = new ObjectNotFoundExceptionMapper().toResponse(new ObjectNotFoundException("test message"))) {
-                assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
-                ErrorEntity entity = (ErrorEntity) response.getEntity();
-                assertNotNull(entity);
-                assertEquals("test message", entity.getMessage());
-            }
-        });
+        try (Response response = new ObjectNotFoundExceptionMapper().toResponse(new ObjectNotFoundException("test message"))) {
+            assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+            ErrorEntity entity = (ErrorEntity) response.getEntity();
+            assertNotNull(entity);
+            assertEquals("test message", entity.getMessage());
+        }
     }
 
 }

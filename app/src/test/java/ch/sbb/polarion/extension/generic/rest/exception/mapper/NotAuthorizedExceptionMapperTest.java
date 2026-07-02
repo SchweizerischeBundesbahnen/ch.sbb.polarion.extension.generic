@@ -13,26 +13,22 @@ class NotAuthorizedExceptionMapperTest {
 
     @Test
     void testResponse() {
-        assertDoesNotThrow(() -> {
-            try (Response response = new NotAuthorizedExceptionMapper().toResponse(new NotAuthorizedException("test message", "Bearer"))) {
-                assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
-                ErrorEntity entity = (ErrorEntity) response.getEntity();
-                assertNotNull(entity);
-                assertEquals("test message", entity.getMessage());
-            }
-        });
+        try (Response response = new NotAuthorizedExceptionMapper().toResponse(new NotAuthorizedException("test message", "Bearer"))) {
+            assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+            ErrorEntity entity = (ErrorEntity) response.getEntity();
+            assertNotNull(entity);
+            assertEquals("test message", entity.getMessage());
+        }
     }
 
     @Test
     void testUnauthorizedExceptionResponse() {
-        assertDoesNotThrow(() -> {
-            try (Response response = new NotAuthorizedExceptionMapper().toResponse(new UnauthorizedException("unauthorized message"))) {
-                assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
-                ErrorEntity entity = (ErrorEntity) response.getEntity();
-                assertNotNull(entity);
-                assertEquals("unauthorized message", entity.getMessage());
-            }
-        });
+        try (Response response = new NotAuthorizedExceptionMapper().toResponse(new UnauthorizedException("unauthorized message"))) {
+            assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+            ErrorEntity entity = (ErrorEntity) response.getEntity();
+            assertNotNull(entity);
+            assertEquals("unauthorized message", entity.getMessage());
+        }
     }
 
 }

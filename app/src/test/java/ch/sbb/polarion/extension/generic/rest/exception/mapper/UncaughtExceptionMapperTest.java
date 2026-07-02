@@ -18,17 +18,15 @@ class UncaughtExceptionMapperTest {
     @Test
     void testResponse() {
         String leakyMessage = "com.polarion.internal.Foo failed at /repo/.polarion/records.xml";
-        assertDoesNotThrow(() -> {
-            try (Response response = new UncaughtExceptionMapper().toResponse(new IllegalAccessException(leakyMessage))) {
-                assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-                ErrorEntity entity = (ErrorEntity) response.getEntity();
-                assertNotNull(entity);
-                assertTrue(ERROR_ID_PATTERN.matcher(entity.getMessage()).matches(),
-                        "message must be the generic message followed by a correlation error id, but was: " + entity.getMessage());
-                assertFalse(entity.getMessage().contains("com.polarion"), "must not leak class names");
-                assertFalse(entity.getMessage().contains("/repo/"), "must not leak repository paths");
-            }
-        });
+        try (Response response = new UncaughtExceptionMapper().toResponse(new IllegalAccessException(leakyMessage))) {
+            assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+            ErrorEntity entity = (ErrorEntity) response.getEntity();
+            assertNotNull(entity);
+            assertTrue(ERROR_ID_PATTERN.matcher(entity.getMessage()).matches(),
+                    "message must be the generic message followed by a correlation error id, but was: " + entity.getMessage());
+            assertFalse(entity.getMessage().contains("com.polarion"), "must not leak class names");
+            assertFalse(entity.getMessage().contains("/repo/"), "must not leak repository paths");
+        }
     }
 
     @Test

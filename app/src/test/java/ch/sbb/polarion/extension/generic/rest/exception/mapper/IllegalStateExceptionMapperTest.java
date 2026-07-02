@@ -11,14 +11,12 @@ class IllegalStateExceptionMapperTest {
 
     @Test
     void testResponse() {
-        assertDoesNotThrow(() -> {
-            try (Response response = new IllegalStateExceptionMapper().toResponse(new IllegalStateException("test message"))) {
-                assertEquals(Response.Status.CONFLICT.getStatusCode(), response.getStatus());
-                ErrorEntity entity = (ErrorEntity) response.getEntity();
-                assertNotNull(entity);
-                assertEquals("test message", entity.getMessage());
-            }
-        });
+        try (Response response = new IllegalStateExceptionMapper().toResponse(new IllegalStateException("test message"))) {
+            assertEquals(Response.Status.CONFLICT.getStatusCode(), response.getStatus());
+            ErrorEntity entity = (ErrorEntity) response.getEntity();
+            assertNotNull(entity);
+            assertEquals("test message", entity.getMessage());
+        }
     }
 
 }
