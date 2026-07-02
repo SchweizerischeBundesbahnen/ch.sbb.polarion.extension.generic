@@ -1,6 +1,7 @@
 export default class SearchableDropdown {
     static COOKIE_PREFIX = 'searchable_dropdown_';
     static COOKIE_EXPIRY_DAYS = 30;
+    static _idCounter = 0;
 
     constructor({
                     element = null,
@@ -79,10 +80,14 @@ export default class SearchableDropdown {
         this.preserveOptionClasses = preserveOptionClasses || this.buildMode;
         this.isOpen = false;
         this.activeIndex = -1;
+        // Unique id prefix for ARIA wiring (listbox + option ids, aria-controls/activedescendant).
+        this._uid = 'sd-' + (++SearchableDropdown._idCounter);
 
         this._createContainer();
         this._render();
         this._bindEvents();
+        // Reflect the <select>'s initial disabled state (needs the trigger created in _render).
+        this._syncDisabled();
     }
 
     _getCookieKey() {
@@ -201,9 +206,6 @@ export default class SearchableDropdown {
                 }
             });
             this._optionsObserver.observe(this.originalElement, { childList: true });
-
-            // Reflect the <select>'s initial disabled state onto the container.
-            this._syncDisabled();
         }
     }
 
@@ -215,6 +217,7 @@ export default class SearchableDropdown {
         }
         const disabled = this.originalElement.disabled;
         this.container.classList.toggle('disabled', disabled);
+        this.trigger.setAttribute('aria-disabled', disabled ? 'true' : 'false');
         if (disabled && this.isOpen) {
             this._close();
         }
@@ -241,6 +244,18 @@ export default class SearchableDropdown {
             }
         }
 
+        // Accessibility: expose the custom control as a combobox with a listbox popup so screen
+        // readers announce it like a native <select> (role, expanded state, label, active option).
+        this._listboxId = this._uid + '-listbox';
+        this.trigger.setAttribute('role', 'combobox');
+        this.trigger.setAttribute('aria-haspopup', 'listbox');
+        this.trigger.setAttribute('aria-expanded', 'false');
+        this.trigger.setAttribute('aria-controls', this._listboxId);
+        const labelText = this._resolveLabelText();
+        if (labelText) {
+            this.trigger.setAttribute('aria-label', labelText);
+        }
+
         // Popup menu (opens on click)
         this.optionsEl = document.createElement('div');
         this.optionsEl.className = 'options';
@@ -254,6 +269,10 @@ export default class SearchableDropdown {
             this.searchInput = document.createElement('input');
             this.searchInput.type = 'text';
             this.searchInput.className = 'search-box';
+            this.searchInput.setAttribute('role', 'searchbox');
+            this.searchInput.setAttribute('aria-label', 'Search');
+            this.searchInput.setAttribute('aria-controls', this._listboxId);
+            this.searchInput.setAttribute('autocomplete', 'off');
             // size=1 keeps the input's intrinsic width tiny so it doesn't blow up the
             // popup's max-content width; flex:1 then stretches it to the list width.
             this.searchInput.size = 1;
@@ -275,9 +294,14 @@ export default class SearchableDropdown {
             this.optionsEl.appendChild(searchRow);
         }
 
-        // Scrollable items list
+        // Scrollable items list — the listbox referenced by the trigger's aria-controls.
         this.itemsEl = document.createElement('div');
         this.itemsEl.className = 'items';
+        this.itemsEl.id = this._listboxId;
+        this.itemsEl.setAttribute('role', 'listbox');
+        if (this.multiselect) {
+            this.itemsEl.setAttribute('aria-multiselectable', 'true');
+        }
         this.optionsEl.appendChild(this.itemsEl);
 
         this.container.appendChild(this.trigger);
@@ -409,6 +433,8 @@ export default class SearchableDropdown {
         list.forEach((item, index) => {
             const option = document.createElement('div');
             option.className = 'option';
+            option.id = this._uid + '-opt-' + index;
+            option.setAttribute('role', 'option');
 
             if (this.multiselect) {
                 option.classList.add('multiselect-option');
@@ -443,7 +469,13 @@ export default class SearchableDropdown {
                 // Dimmed + non-interactive (CSS pointer-events:none); keyboard nav skips it and
                 // selectItem() ignores it.
                 option.classList.add('disabled');
+                option.setAttribute('aria-disabled', 'true');
             }
+
+            const isSelected = (this.multiselect || this.buildMode)
+                ? !!item.selected
+                : item.value === this.value;
+            option.setAttribute('aria-selected', isSelected ? 'true' : 'false');
 
             if (index === this.activeIndex) {
                 option.classList.add('active');
@@ -466,6 +498,7 @@ export default class SearchableDropdown {
 
             this.itemsEl.appendChild(option);
         });
+        this._updateActiveDescendant();
     }
 
     _paintActive() {
@@ -473,6 +506,7 @@ export default class SearchableDropdown {
         for (let i = 0; i < options.length; i++) {
             options[i].classList.toggle('active', i === this.activeIndex);
         }
+        this._updateActiveDescendant();
     }
 
     _createOptionIcon(src) {
@@ -481,6 +515,44 @@ export default class SearchableDropdown {
         icon.src = src;
         icon.alt = '';
         return icon;
+    }
+
+    // Accessible name for the combobox — from the passed label, the <select>'s aria-label, or the
+    // associated <label for="…">.
+    _resolveLabelText() {
+        if (this.label && this.label.textContent) {
+            return this.label.textContent.trim();
+        }
+        if (this.isSelect) {
+            const ariaLabel = this.originalElement.getAttribute('aria-label');
+            if (ariaLabel) {
+                return ariaLabel;
+            }
+            const id = this.originalElement.id;
+            if (id) {
+                try {
+                    const labelEl = document.querySelector('label[for="' + id + '"]');
+                    if (labelEl && labelEl.textContent) {
+                        return labelEl.textContent.trim();
+                    }
+                } catch (e) {
+                    // id not usable as a selector — ignore
+                }
+            }
+        }
+        return '';
+    }
+
+    // Point aria-activedescendant (on whichever element has focus) at the highlighted option so
+    // screen readers announce it during arrow-key navigation.
+    _updateActiveDescendant() {
+        const target = this.searchable ? this.searchInput : this.trigger;
+        const active = this.activeIndex >= 0 ? this.itemsEl.children[this.activeIndex] : null;
+        if (active && active.id) {
+            target.setAttribute('aria-activedescendant', active.id);
+        } else {
+            target.removeAttribute('aria-activedescendant');
+        }
     }
 
     // Next selectable (non-disabled) index in the given direction, wrapping around. Returns the
@@ -544,6 +616,7 @@ export default class SearchableDropdown {
         }
         this.isOpen = true;
         this.container.classList.add('open');
+        this.trigger.setAttribute('aria-expanded', 'true');
         // Highlight the currently selected item on open (single-select only, and only if something
         // is actually selected). The highlight then follows the mouse/keyboard. Multi-select shows
         // its state via checkboxes, so nothing is pre-highlighted.
@@ -581,6 +654,11 @@ export default class SearchableDropdown {
         }
         this.isOpen = false;
         this.container.classList.remove('open');
+        this.trigger.setAttribute('aria-expanded', 'false');
+        this.trigger.removeAttribute('aria-activedescendant');
+        if (this.searchable) {
+            this.searchInput.removeAttribute('aria-activedescendant');
+        }
         this._hide();
         if (this._repositionHandler) {
             window.removeEventListener('scroll', this._repositionHandler, true);
