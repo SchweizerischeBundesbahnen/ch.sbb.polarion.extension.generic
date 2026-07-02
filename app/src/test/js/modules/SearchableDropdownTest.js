@@ -13,6 +13,7 @@ describe('SearchableDropdown', function () {
             <select id="single">
                 <option value="a">A</option>
                 <option value="b">B</option>
+                <option value="c" disabled>C</option>
             </select>
             <select id="multi" multiple>
                 <option value="a">A</option>
@@ -165,6 +166,75 @@ describe('SearchableDropdown', function () {
         const second = new SearchableDropdown({ element: select, rememberSelection: false });
         expect(second.getSelectedValue()).to.equal('a');
         second.destroy();
+    });
+
+    it('mirrors the <select> title tooltip onto the trigger', function () {
+        const select = document.getElementById('single');
+        select.setAttribute('title', 'Choose a size');
+        const dropdown = new SearchableDropdown({ element: select, rememberSelection: false });
+        expect(dropdown.trigger.getAttribute('title')).to.equal('Choose a size');
+        dropdown.destroy();
+        select.removeAttribute('title');
+    });
+
+    it('exposes ARIA combobox/listbox semantics', function () {
+        const label = document.createElement('label');
+        label.setAttribute('for', 'single');
+        label.textContent = 'Paper size';
+        document.body.appendChild(label);
+
+        const dropdown = new SearchableDropdown({ element: document.getElementById('single'), rememberSelection: false });
+        expect(dropdown.trigger.getAttribute('role')).to.equal('combobox');
+        expect(dropdown.trigger.getAttribute('aria-haspopup')).to.equal('listbox');
+        expect(dropdown.trigger.getAttribute('aria-expanded')).to.equal('false');
+        expect(dropdown.trigger.getAttribute('aria-label')).to.equal('Paper size');
+        expect(dropdown.trigger.getAttribute('aria-controls')).to.equal(dropdown.itemsEl.id);
+        expect(dropdown.itemsEl.getAttribute('role')).to.equal('listbox');
+
+        dropdown._renderOptions(dropdown.items);
+        const first = dropdown.itemsEl.children[0];
+        expect(first.getAttribute('role')).to.equal('option');
+        expect(first.getAttribute('aria-selected')).to.equal('true'); // 'a' is the selected first option
+        const disabledOpt = dropdown.itemsEl.children[2];
+        expect(disabledOpt.getAttribute('aria-disabled')).to.equal('true');
+
+        dropdown._open();
+        expect(dropdown.trigger.getAttribute('aria-expanded')).to.equal('true');
+        dropdown._close();
+        expect(dropdown.trigger.getAttribute('aria-expanded')).to.equal('false');
+
+        dropdown.destroy();
+        label.remove();
+    });
+
+    it('ignores a disabled option and skips it in keyboard navigation', function () {
+        const dropdown = new SearchableDropdown({ element: document.getElementById('single'), rememberSelection: false });
+        const disabledItem = dropdown.items.find(i => i.value === 'c');
+        expect(disabledItem.disabled).to.be.true;
+
+        // Selecting a disabled option is a no-op (stays on the first option).
+        dropdown.selectItem(disabledItem);
+        expect(dropdown.getSelectedValue()).to.equal('a');
+
+        // Keyboard navigation skips the disabled option (a=0, b=1, c=2 disabled → wraps to a).
+        dropdown._visibleItems = dropdown.items;
+        expect(dropdown._nextEnabledIndex(1, 1)).to.equal(0);
+        // From no selection (index -1): Down → first (a=0), Up → last enabled (c=2 is disabled → b=1).
+        expect(dropdown._nextEnabledIndex(-1, 1)).to.equal(0);
+        expect(dropdown._nextEnabledIndex(-1, -1)).to.equal(1);
+        dropdown.destroy();
+    });
+
+    it('reflects the wrapped <select> disabled state onto the container', function () {
+        const select = document.getElementById('single');
+        select.disabled = true;
+        const dropdown = new SearchableDropdown({ element: select, rememberSelection: false });
+        expect(dropdown.container.classList.contains('disabled')).to.be.true;
+
+        select.disabled = false;
+        dropdown._syncDisabled();
+        expect(dropdown.container.classList.contains('disabled')).to.be.false;
+        dropdown.destroy();
     });
 
     it('re-wrapping the same <select> does not stack duplicate containers/portals', function () {
