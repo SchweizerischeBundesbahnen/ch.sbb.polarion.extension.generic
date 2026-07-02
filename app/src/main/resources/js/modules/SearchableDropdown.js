@@ -12,7 +12,8 @@ export default class SearchableDropdown {
                     placeholder = '',
                     searchable = true,
                     rememberSelection = true,
-                    preserveOptionClasses = false
+                    preserveOptionClasses = false,
+                    allowEmpty = false
                 }) {
         if (!element && !selectContainer) {
             throw new Error('SearchableDropdown: element or selectContainer is required');
@@ -49,12 +50,21 @@ export default class SearchableDropdown {
                 throw new Error('SearchableDropdown: element not found');
             }
             this.isSelect = this.originalElement.tagName === 'SELECT';
+            // If this element was already wrapped (e.g. a pane re-runs its dropdown init on save),
+            // tear the previous instance down first so we don't stack duplicate containers/portals.
+            if (this.originalElement._searchableDropdown) {
+                this.originalElement._searchableDropdown.destroy();
+            }
             this.items = this.isSelect
                 ? this._extractItemsFromSelect(this.originalElement)
                 : items;
         }
 
         this.multiselect = multiselect;
+        // When true, the single-select dropdown may stay unselected: it does not auto-select the
+        // first option and shows the placeholder (e.g. "Select…") until the user picks. Otherwise it
+        // behaves like a native <select> and always keeps an option selected.
+        this.allowEmpty = allowEmpty;
         this.label = label;
         this.changeListener = changeListener;
         this.rememberSelection =
@@ -143,6 +153,14 @@ export default class SearchableDropdown {
         }
 
         if (this.isSelect) {
+            // allowEmpty: a native <select> always auto-selects its first option — clear that so the
+            // control starts unselected (placeholder shown) unless an option is explicitly marked
+            // selected in the markup. The user must then choose.
+            if (this.allowEmpty
+                && !Array.from(this.originalElement.options).some(o => o.defaultSelected)) {
+                this.originalElement.selectedIndex = -1;
+            }
+
             // Mirror the element's current visibility onto the container...
             this.container.style.display = this.originalElement.style.display || '';
             this.container.style.visibility = this.originalElement.style.visibility || '';
@@ -150,6 +168,8 @@ export default class SearchableDropdown {
             // ...then visually hide the native <select> WITHOUT touching display/visibility,
             // so consumer-driven display/visibility changes (displayIf, visibleIf, inline
             // onchange handlers) stay observable and can be mirrored onto the container.
+            // Remember the original inline style so destroy() can restore the <select>.
+            this._originalElementCssText = this.originalElement.style.cssText;
             this.originalElement.style.position = 'absolute';
             this.originalElement.style.width = '1px';
             this.originalElement.style.height = '1px';
@@ -664,6 +684,16 @@ export default class SearchableDropdown {
         if (this.originalElement && this.originalElement._searchableDropdown === this) {
             delete this.originalElement._searchableDropdown;
         }
+        // In element mode we created the container as a sibling of the <select> and hid the
+        // <select>; remove the container and restore the <select> so nothing is left behind.
+        if (!this.buildMode) {
+            if (this.container && this.container.parentNode) {
+                this.container.remove();
+            }
+            if (this.originalElement && this._originalElementCssText !== undefined) {
+                this.originalElement.style.cssText = this._originalElementCssText;
+            }
+        }
     }
 
     // Sync the trigger display to the underlying <select>'s current value (no change event fired).
@@ -677,8 +707,9 @@ export default class SearchableDropdown {
             this._updateTriggerFromSelection();
             return;
         }
-        if (this.isSelect && this.originalElement.selectedIndex === -1 && this.originalElement.options.length > 0) {
-            // Native single-select left blank (value cleared) — keep the first option selected.
+        if (this.isSelect && !this.allowEmpty && this.originalElement.selectedIndex === -1 && this.originalElement.options.length > 0) {
+            // Native single-select left blank (value cleared) — keep the first option selected
+            // (unless allowEmpty lets it stay unselected to show the placeholder).
             this.originalElement.selectedIndex = 0;
         }
         const value = this.isSelect ? this.originalElement.value : this.trigger.value;
@@ -761,8 +792,8 @@ export default class SearchableDropdown {
         };
         this.items.push(item);
         // Single-select defaults to the first option (no empty/placeholder state), matching a
-        // native <select>. A later selectValue() overrides it.
-        if (!this.multiselect && this.items.length === 1) {
+        // native <select>. A later selectValue() overrides it. Skipped when allowEmpty is set.
+        if (!this.multiselect && !this.allowEmpty && this.items.length === 1) {
             item.selected = true;
             this._updateTriggerFromSelection();
         }
@@ -842,8 +873,8 @@ export default class SearchableDropdown {
         if (this.buildMode) {
             this.items.forEach(i => i.selected = i.value === value);
             // Single-select never stays empty — if the value matched nothing, fall back to the
-            // first option (like a native <select>).
-            if (!this.multiselect && this.items.length > 0 && !this.items.some(i => i.selected)) {
+            // first option (like a native <select>). Skipped when allowEmpty is set.
+            if (!this.multiselect && !this.allowEmpty && this.items.length > 0 && !this.items.some(i => i.selected)) {
                 this.items[0].selected = true;
             }
             this._updateTriggerFromSelection();
@@ -854,8 +885,8 @@ export default class SearchableDropdown {
         } else if (this.isSelect) {
             this.originalElement.value = value;
             // Native single-select: if the value didn't match any option, keep the first selected
-            // rather than leaving the control blank.
-            if (!this.multiselect && this.originalElement.selectedIndex === -1 && this.originalElement.options.length > 0) {
+            // rather than leaving the control blank. Skipped when allowEmpty is set.
+            if (!this.multiselect && !this.allowEmpty && this.originalElement.selectedIndex === -1 && this.originalElement.options.length > 0) {
                 this.originalElement.selectedIndex = 0;
             }
             this.syncFromElement();
