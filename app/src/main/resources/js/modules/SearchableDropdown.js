@@ -111,7 +111,9 @@ export default class SearchableDropdown {
                 value: option.value,
                 label: option.text,
                 className: option.className,
-                selected: option.selected
+                selected: option.selected,
+                // Optional per-option icon: <option data-icon="/polarion/…/icon.svg">Label</option>
+                icon: option.getAttribute('data-icon') || ''
             }));
     }
 
@@ -238,6 +240,17 @@ export default class SearchableDropdown {
 
         this.container.appendChild(this.trigger);
 
+        // Single-select trigger is a read-only <input> (can't hold markup), so the selected option's
+        // icon is overlaid as an absolutely-positioned image at its left edge (with .has-icon adding
+        // room for it). Multi-select shows icons inside its chips instead.
+        if (!this.multiselect) {
+            this.triggerIcon = document.createElement('img');
+            this.triggerIcon.className = 'sd-trigger-icon';
+            this.triggerIcon.alt = '';
+            this.triggerIcon.style.display = 'none';
+            this.container.appendChild(this.triggerIcon);
+        }
+
         // The popup is rendered into a portal appended to <body> (position:fixed) rather than
         // nested in the container. This lets it escape any ancestor overflow clipping (narrow side
         // panels, scrollable modals) and its width is driven in JS from the trigger, so it always
@@ -259,6 +272,23 @@ export default class SearchableDropdown {
             }
         }
         this._applyTriggerClass();
+        this._refreshTriggerIcon();
+    }
+
+    // Show/hide the selected option's icon on the single-select trigger (overlaid on the <input>).
+    _refreshTriggerIcon() {
+        if (this.multiselect || !this.triggerIcon) {
+            return;
+        }
+        const item = this.items.find(i => i.value === this.value);
+        if (item && item.icon) {
+            this.triggerIcon.src = item.icon;
+            this.triggerIcon.style.display = '';
+            this.trigger.classList.add('has-icon');
+        } else {
+            this.triggerIcon.style.display = 'none';
+            this.trigger.classList.remove('has-icon');
+        }
     }
 
     _bindEvents() {
@@ -345,6 +375,16 @@ export default class SearchableDropdown {
                 checkbox.checked = !!item.selected;
                 checkbox.tabIndex = -1;
                 option.appendChild(checkbox);
+                if (item.icon) {
+                    option.appendChild(this._createOptionIcon(item.icon));
+                }
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'option-label';
+                labelSpan.textContent = item.label;
+                option.appendChild(labelSpan);
+            } else if (item.icon) {
+                option.classList.add('has-icon');
+                option.appendChild(this._createOptionIcon(item.icon));
                 const labelSpan = document.createElement('span');
                 labelSpan.className = 'option-label';
                 labelSpan.textContent = item.label;
@@ -385,6 +425,14 @@ export default class SearchableDropdown {
         for (let i = 0; i < options.length; i++) {
             options[i].classList.toggle('active', i === this.activeIndex);
         }
+    }
+
+    _createOptionIcon(src) {
+        const icon = document.createElement('img');
+        icon.className = 'option-icon';
+        icon.src = src;
+        icon.alt = '';
+        return icon;
     }
 
     _handleArrowDown() {
@@ -532,6 +580,7 @@ export default class SearchableDropdown {
         const selected = this.items.filter(i => i.selected);
         this.trigger.value = selected.length ? selected[0].label : '';
         this._applyTriggerClass();
+        this._refreshTriggerIcon();
     }
 
     // Multi-select trigger content: one removable chip per selected value (empty → placeholder).
@@ -636,6 +685,7 @@ export default class SearchableDropdown {
         const item = this.items.find(i => i.value === value);
         this.trigger.value = item ? item.label : '';
         this._applyTriggerClass();
+        this._refreshTriggerIcon();
     }
 
     _applyTriggerClass() {
@@ -678,6 +728,7 @@ export default class SearchableDropdown {
         } else {
             this.trigger.value = item ? item.label : '';
             this._applyTriggerClass();
+            this._refreshTriggerIcon();
         }
 
         if (!preventClosing) {
@@ -700,12 +751,13 @@ export default class SearchableDropdown {
     // Append a selectable option. Returns lightweight handles whose classList mutations are
     // mirrored onto the rendered option — this preserves the CustomSelect contract where callers do
     // `addOption(...).label.classList.add('parent')` to mark a global-scope config.
-    addOption(value, text) {
+    addOption(value, text, icon) {
         const item = {
             value,
             label: text !== undefined && text !== null ? text : value,
             className: '',
-            selected: false
+            selected: false,
+            icon: icon || ''
         };
         this.items.push(item);
         // Single-select defaults to the first option (no empty/placeholder state), matching a
@@ -743,8 +795,15 @@ export default class SearchableDropdown {
     empty() {
         this.items = [];
         this.activeIndex = -1;
-        this.trigger.value = '';
-        this._applyTriggerClass();
+        if (this.multiselect) {
+            // The multi-select trigger is a chip container div — re-render it so stale chips (and
+            // their mousedown closures over removed items) are cleared and the placeholder shows.
+            this._updateTriggerFromSelection();
+        } else {
+            this.trigger.value = '';
+            this._applyTriggerClass();
+            this._refreshTriggerIcon();
+        }
         if (this.isOpen) {
             this._renderOptions(this.items);
         }
@@ -841,5 +900,6 @@ export default class SearchableDropdown {
         } else {
             this.trigger.value = val;
         }
+        this._refreshTriggerIcon();
     }
 }

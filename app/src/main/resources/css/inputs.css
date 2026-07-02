@@ -22,11 +22,15 @@
 .form-wrapper input[type="text"]:not(.sd-trigger):not(.search-box),
 .form-wrapper input[type="number"],
 .form-wrapper input[type="password"],
-.form-wrapper input[type="search"] {
+.form-wrapper input[type="search"],
+.modal__container input:not([type]):not(.sd-trigger):not(.search-box),
+.standard-admin-page input:not([type]):not(.sd-trigger):not(.search-box),
+.form-wrapper input:not([type]):not(.sd-trigger):not(.search-box) {
     box-sizing: border-box;
     height: 23px;
     border: 1px solid #c9c9c9;
-    border-radius: 2px;
+    /* Square corners to match Polarion's own text inputs (its inputs are not rounded). */
+    border-radius: 0;
     padding: 2px 6px;
     background-color: #fff;
     font-family: "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif;
@@ -46,7 +50,10 @@
 .form-wrapper input[type="text"]:not(.sd-trigger):not(.search-box):focus,
 .form-wrapper input[type="number"]:focus,
 .form-wrapper input[type="password"]:focus,
-.form-wrapper input[type="search"]:focus {
+.form-wrapper input[type="search"]:focus,
+.modal__container input:not([type]):not(.sd-trigger):not(.search-box):focus,
+.standard-admin-page input:not([type]):not(.sd-trigger):not(.search-box):focus,
+.form-wrapper input:not([type]):not(.sd-trigger):not(.search-box):focus {
     border-color: #1491EB;
     outline: none;
 }

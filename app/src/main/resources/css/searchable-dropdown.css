@@ -14,7 +14,7 @@
     box-sizing: border-box;
     padding: 2px 2rem 2px .5rem;
     border: 1px solid #c9c9c9;
-    border-radius: 2px;
+    border-radius: 0;
     background-color: #fff;
     cursor: pointer;
     overflow: hidden;
@@ -32,6 +32,23 @@
     outline: none;
 }
 
+/* Selected option's icon overlaid on the single-select trigger (the <input> can't hold markup);
+   .has-icon makes room for it on the left. */
+.searchable-dropdown > input.sd-trigger.has-icon {
+    padding-left: 26px;
+}
+
+.searchable-dropdown .sd-trigger-icon {
+    position: absolute;
+    left: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    pointer-events: none;
+}
+
 /* Multi-select trigger: renders selected values as chips and grows in height (wrapping) so all
    selections stay visible instead of being truncated into a single comma-joined line. */
 .searchable-dropdown > .sd-trigger-multi {
@@ -40,7 +57,7 @@
     box-sizing: border-box;
     padding: 1px 2rem 1px 3px;
     border: 1px solid #c9c9c9;
-    border-radius: 2px;
+    border-radius: 0;
     background-color: #fff;
     cursor: pointer;
     display: flex;
@@ -68,7 +85,7 @@
     padding: 0 3px 0 5px;
     background: #ebf7f8;
     border: 1px solid #b6dfe3;
-    border-radius: 2px;
+    border-radius: 0;
     font-size: 12px;
     font-weight: 600;
     line-height: 17px;
@@ -125,7 +142,7 @@
     width: max-content;
     background: #fff;
     border: 1px solid #CCCCD4;
-    border-radius: 2px;
+    border-radius: 0;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -154,7 +171,7 @@
     box-sizing: border-box;
     padding: 4px 6px;
     border: 1px solid #1491EB;
-    border-radius: 2px;
+    border-radius: 0;
     background-color: #fff;
     font-family: inherit;
     font-size: 13px;
@@ -193,6 +210,20 @@
    Only one option is highlighted at a time (follows mouse/keyboard), managed via the .active class. */
 .sd-portal .option.active {
     background-color: #ebf7f8;
+}
+
+/* Optional per-option icon (from <option data-icon="…"> or addOption(value, text, icon)). */
+.sd-portal .option.has-icon {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sd-portal .option .option-icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
 }
 
 /* Multi-select option: a checkbox in front of the label (toggles without closing the popup). */

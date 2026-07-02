@@ -121,6 +121,23 @@ describe('SearchableDropdown', function () {
         });
     });
 
+    it('empty() clears rendered chips in multi-select build mode', function () {
+        const dropdown = new SearchableDropdown({
+            selectContainer: document.getElementById('build-container'),
+            multiselect: true,
+            rememberSelection: false
+        });
+        dropdown.addOption('a', 'A');
+        dropdown.addOption('b', 'B');
+        dropdown.selectMultipleValues(['a', 'b']);
+        expect(dropdown.trigger.querySelectorAll('.sd-chip').length).to.equal(2);
+
+        dropdown.empty();
+        expect(dropdown.trigger.querySelectorAll('.sd-chip').length).to.equal(0);
+        expect(dropdown.getSelectedValue()).to.deep.equal([]);
+        dropdown.destroy();
+    });
+
     it('destroy() removes the body-level portal', function () {
         const dropdown = new SearchableDropdown({
             selectContainer: document.getElementById('build-container'),
