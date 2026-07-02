@@ -75,7 +75,7 @@
         <assertj-core.version>3.27.7</assertj-core.version>
         <jaxb.impl.version>4.0.9</jaxb.impl.version>
         <istack.version>4.2.0</istack.version>
-        <log4j.version>2.26.0</log4j.version>
+        <log4j.version>2.26.1</log4j.version>
         <jackson.annotations.version>2.22.0</jackson.annotations.version>
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
 
