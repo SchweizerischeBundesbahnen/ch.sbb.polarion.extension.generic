@@ -1,5 +1,18 @@
 # Changelog
 
+## [15.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.1.0...v15.2.0) (2026-07-02)
+
+
+### Features
+
+* single shared dropdown component ([#479](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/479)) ([08257c6](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/08257c6b2946b85bb744dc91c2e55b2576399433)), closes [#478](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/478)
+
+
+### Bug Fixes
+
+* add allowEmpty option to SearchableDropdown ([#482](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/482)) ([b461aa5](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/b461aa5e753bf0132a0b2ffecfa09090b630a672)), closes [#478](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/478)
+* **deps:** update swagger.version to v2.2.52 ([#473](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/473)) ([e947169](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/e947169549a3b4885b6e439f842a7f9c7ee4b118))
+
 ## [15.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.0.1...v15.1.0) (2026-06-23)
 
 
