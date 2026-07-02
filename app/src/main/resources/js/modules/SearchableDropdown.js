@@ -574,8 +574,11 @@ export default class SearchableDropdown {
     // current index if every option is disabled.
     _nextEnabledIndex(start, direction) {
         const count = this._visibleItems.length;
+        // From "no selection" (start < 0) the first step must land on the first item (Arrow Down)
+        // or the last item (Arrow Up), mirroring a native <select>; normalise the start so it does.
+        const from = start >= 0 ? start : (direction > 0 ? -1 : 0);
         for (let step = 1; step <= count; step++) {
-            const idx = (((start + direction * step) % count) + count) % count;
+            const idx = (((from + direction * step) % count) + count) % count;
             if (!this._visibleItems[idx].disabled) {
                 return idx;
             }

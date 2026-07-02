@@ -219,6 +219,9 @@ describe('SearchableDropdown', function () {
         // Keyboard navigation skips the disabled option (a=0, b=1, c=2 disabled → wraps to a).
         dropdown._visibleItems = dropdown.items;
         expect(dropdown._nextEnabledIndex(1, 1)).to.equal(0);
+        // From no selection (index -1): Down → first (a=0), Up → last enabled (c=2 is disabled → b=1).
+        expect(dropdown._nextEnabledIndex(-1, 1)).to.equal(0);
+        expect(dropdown._nextEnabledIndex(-1, -1)).to.equal(1);
         dropdown.destroy();
     });
 
