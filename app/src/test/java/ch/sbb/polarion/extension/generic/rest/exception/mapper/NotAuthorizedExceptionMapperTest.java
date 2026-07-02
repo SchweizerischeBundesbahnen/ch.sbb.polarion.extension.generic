@@ -13,26 +13,26 @@ class NotAuthorizedExceptionMapperTest {
 
     @Test
     void testResponse() {
-        try (Response response = new NotAuthorizedExceptionMapper().toResponse(new NotAuthorizedException("test message", "Bearer"))) {
-            assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
-            ErrorEntity entity = (ErrorEntity) response.getEntity();
-            assertNotNull(entity);
-            assertEquals("test message", entity.getMessage());
-        } catch (Exception e) {
-            fail("Exception thrown: " + e.getMessage());
-        }
+        assertDoesNotThrow(() -> {
+            try (Response response = new NotAuthorizedExceptionMapper().toResponse(new NotAuthorizedException("test message", "Bearer"))) {
+                assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+                ErrorEntity entity = (ErrorEntity) response.getEntity();
+                assertNotNull(entity);
+                assertEquals("test message", entity.getMessage());
+            }
+        });
     }
 
     @Test
     void testUnauthorizedExceptionResponse() {
-        try (Response response = new NotAuthorizedExceptionMapper().toResponse(new UnauthorizedException("unauthorized message"))) {
-            assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
-            ErrorEntity entity = (ErrorEntity) response.getEntity();
-            assertNotNull(entity);
-            assertEquals("unauthorized message", entity.getMessage());
-        } catch (Exception e) {
-            fail("Exception thrown: " + e.getMessage());
-        }
+        assertDoesNotThrow(() -> {
+            try (Response response = new NotAuthorizedExceptionMapper().toResponse(new UnauthorizedException("unauthorized message"))) {
+                assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+                ErrorEntity entity = (ErrorEntity) response.getEntity();
+                assertNotNull(entity);
+                assertEquals("unauthorized message", entity.getMessage());
+            }
+        });
     }
 
 }

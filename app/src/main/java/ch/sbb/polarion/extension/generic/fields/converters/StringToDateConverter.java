@@ -63,7 +63,7 @@ public class StringToDateConverter implements IConverter<String, Date> {
         DateTimeFormatter formatter = builder.parseCaseInsensitive()
                 .append(DateTimeFormatter.ISO_LOCAL_TIME)
                 .toFormatter(Locale.getDefault());
-        LocalDateTime dateTime = LocalDateTime.now();
+        LocalDateTime dateTime = LocalDateTime.now(ZoneId.systemDefault());
         LocalTime time = LocalTime.parse(initialValue, formatter);
         return Date.from(dateTime.with(time)
                 .atZone(ZoneId.systemDefault())
