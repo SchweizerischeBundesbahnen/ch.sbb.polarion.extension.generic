@@ -153,6 +153,10 @@ export default class SearchableDropdown {
         }
 
         if (this.isSelect) {
+            // Remember the original selection so destroy() can restore it (allowEmpty below may
+            // clear it to -1, which would otherwise leak to a later re-wrap of the same <select>).
+            this._originalSelectedIndex = this.originalElement.selectedIndex;
+
             // allowEmpty: a native <select> always auto-selects its first option — clear that so the
             // control starts unselected (placeholder shown) unless an option is explicitly marked
             // selected in the markup. The user must then choose.
@@ -692,6 +696,9 @@ export default class SearchableDropdown {
             }
             if (this.originalElement && this._originalElementCssText !== undefined) {
                 this.originalElement.style.cssText = this._originalElementCssText;
+            }
+            if (this.originalElement && this.isSelect && this._originalSelectedIndex !== undefined) {
+                this.originalElement.selectedIndex = this._originalSelectedIndex;
             }
         }
     }

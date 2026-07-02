@@ -156,6 +156,17 @@ describe('SearchableDropdown', function () {
         dropdown.destroy();
     });
 
+    it('destroy() restores selectedIndex so allowEmpty does not leak to a re-wrap', function () {
+        const select = document.getElementById('single');
+        // First instance clears the selection (allowEmpty); re-wrapping without allowEmpty must see
+        // the first option again, not the -1 left behind.
+        new SearchableDropdown({ element: select, allowEmpty: true, placeholder: 'Select...', rememberSelection: false });
+        expect(select.selectedIndex).to.equal(-1);
+        const second = new SearchableDropdown({ element: select, rememberSelection: false });
+        expect(second.getSelectedValue()).to.equal('a');
+        second.destroy();
+    });
+
     it('re-wrapping the same <select> does not stack duplicate containers/portals', function () {
         const select = document.getElementById('multi');
         new SearchableDropdown({ element: select, rememberSelection: false });
