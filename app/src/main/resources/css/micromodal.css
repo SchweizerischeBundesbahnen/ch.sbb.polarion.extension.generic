@@ -120,6 +120,14 @@
    top, teal outline/filled buttons) shared by admin dialogs. Opt in by adding
    `standard-dialog` to the `.modal__container`. Exporter popups keep their own
    `.modal__container.<ext>` styling and are unaffected by this block. */
+/* Sit above in-page editors: code-input renders a transparent <textarea> at z-index:1 over its
+   syntax highlighting, which would otherwise capture clicks meant for the dialog (the dialog stays
+   visible because that textarea is transparent). Scoped to standard-dialog so exporter popups —
+   which set their own overlay z-index — are untouched. */
+.modal__overlay:has(> .modal__container.standard-dialog) {
+  z-index: 10000;
+}
+
 .modal__container.standard-dialog {
   /* Drop the container's default padding so the dark header sits flush to the top/edges
      (rounded corners clipped by overflow:hidden); content and footer carry their own padding. */
