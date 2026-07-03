@@ -504,6 +504,35 @@ change: its unversioned injection is simply superseded once a versioned copy is 
 native `<select id="configurations-select">` wrapped by `SearchableDropdown`), including the
 italic `global` marker for configurations inherited from a broader scope.
 
+#### Modal dialogs (`micromodal`)
+
+The [Micromodal](https://micromodal.vercel.app/) library (`js/micromodal.min.js`) and its styling
+(`css/micromodal.css`) ship with generic and are served at
+`/polarion/<ext>/ui/generic/js/micromodal.min.js` and `.../css/micromodal.css`. Link/inject them from
+there — do **not** vendor a per-extension copy. Build the standard micromodal markup
+(`.modal.micromodal-slide` → `.modal__overlay` → `.modal__container` → `.modal__header` /
+`.modal__content` / `.modal__footer`) and open it with `MicroModal.show('<id>')`.
+
+For a simple, polished message / confirmation dialog — full-width dark header flush to the top, teal
+outline (secondary) / filled (primary) buttons — add **`standard-dialog`** to the `.modal__container`:
+
+```html
+<div class="modal__container standard-dialog" role="dialog" aria-modal="true" ...>
+  <header class="modal__header">
+    <h2 class="modal__title">Title</h2>
+    <button class="modal__close" data-micromodal-close></button>
+  </header>
+  <main class="modal__content">…</main>
+  <footer class="modal__footer">
+    <button class="modal__btn" data-micromodal-close>Cancel</button>
+    <button class="modal__btn modal__btn-primary" data-micromodal-close>OK</button>
+  </footer>
+</div>
+```
+
+The `.standard-dialog` rules live in `css/micromodal.css` and are **opt-in**, so exporter popups —
+which scope their own look under `.modal__container.<ext>` (e.g. `.pdf-exporter`) — are unaffected.
+
 #### Deprecated components
 
 The following are kept only for backward compatibility and should not be used in new code:
