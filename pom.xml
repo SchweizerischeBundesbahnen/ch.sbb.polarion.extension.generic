@@ -1044,6 +1044,17 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
+                <!-- generic-build-info.js is filtered separately (below) to bake in the build timestamp -->
+                <excludes>
+                    <exclude>js/modules/generic-build-info.js</exclude>
+                </excludes>
+            </resource>
+            <resource> <!-- Bake ${maven.build.timestamp} into generic-build-info.js (it has no template literals, so default ${} filtering is safe) -->
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>js/modules/generic-build-info.js</include>
+                </includes>
             </resource>
             <resource> <!-- Below is a way to replace polarion version in generic.properties by version from a profile -->
                 <directory>src/main/resources-filtered</directory>
