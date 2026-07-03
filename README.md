@@ -473,6 +473,31 @@ UI wrappers `.modal__container` (popups), `.standard-admin-page` (admin pages) a
 (document-properties side panels) so they never restyle Polarion's own controls — put the matching
 wrapper class on your surface.
 
+#### Shared control CSS is self-provided by `SearchableDropdown` (versioned)
+
+The shared control CSS reaches a page as global `<link>`s. Historically that only happened via an
+exporter's `scriptInjection.*Head` → `starter.js` → `injectStyles(...)`. That path is **shared and
+optional**: the component classes are global, so one installed exporter styles every surface — but if
+no exporter's `starter.js` runs (unconfigured `scriptInjection`, or the injecting extension removed),
+a document-properties side panel renders its controls **unstyled** even though its JS already wrapped
+them. (A panel cannot fix this from its own HTML fragment: Polarion inserts it via `HtmlFragmentBuilder`,
+which honors an inline `<style>` but **not** external `<link>`/`<script>` — which is also why panels
+bootstrap their JS through a `<link onload>` hook.)
+
+So the component provides its own styling: the `SearchableDropdown` constructor calls
+`ensureSharedStyles()` (`js/modules/ensureSharedStyles.js`), which injects the shared CSS
+(`checkboxes` / `radios` / `inputs` / `searchable-dropdown`) as `<link>`s into `<head>`. Any surface
+that renders a dropdown — side panel, export popup, admin page — is therefore styled on its own, with
+**no per-extension wiring**: an extension just consumes the generic version that ships it.
+
+**Versioning.** Each injected `<link>` carries `data-generic-version` = the generic bundle build
+timestamp (baked into `generic-build-info.js` via `resources-filtered`). The `<link>` ids match the
+ones `injectStyles` uses, so the two never duplicate. On a clash `ensureSharedStyles` keeps the copy
+with the **higher** version and treats an unversioned copy (e.g. from an older `starter.js`) as the
+lowest — so across a page assembled from extensions on **different generic versions**, the newest
+generic's CSS always wins, deterministically and regardless of load order. `starter.js` needs no
+change: its unversioned injection is simply superseded once a versioned copy is present.
+
 #### `ConfigurationsPane`
 
 `js/modules/ConfigurationsPane.js` renders the admin "choose a configuration" pane (backed by a

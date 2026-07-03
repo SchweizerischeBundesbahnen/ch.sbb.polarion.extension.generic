@@ -1,3 +1,5 @@
+import ensureSharedStyles from './ensureSharedStyles.js';
+
 export default class SearchableDropdown {
     static COOKIE_PREFIX = 'searchable_dropdown_';
     static COOKIE_EXPIRY_DAYS = 30;
@@ -19,6 +21,10 @@ export default class SearchableDropdown {
         if (!element && !selectContainer) {
             throw new Error('SearchableDropdown: element or selectContainer is required');
         }
+
+        // Guarantee our shared control CSS is on the page (versioned), so a pane/popup that uses this
+        // component is styled without depending on any extension's scriptInjection/starter.js.
+        ensureSharedStyles();
 
         // Two construction modes:
         //  - "select" mode: wrap an existing native <select> (element) — the <select> stays the
