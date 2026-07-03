@@ -127,6 +127,38 @@
     pointer-events: none;
 }
 
+/* Optional clear (×) button — reset a single-select back to its placeholder. Opt-in via the
+   `clearable` option; shown only while a value is selected (.has-value). Sits left of the chevron. */
+.searchable-dropdown.clearable.has-value > input.sd-trigger {
+    padding-right: 2.75rem;
+}
+
+.searchable-dropdown .sd-clear {
+    position: absolute;
+    right: 26px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    width: 15px;
+    height: 15px;
+    line-height: 14px;
+    text-align: center;
+    font-size: 15px;
+    color: #6b6b6b;
+    cursor: pointer;
+    border-radius: 50%;
+    user-select: none;
+}
+
+.searchable-dropdown .sd-clear:hover {
+    color: #1a1a1a;
+    background: #e6e6e6;
+}
+
+.searchable-dropdown.clearable.has-value .sd-clear {
+    display: block;
+}
+
 /* The popup is portalled into <body> (see SearchableDropdown._render) so it can't be clipped by
    an ancestor's overflow (narrow side panels, scrollable modals). The portal is fixed-positioned
    in JS under the trigger, and given the trigger's width so the popup min-width (trigger + 35px)

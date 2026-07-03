@@ -443,6 +443,8 @@ Key options: `multiselect` (removable chips + in-list checkboxes; the popup stay
 toggling), `searchable` (default `true`), `placeholder`, `allowEmpty` (default `false` — a
 single-select then does **not** auto-select the first option; it stays unselected and shows the
 `placeholder` until the user picks, e.g. `{ allowEmpty: true, placeholder: 'Select…' }`),
+`clearable` (default `false` — adds a small `×` in the trigger that resets a single-select back to
+its `placeholder`; pairs naturally with `allowEmpty`),
 `rememberSelection` (cookie; usually pass `false`), `preserveOptionClasses` (mirror each `<option>`'s
 CSS class onto the rendered option — e.g. the `parent` class renders a global-scope configuration
 with an italic `global` marker).
