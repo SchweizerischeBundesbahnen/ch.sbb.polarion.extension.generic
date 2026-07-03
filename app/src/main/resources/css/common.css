@@ -104,6 +104,23 @@ select {
     vertical-align: middle;
 }
 
+/* Role pickers (api-extender / xml-repair / diff-tool) render each role as
+   <td><input type="checkbox"></td><td><label>role</label></td>. The two-cell split
+   plus per-cell padding and table border-spacing inflates the checkbox-to-text gap
+   well beyond the standard inline `<label><input> text</label>` (~4px). Collapse the
+   horizontal gap so it matches every other checkbox; vertical row spacing is kept. */
+.standard-admin-page .roles_table table {
+    border-spacing: 0;
+}
+
+.standard-admin-page .roles_table td:first-child {
+    padding-right: 0;
+}
+
+.standard-admin-page .roles_table td:last-child {
+    padding-left: 0;
+}
+
 .standard-admin-page h1 {
     font-size: 30px;
     line-height: 38px;
