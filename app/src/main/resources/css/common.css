@@ -91,6 +91,19 @@ select {
     font-weight: bold;
 }
 
+/* Vertically center inline controls that share a row (a label next to a native <select>, a
+   SearchableDropdown, an <input>, or a .toolbar-button / .action-buttons group). Without this they
+   align on the text baseline, so the taller controls sit visually off-center against the label. */
+.standard-admin-page label,
+.standard-admin-page input:not([type="hidden"]),
+.standard-admin-page select,
+.standard-admin-page .searchable-dropdown,
+.standard-admin-page .toolbar-button,
+.standard-admin-page .action-buttons,
+.standard-admin-page td {
+    vertical-align: middle;
+}
+
 .standard-admin-page h1 {
     font-size: 30px;
     line-height: 38px;
