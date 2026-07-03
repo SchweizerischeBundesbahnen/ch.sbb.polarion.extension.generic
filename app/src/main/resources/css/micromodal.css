@@ -113,6 +113,69 @@
 }
 
 
+/**************************\
+  Standard dialog
+\**************************/
+/* A simple, polished message/confirmation dialog (full-width dark header flush to the
+   top, teal outline/filled buttons) shared by admin dialogs. Opt in by adding
+   `standard-dialog` to the `.modal__container`. Exporter popups keep their own
+   `.modal__container.<ext>` styling and are unaffected by this block. */
+.modal__container.standard-dialog {
+  /* Drop the container's default padding so the dark header sits flush to the top/edges
+     (rounded corners clipped by overflow:hidden); content and footer carry their own padding. */
+  padding: 0;
+  min-width: 400px;
+  max-width: 90vw;
+  overflow: hidden;
+}
+
+.modal__container.standard-dialog .modal__close {
+  margin-left: auto;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal__container.standard-dialog .modal__content {
+  margin: 0;
+  padding: 20px 24px;
+  max-height: 78vh;
+  overflow: auto;
+}
+
+.modal__container.standard-dialog .modal__footer {
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px 16px;
+}
+
+/* Teal outline (secondary) / filled (primary) buttons, matching the exporter dialogs. */
+.modal__container.standard-dialog .modal__btn {
+  background-color: #fff;
+  color: #007993;
+  border: 2px solid #007993;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 6px 18px;
+}
+
+.modal__container.standard-dialog .modal__btn:hover,
+.modal__container.standard-dialog .modal__btn:focus {
+  background-color: #f0f8f9;
+  transform: none;
+}
+
+.modal__container.standard-dialog .modal__btn-primary {
+  background-color: #007993;
+  color: #fff;
+}
+
+.modal__container.standard-dialog .modal__btn-primary:hover,
+.modal__container.standard-dialog .modal__btn-primary:focus {
+  background-color: #0a6a80;
+}
+
 
 /**************************\
   Modal Animation Styles
