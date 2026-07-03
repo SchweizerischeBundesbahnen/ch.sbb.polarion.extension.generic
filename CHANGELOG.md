@@ -1,5 +1,13 @@
 # Changelog
 
+## [15.2.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.2.0...v15.2.1) (2026-07-03)
+
+
+### Bug Fixes
+
+* inject shared control CSS for consistent styling across components ([#490](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/490)) ([53d907b](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/53d907b8ff99dd6e16bdd8fc1906075351b1e691)), closes [#489](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/489)
+* reflect native select state on searchabledropdown disabled options a11y ([#486](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/486)) ([2d8a618](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2d8a6182774e82bfdb6852d42b29208be0d0b392)), closes [#485](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/485)
+
 ## [15.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.1.0...v15.2.0) (2026-07-02)
 
 
