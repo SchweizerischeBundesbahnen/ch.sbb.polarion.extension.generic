@@ -27,7 +27,11 @@
   padding: 30px;
   max-height: 100vh;
   border-radius: 4px;
-  overflow-y: auto;
+  /* Flex column so the header and footer stay fixed and only .modal__content scrolls — avoids a
+     second (outer) scrollbar on the container when content doesn't fit vertically. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -39,12 +43,14 @@
   min-height: 48px;
   padding: 0 16px;
   border-radius: 4px 4px 0 0;
+  flex-shrink: 0;
 }
 
 .modal__footer {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .modal__title {
@@ -70,6 +76,10 @@
   margin-bottom: 2rem;
   line-height: 1.5;
   color: rgba(0,0,0,.8);
+  /* The only scroll area — flex child that shrinks below its content height (min-height:0) and
+     scrolls internally while the header/footer stay put. */
+  overflow: auto;
+  min-height: 0;
 }
 
 .modal__btn {
