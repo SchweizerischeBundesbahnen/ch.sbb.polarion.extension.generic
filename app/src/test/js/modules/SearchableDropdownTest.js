@@ -39,6 +39,33 @@ describe('SearchableDropdown', function () {
         delete global.MutationObserver;
     });
 
+    describe('clearable (× reset button)', function () {
+        let select, dropdown;
+
+        beforeEach(function () {
+            // Clearable pairs with allowEmpty; start on a real value (option B is pre-selected).
+            select = document.createElement('select');
+            select.id = 'clearable-single';
+            select.innerHTML = '<option value="a">A</option><option value="b" selected>B</option>';
+            document.body.appendChild(select);
+            dropdown = new SearchableDropdown({ element: select, clearable: true, allowEmpty: true });
+        });
+
+        it('shows the clear button on initial render when a value is pre-selected', function () {
+            // Regression: _updateClearButton() must run in _render(), so the × is visible from the
+            // start (via the container's .has-value class), not only after the user interacts.
+            expect(dropdown.container.classList.contains('clearable')).to.be.true;
+            expect(dropdown.container.querySelector('.sd-clear')).to.exist;
+            expect(dropdown.container.classList.contains('has-value')).to.be.true;
+        });
+
+        it('clearing resets the selection to the placeholder and hides the clear button', function () {
+            dropdown.selectItem(null);
+            expect(select.selectedIndex).to.equal(-1);
+            expect(dropdown.container.classList.contains('has-value')).to.be.false;
+        });
+    });
+
     describe('build mode (CustomSelect-compatible API)', function () {
         let dropdown;
 

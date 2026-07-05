@@ -382,6 +382,9 @@ export default class SearchableDropdown {
         }
         this._applyTriggerClass();
         this._refreshTriggerIcon();
+        // Initialize clear-button visibility to match the starting selection (e.g. a dropdown that
+        // renders with a pre-selected value shows the × immediately, not only after interaction).
+        this._updateClearButton();
     }
 
     // Show/hide the selected option's icon on the single-select trigger (overlaid on the <input>).
@@ -951,7 +954,14 @@ export default class SearchableDropdown {
         }
 
         if (this.isSelect) {
-            this.originalElement.value = item ? item.value : null;
+            if (item) {
+                this.originalElement.value = item.value;
+            } else {
+                // Explicitly deselect rather than assigning value = null: setting an unmatched value
+                // doesn't reliably clear a native <select>'s selection, which would leave the old
+                // value readable by consumers even though the trigger shows the placeholder.
+                this.originalElement.selectedIndex = -1;
+            }
             this.originalElement.dispatchEvent(
                 new Event('change', { bubbles: true })
             );
