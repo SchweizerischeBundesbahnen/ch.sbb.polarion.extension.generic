@@ -27,7 +27,11 @@
   padding: 30px;
   max-height: 100vh;
   border-radius: 4px;
-  overflow-y: auto;
+  /* Flex column so the header and footer stay fixed and only .modal__content scrolls — avoids a
+     second (outer) scrollbar on the container when content doesn't fit vertically. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -39,12 +43,14 @@
   min-height: 48px;
   padding: 0 16px;
   border-radius: 4px 4px 0 0;
+  flex-shrink: 0;
 }
 
 .modal__footer {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .modal__title {
@@ -70,6 +76,10 @@
   margin-bottom: 2rem;
   line-height: 1.5;
   color: rgba(0,0,0,.8);
+  /* The only scroll area — flex child that shrinks below its content height (min-height:0) and
+     scrolls internally while the header/footer stay put. */
+  overflow: auto;
+  min-height: 0;
 }
 
 .modal__btn {
@@ -112,6 +122,77 @@
   color: #fff;
 }
 
+
+/**************************\
+  Standard dialog
+\**************************/
+/* A simple, polished message/confirmation dialog (full-width dark header flush to the
+   top, teal outline/filled buttons) shared by admin dialogs. Opt in by adding
+   `standard-dialog` to the `.modal__container`. Exporter popups keep their own
+   `.modal__container.<ext>` styling and are unaffected by this block. */
+/* Sit above in-page editors: code-input renders a transparent <textarea> at z-index:1 over its
+   syntax highlighting, which would otherwise capture clicks meant for the dialog (the dialog stays
+   visible because that textarea is transparent). Scoped to standard-dialog so exporter popups —
+   which set their own overlay z-index — are untouched. */
+.modal__overlay:has(> .modal__container.standard-dialog) {
+  z-index: 10000;
+}
+
+.modal__container.standard-dialog {
+  /* Drop the container's default padding so the dark header sits flush to the top/edges
+     (rounded corners clipped by overflow:hidden); content and footer carry their own padding. */
+  padding: 0;
+  min-width: 400px;
+  max-width: 90vw;
+  overflow: hidden;
+}
+
+.modal__container.standard-dialog .modal__close {
+  margin-left: auto;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal__container.standard-dialog .modal__content {
+  margin: 0;
+  padding: 20px 24px;
+  max-height: 78vh;
+  overflow: auto;
+}
+
+.modal__container.standard-dialog .modal__footer {
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px 16px;
+}
+
+/* Teal outline (secondary) / filled (primary) buttons, matching the exporter dialogs. */
+.modal__container.standard-dialog .modal__btn {
+  background-color: #fff;
+  color: #007993;
+  border: 2px solid #007993;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 6px 18px;
+}
+
+.modal__container.standard-dialog .modal__btn:hover,
+.modal__container.standard-dialog .modal__btn:focus {
+  background-color: #f0f8f9;
+  transform: none;
+}
+
+.modal__container.standard-dialog .modal__btn-primary {
+  background-color: #007993;
+  color: #fff;
+}
+
+.modal__container.standard-dialog .modal__btn-primary:hover,
+.modal__container.standard-dialog .modal__btn-primary:focus {
+  background-color: #0a6a80;
+}
 
 
 /**************************\

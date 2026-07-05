@@ -16,7 +16,8 @@ export default class SearchableDropdown {
                     searchable = true,
                     rememberSelection = true,
                     preserveOptionClasses = false,
-                    allowEmpty = false
+                    allowEmpty = false,
+                    clearable = false
                 }) {
         if (!element && !selectContainer) {
             throw new Error('SearchableDropdown: element or selectContainer is required');
@@ -72,6 +73,9 @@ export default class SearchableDropdown {
         // first option and shows the placeholder (e.g. "Select…") until the user picks. Otherwise it
         // behaves like a native <select> and always keeps an option selected.
         this.allowEmpty = allowEmpty;
+        // Optional clear (×) button on a single-select trigger: lets the user reset the selection
+        // back to the placeholder (most useful together with allowEmpty). Off by default.
+        this.clearable = clearable;
         this.label = label;
         this.changeListener = changeListener;
         this.rememberSelection =
@@ -338,6 +342,24 @@ export default class SearchableDropdown {
             this.container.appendChild(this.triggerIcon);
         }
 
+        // Optional clear (×) button — reset the single-select back to its placeholder. It sits left
+        // of the chevron and is only visible while a value is selected (toggled via .has-value).
+        if (this.clearable && !this.multiselect) {
+            this.container.classList.add('clearable');
+            this.clearButton = document.createElement('span');
+            this.clearButton.className = 'sd-clear';
+            this.clearButton.textContent = '×';
+            this.clearButton.setAttribute('role', 'button');
+            this.clearButton.setAttribute('aria-label', 'Clear selection');
+            this.clearButton.addEventListener('mousedown', e => {
+                // Don't let the trigger's open/close handler fire; just clear the selection.
+                e.preventDefault();
+                e.stopPropagation();
+                this.selectItem(null);
+            });
+            this.container.appendChild(this.clearButton);
+        }
+
         // The popup is rendered into a portal appended to <body> (position:fixed) rather than
         // nested in the container. This lets it escape any ancestor overflow clipping (narrow side
         // panels, scrollable modals) and its width is driven in JS from the trigger, so it always
@@ -360,6 +382,9 @@ export default class SearchableDropdown {
         }
         this._applyTriggerClass();
         this._refreshTriggerIcon();
+        // Initialize clear-button visibility to match the starting selection (e.g. a dropdown that
+        // renders with a pre-selected value shows the × immediately, not only after interaction).
+        this._updateClearButton();
     }
 
     // Show/hide the selected option's icon on the single-select trigger (overlaid on the <input>).
@@ -747,6 +772,16 @@ export default class SearchableDropdown {
         this.trigger.value = selected.length ? selected[0].label : '';
         this._applyTriggerClass();
         this._refreshTriggerIcon();
+        this._updateClearButton();
+    }
+
+    // Show the clear (×) button only while a single-select value is selected (toggled via the
+    // container's .has-value class). No-op when the dropdown isn't clearable.
+    _updateClearButton() {
+        if (!this.clearButton) {
+            return;
+        }
+        this.container.classList.toggle('has-value', !this.multiselect && !!this.trigger.value);
     }
 
     // Multi-select trigger content: one removable chip per selected value (empty → placeholder).
@@ -919,7 +954,14 @@ export default class SearchableDropdown {
         }
 
         if (this.isSelect) {
-            this.originalElement.value = item ? item.value : null;
+            if (item) {
+                this.originalElement.value = item.value;
+            } else {
+                // Explicitly deselect rather than assigning value = null: setting an unmatched value
+                // doesn't reliably clear a native <select>'s selection, which would leave the old
+                // value readable by consumers even though the trigger shows the placeholder.
+                this.originalElement.selectedIndex = -1;
+            }
             this.originalElement.dispatchEvent(
                 new Event('change', { bubbles: true })
             );
@@ -927,6 +969,7 @@ export default class SearchableDropdown {
 
         this._saveSelection(item ? item.value : null);
         this._fireChangeListener();
+        this._updateClearButton();
     }
 
     /* ---------- Build-mode API (drop-in for CustomSelect) ---------- */
