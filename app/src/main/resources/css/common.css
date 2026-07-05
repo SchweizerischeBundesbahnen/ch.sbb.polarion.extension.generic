@@ -92,25 +92,34 @@ select {
 }
 
 /* Vertically center inline controls that share a row (a label next to a native <select>, a
-   SearchableDropdown, an <input>, or a .toolbar-button / .action-buttons group). Without this they
-   align on the text baseline, so the taller controls sit visually off-center against the label. */
+   SearchableDropdown, an <input>, or an .action-buttons group). Without this they align on the
+   text baseline, so the taller controls sit visually off-center against the label. (.toolbar-button
+   already centers itself; control rows rendered as table cells scope their own td alignment.) */
 .standard-admin-page label,
 .standard-admin-page input:not([type="hidden"]),
 .standard-admin-page select,
 .standard-admin-page .searchable-dropdown,
-.standard-admin-page .toolbar-button,
-.standard-admin-page .action-buttons,
-.standard-admin-page td {
+.standard-admin-page .action-buttons {
     vertical-align: middle;
 }
 
 /* Role pickers (api-extender / xml-repair / diff-tool) render each role as
-   <td><input type="checkbox"></td><td><label>role</label></td>. The two-cell split
-   plus per-cell padding and table border-spacing inflates the checkbox-to-text gap
-   well beyond the standard inline `<label><input> text</label>` (~4px). Collapse the
-   horizontal gap so it matches every other checkbox; vertical row spacing is kept. */
+   <div class="roles_table"><table>… <td><input type="checkbox"></td><td><label>role</label></td> …
+   The complete styling lives here so every consumer just uses the class (no per-page duplication).
+   The two-cell split would otherwise inflate the checkbox-to-text gap well beyond the standard
+   inline `<label><input> text</label>` (~4px): border-spacing and the facing-edge cell padding are
+   removed so the only gap is the checkbox's own 4px margin; vertical row spacing (3px) is kept. */
+.standard-admin-page .roles_table {
+    margin: 20px;
+}
+
 .standard-admin-page .roles_table table {
     border-spacing: 0;
+}
+
+.standard-admin-page .roles_table td {
+    padding: 3px;
+    vertical-align: middle;
 }
 
 .standard-admin-page .roles_table td:first-child {
