@@ -28,3 +28,24 @@ export function createSearchableSelect(selectElement, options = {}) {
     ...options
   });
 }
+
+/*
+ * Convenience for the exporters (pdf / docx / strictdoc), which upgrade a fixed set of <select>s by
+ * id — a batch of single-selects plus one optional `<select multiple>`. Shared here so the exporters
+ * drop their copy-pasted (and drifted) `dropdown-utils.js`. `ctx` is the extension's ExtensionContext
+ * (only `getElementById` is used).
+ */
+export function initSearchableDropdowns(ctx, singleIds, multiSelectId) {
+  (singleIds || []).forEach((id) => {
+    const element = ctx.getElementById(id);
+    if (element) {
+      new SearchableDropdown({ element, placeholder: '', rememberSelection: false });
+    }
+  });
+  if (multiSelectId) {
+    const element = ctx.getElementById(multiSelectId);
+    if (element) {
+      new SearchableDropdown({ element, placeholder: '', rememberSelection: false, multiselect: true });
+    }
+  }
+}

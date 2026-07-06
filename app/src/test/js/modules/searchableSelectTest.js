@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { JSDOM } from 'jsdom';
-import { createSearchableSelect } from '../../../main/resources/js/modules/searchableSelect.js';
+import { createSearchableSelect, initSearchableDropdowns } from '../../../main/resources/js/modules/searchableSelect.js';
 
 describe('createSearchableSelect', function () {
   let dom;
@@ -46,5 +46,20 @@ describe('createSearchableSelect', function () {
     expect(sd.allowEmpty).to.be.true;
     expect(sd.placeholder).to.equal('Pick…');
     sd.destroy();
+  });
+
+  it('initSearchableDropdowns upgrades the single-select ids and the optional multi-select', function () {
+    const s1 = selectWith(['a']); s1.id = 's1';
+    const s2 = selectWith(['b']); s2.id = 's2';
+    const m = selectWith(['c']); m.id = 'roles'; m.multiple = true;
+    const ctx = { getElementById: (id) => document.getElementById(id) };
+
+    initSearchableDropdowns(ctx, ['s1', 's2', 'missing'], 'roles');
+
+    // Each wrapped <select> gets a sibling `.searchable-dropdown` container; a missing id is skipped.
+    expect(s1.nextElementSibling.classList.contains('searchable-dropdown')).to.be.true;
+    expect(s2.nextElementSibling.classList.contains('searchable-dropdown')).to.be.true;
+    expect(m.nextElementSibling.classList.contains('searchable-dropdown')).to.be.true;
+    expect(m.nextElementSibling.querySelector('.sd-trigger-multi')).to.exist; // rendered as multi-select
   });
 });
