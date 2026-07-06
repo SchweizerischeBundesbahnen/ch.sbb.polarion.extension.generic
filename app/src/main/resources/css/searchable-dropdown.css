@@ -117,7 +117,7 @@
 }
 
 .searchable-dropdown .sd-chip-remove:hover {
-    color: #1a1a1a;
+    color: var(--sbb-control-text, #1a1a1a);
 }
 
 /* Arrow on the trigger — Polarion combo_box_old.png */
@@ -157,7 +157,7 @@
 }
 
 .searchable-dropdown .sd-clear:hover {
-    color: #1a1a1a;
+    color: var(--sbb-control-text, #1a1a1a);
     background: #e6e6e6;
 }
 
@@ -242,9 +242,9 @@
     padding: 6px 12px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: var(--sbb-control-font-size, 13px);
+    font-weight: var(--sbb-control-font-weight, 600);
+    color: var(--sbb-control-text, #1a1a1a);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
