@@ -161,11 +161,18 @@ export default class SearchableDropdown {
         if (this.buildMode) {
             // Render straight into the consumer-provided container.
             this.container.classList.add('searchable-dropdown');
+            if (this.editable) {
+                this.container.classList.add('editable');
+            }
             return;
         }
 
         this.container = document.createElement('div');
         this.container.className = 'searchable-dropdown';
+        // An editable trigger is a free-text field, not a click-to-open combobox — drop the chevron.
+        if (this.editable) {
+            this.container.classList.add('editable');
+        }
 
         this.originalElement.parentNode.insertBefore(
             this.container,

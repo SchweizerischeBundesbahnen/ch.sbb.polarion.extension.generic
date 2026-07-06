@@ -149,6 +149,16 @@
     pointer-events: none;
 }
 
+/* Editable mode is a free-text field, not a click-to-open combobox: drop the dropdown chevron and
+   reclaim the space it reserved on the right. */
+.searchable-dropdown.editable::after {
+    display: none;
+}
+
+.searchable-dropdown.editable > input.sd-trigger {
+    padding-right: .5rem;
+}
+
 /* Optional clear (×) button — reset a single-select back to its placeholder. Opt-in via the
    `clearable` option; shown only while a value is selected (.has-value). Sits left of the chevron. */
 .searchable-dropdown.clearable.has-value > input.sd-trigger {

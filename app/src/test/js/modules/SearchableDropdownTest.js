@@ -1175,6 +1175,8 @@ describe('SearchableDropdown', function () {
             expect(dd._hasSearchBox).to.be.false;
             expect(dd.searchInput).to.be.undefined;
             expect(dd.trigger.value).to.equal('42');
+            // The container is flagged .editable so CSS can drop the combobox chevron.
+            expect(dd.container.classList.contains('editable')).to.be.true;
             dd.destroy();
         });
 
