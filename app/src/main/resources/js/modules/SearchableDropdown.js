@@ -140,7 +140,9 @@ export default class SearchableDropdown {
                 selected: option.selected,
                 disabled: option.disabled,
                 // Optional per-option icon: <option data-icon="/polarion/…/icon.svg">Label</option>
-                icon: option.getAttribute('data-icon') || ''
+                icon: option.getAttribute('data-icon') || '',
+                // Optional coloured tile behind the icon: <option data-icon-bg="#1a3a5c">Label</option>
+                iconBg: option.getAttribute('data-icon-bg') || ''
             }));
     }
 
@@ -397,6 +399,7 @@ export default class SearchableDropdown {
             this.triggerIcon.src = item.icon;
             this.triggerIcon.style.display = '';
             this.trigger.classList.add('has-icon');
+            this._applyIconBg(this.triggerIcon, item.iconBg);
         } else {
             this.triggerIcon.style.display = 'none';
             this.trigger.classList.remove('has-icon');
@@ -490,7 +493,7 @@ export default class SearchableDropdown {
                 checkbox.tabIndex = -1;
                 option.appendChild(checkbox);
                 if (item.icon) {
-                    option.appendChild(this._createOptionIcon(item.icon));
+                    option.appendChild(this._createOptionIcon(item.icon, item.iconBg));
                 }
                 const labelSpan = document.createElement('span');
                 labelSpan.className = 'option-label';
@@ -498,7 +501,7 @@ export default class SearchableDropdown {
                 option.appendChild(labelSpan);
             } else if (item.icon) {
                 option.classList.add('has-icon');
-                option.appendChild(this._createOptionIcon(item.icon));
+                option.appendChild(this._createOptionIcon(item.icon, item.iconBg));
                 const labelSpan = document.createElement('span');
                 labelSpan.className = 'option-label';
                 labelSpan.textContent = item.label;
@@ -555,12 +558,25 @@ export default class SearchableDropdown {
         this._updateActiveDescendant();
     }
 
-    _createOptionIcon(src) {
+    _createOptionIcon(src, iconBg) {
         const icon = document.createElement('img');
         icon.className = 'option-icon';
         icon.src = src;
         icon.alt = '';
+        this._applyIconBg(icon, iconBg);
         return icon;
+    }
+
+    // Optional coloured tile behind an icon. The CSS class (.has-icon-bg) supplies the padding and
+    // radius; the colour is per-option so it is set inline. A falsy bg clears any previous tile.
+    _applyIconBg(icon, iconBg) {
+        if (iconBg) {
+            icon.classList.add('has-icon-bg');
+            icon.style.backgroundColor = iconBg;
+        } else {
+            icon.classList.remove('has-icon-bg');
+            icon.style.backgroundColor = '';
+        }
     }
 
     // Accessible name for the combobox — from the passed label, the <select>'s aria-label, or the
@@ -977,13 +993,14 @@ export default class SearchableDropdown {
     // Append a selectable option. Returns lightweight handles whose classList mutations are
     // mirrored onto the rendered option — this preserves the CustomSelect contract where callers do
     // `addOption(...).label.classList.add('parent')` to mark a global-scope config.
-    addOption(value, text, icon) {
+    addOption(value, text, icon, iconBg) {
         const item = {
             value,
             label: text !== undefined && text !== null ? text : value,
             className: '',
             selected: false,
-            icon: icon || ''
+            icon: icon || '',
+            iconBg: iconBg || ''
         };
         this.items.push(item);
         // Single-select defaults to the first option (no empty/placeholder state), matching a

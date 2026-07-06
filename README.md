@@ -451,7 +451,10 @@ with an italic `global` marker).
 
 Per-option **icons**: give a source `<option>` a `data-icon="…"` (element mode) or pass a third
 argument to `addOption(value, text, icon)` (build mode); the icon is shown to the left of the label
-in the list and on the closed single-select trigger.
+in the list and on the closed single-select trigger. For an icon that sits on a coloured tile (e.g.
+an entity/project icon on a dark background), add `data-icon-bg="#1a3a5c"` on the `<option>` or pass
+it as the fourth argument, `addOption(value, text, icon, iconBg)`; the colour is applied behind the
+icon in both the list and the trigger.
 
 The popup is portalled into `document.body` so it is never clipped by an ancestor's `overflow`
 (narrow side panels, scrollable modals). It integrates with `ExtensionContext` (`setSelector` /
