@@ -46,14 +46,13 @@
     /* Combobox popup + options */
     --sbb-combo-chevron: url(/polarion/ria/images/combo_box_old.png);
     --sbb-combo-popup-border: #ccccd4;
-    --sbb-option-hover: #ebf7f8;
+    /* Light teal hover / selection tint — the base that --sbb-option-hover and --sbb-chip-bg
+       derive from, and the token the React SPAs reference for dropdown-row hovers. */
+    --sbb-hover-tint: #ebf7f8;
+    --sbb-option-hover: var(--sbb-hover-tint, #ebf7f8);
 
     /* Multi-select chips */
-    --sbb-chip-bg: #ebf7f8;
+    --sbb-chip-bg: var(--sbb-hover-tint, #ebf7f8);
     --sbb-chip-border: #b6dfe3;
     --sbb-chip-remove: #5c8a90;
-
-    /* Accent (selection / focus emphasis) */
-    --sbb-accent: #1491eb;
-    --sbb-hover-tint: #ebf7f8;
 }

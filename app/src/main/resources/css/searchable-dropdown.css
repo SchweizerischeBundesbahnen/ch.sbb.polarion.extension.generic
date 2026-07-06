@@ -84,7 +84,7 @@
 }
 
 .searchable-dropdown > .sd-trigger-multi .sd-placeholder {
-    color: #7c7c7c;
+    color: var(--sbb-control-placeholder, #7c7c7c);
     padding-left: 3px;
 }
 
@@ -111,7 +111,7 @@
 
 .searchable-dropdown .sd-chip-remove {
     cursor: pointer;
-    color: #5c8a90;
+    color: var(--sbb-chip-remove, #5c8a90);
     font-weight: 700;
     line-height: 1;
 }

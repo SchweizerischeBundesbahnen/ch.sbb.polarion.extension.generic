@@ -31,6 +31,12 @@
     background-image: var(--sbb-checkbox-checked, url(/polarion/ria/images/checkbox/checked.png));
 }
 
+.modal__container input[type="checkbox"]:indeterminate,
+.standard-admin-page input[type="checkbox"]:indeterminate,
+.form-wrapper input[type="checkbox"]:indeterminate {
+    background-image: var(--sbb-checkbox-indeterminate, url(/polarion/ria/images/checkbox/grayed.png));
+}
+
 /* Keep the checkbox vertically centered with its label text. */
 .modal__container label:has(input[type="checkbox"]),
 .standard-admin-page label:has(input[type="checkbox"]),
