@@ -323,6 +323,13 @@
     box-sizing: content-box;
 }
 
+/* An icon tile (has-icon-bg) is a few px wider than a bare icon, so on the single-select trigger —
+   where the icon is absolutely positioned and the text just gets left padding — the value would sit
+   flush against the tile. Give it the same gap the popup options get from their flex `gap`. */
+.searchable-dropdown:has(.sd-trigger-icon.has-icon-bg) > input.sd-trigger.has-icon {
+    padding-left: 33px;
+}
+
 /* Multi-select option: a checkbox in front of the label (toggles without closing the popup). */
 .sd-portal .option.multiselect-option {
     display: flex;
