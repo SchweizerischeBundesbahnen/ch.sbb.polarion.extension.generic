@@ -37,6 +37,28 @@
     font-size: 13px;
     font-weight: 600;
     color: #1a1a1a;
+    /* Soft elevation shadow appears on hover/focus (added below). */
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+/* The shared soft elevation shadow — mirrors the combobox trigger — shown on hover so every text
+   input across all extensions gets the same subtle lift. */
+.modal__container input[type="text"]:not(.sd-trigger):not(.search-box):not(:disabled):hover,
+.modal__container input[type="number"]:not(:disabled):hover,
+.modal__container input[type="password"]:not(:disabled):hover,
+.modal__container input[type="search"]:not(:disabled):hover,
+.standard-admin-page input[type="text"]:not(.sd-trigger):not(.search-box):not(:disabled):hover,
+.standard-admin-page input[type="number"]:not(:disabled):hover,
+.standard-admin-page input[type="password"]:not(:disabled):hover,
+.standard-admin-page input[type="search"]:not(:disabled):hover,
+.form-wrapper input[type="text"]:not(.sd-trigger):not(.search-box):not(:disabled):hover,
+.form-wrapper input[type="number"]:not(:disabled):hover,
+.form-wrapper input[type="password"]:not(:disabled):hover,
+.form-wrapper input[type="search"]:not(:disabled):hover,
+.modal__container input:not([type]):not(.sd-trigger):not(.search-box):not(:disabled):hover,
+.standard-admin-page input:not([type]):not(.sd-trigger):not(.search-box):not(:disabled):hover,
+.form-wrapper input:not([type]):not(.sd-trigger):not(.search-box):not(:disabled):hover {
+    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.2);
 }
 
 .modal__container input[type="text"]:not(.sd-trigger):not(.search-box):focus,
@@ -56,4 +78,5 @@
 .form-wrapper input:not([type]):not(.sd-trigger):not(.search-box):focus {
     border-color: #1491EB;
     outline: none;
+    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.2);
 }

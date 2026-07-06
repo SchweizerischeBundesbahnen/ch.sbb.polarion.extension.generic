@@ -23,9 +23,15 @@
     font-size: 13px;
     font-weight: 600;
     color: #1a1a1a;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-/* Open state — Polarion JSSelector-ComboOpen (blue border + shadow) */
+/* Soft elevation shadow on hover — same lift as the text inputs (inputs.css). */
+.searchable-dropdown:not(.disabled) > .sd-trigger:hover {
+    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Open state — Polarion JSSelector-ComboOpen (blue border + stronger shadow) */
 .searchable-dropdown.open > .sd-trigger {
     border-color: #1491EB;
     box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.3);
