@@ -277,6 +277,17 @@
     object-fit: contain;
 }
 
+/* Optional coloured tile behind an icon (<option data-icon-bg> / addOption's 4th arg). The tile
+   colour is per-option, so it is set inline in JS (_applyIconBg); this only adds the padding and
+   radius that turn the icon's own background into a neat little tile — matching the entity/project
+   icon tiles the React pickers use. */
+.searchable-dropdown .sd-trigger-icon.has-icon-bg,
+.sd-portal .option .option-icon.has-icon-bg {
+    padding: 2px;
+    border-radius: 2px;
+    box-sizing: content-box;
+}
+
 /* Multi-select option: a checkbox in front of the label (toggles without closing the popup). */
 .sd-portal .option.multiselect-option {
     display: flex;
@@ -294,8 +305,8 @@
        scopes to, so replicate the image styling here — only for in-list multi-select checkboxes). */
     -webkit-appearance: none;
     appearance: none;
-    width: 15px;
-    height: 15px;
+    width: var(--sbb-toggle-size, 15px);
+    height: var(--sbb-toggle-size, 15px);
     background: var(--sbb-checkbox-unchecked, url(/polarion/ria/images/checkbox/unchecked.png)) no-repeat center;
     background-size: var(--sbb-toggle-size, 15px) var(--sbb-toggle-size, 15px);
 }

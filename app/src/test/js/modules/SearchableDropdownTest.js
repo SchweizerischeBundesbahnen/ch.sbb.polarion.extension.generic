@@ -642,6 +642,42 @@ describe('SearchableDropdown', function () {
             dropdown.destroy();
         });
 
+        it('applies an icon background tile from data-icon-bg (element mode)', function () {
+            const select = document.createElement('select');
+            select.innerHTML =
+                '<option value="a" data-icon="/i/a.svg" data-icon-bg="#1a3a5c">A</option>' +
+                '<option value="b" data-icon="/i/b.svg">B</option>';
+            document.body.appendChild(select);
+            const dropdown = new SearchableDropdown({ element: select, rememberSelection: false });
+            // Option "a" is selected first, so its tile shows on the trigger icon.
+            expect(dropdown.triggerIcon.classList.contains('has-icon-bg')).to.be.true;
+            expect(dropdown.triggerIcon.style.backgroundColor).to.not.equal('');
+            // In the list: "a" gets a tile, "b" (no data-icon-bg) does not.
+            dropdown._renderOptions(dropdown.items);
+            const iconA = dropdown.itemsEl.children[0].querySelector('img.option-icon');
+            const iconB = dropdown.itemsEl.children[1].querySelector('img.option-icon');
+            expect(iconA.classList.contains('has-icon-bg')).to.be.true;
+            expect(iconA.style.backgroundColor).to.not.equal('');
+            expect(iconB.classList.contains('has-icon-bg')).to.be.false;
+            dropdown.destroy();
+        });
+
+        it('accepts an icon background as the 4th addOption argument (build mode)', function () {
+            const dropdown = new SearchableDropdown({
+                selectContainer: document.getElementById('build-container'),
+                rememberSelection: false
+            });
+            dropdown.addOption('a', 'A', '/i/a.svg', '#1a3a5c');
+            dropdown.addOption('b', 'B', '/i/b.svg');
+            dropdown._renderOptions(dropdown.items);
+            const iconA = dropdown.itemsEl.children[0].querySelector('img.option-icon');
+            const iconB = dropdown.itemsEl.children[1].querySelector('img.option-icon');
+            expect(iconA.classList.contains('has-icon-bg')).to.be.true;
+            expect(iconA.style.backgroundColor).to.not.equal('');
+            expect(iconB.classList.contains('has-icon-bg')).to.be.false;
+            dropdown.destroy();
+        });
+
         it('mirrors an option CSS class onto the rendered option when preserveOptionClasses', function () {
             const select = document.createElement('select');
             select.innerHTML = '<option value="a" class="parent">A</option>';
