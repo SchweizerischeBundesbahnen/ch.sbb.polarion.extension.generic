@@ -16,19 +16,19 @@
 .form-wrapper input[type="checkbox"] {
     -webkit-appearance: none;
     appearance: none;
-    width: 15px;
-    height: 15px;
+    width: var(--sbb-toggle-size, 15px);
+    height: var(--sbb-toggle-size, 15px);
     margin: 0 4px 0 0;
     vertical-align: middle;
     cursor: pointer;
-    background: url(/polarion/ria/images/checkbox/unchecked.png) no-repeat center;
-    background-size: 15px 15px;
+    background: var(--sbb-checkbox-unchecked, url(/polarion/ria/images/checkbox/unchecked.png)) no-repeat center;
+    background-size: var(--sbb-toggle-size, 15px) var(--sbb-toggle-size, 15px);
 }
 
 .modal__container input[type="checkbox"]:checked,
 .standard-admin-page input[type="checkbox"]:checked,
 .form-wrapper input[type="checkbox"]:checked {
-    background-image: url(/polarion/ria/images/checkbox/checked.png);
+    background-image: var(--sbb-checkbox-checked, url(/polarion/ria/images/checkbox/checked.png));
 }
 
 /* Keep the checkbox vertically centered with its label text. */
