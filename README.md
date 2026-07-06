@@ -475,6 +475,47 @@ UI wrappers `.modal__container` (popups), `.standard-admin-page` (admin pages) a
 (document-properties side panels) so they never restyle Polarion's own controls — put the matching
 wrapper class on your surface.
 
+#### Design tokens & reuse in React SPAs (`control-tokens.css`)
+
+The 2606 control look is defined once as CSS custom properties in `css/control-tokens.css`
+(`:root { --sbb-* }`: border / focus colors, control height, radius, the soft hover/active
+elevation shadows, checkbox images, radio dot, combobox chevron, popup border, option hover tint,
+chips, and typography). `common.css` `@import`s it, and the class-based stylesheets above consume it
+via `var(--sbb-*, <literal fallback>)` — so restyling every native control across the ecosystem is a
+one-file edit, and each fallback equals the previous literal so the stylesheets still render if the
+token file is ever missing.
+
+This is also the **reuse path for extensions whose UI is not built from our class-based CSS** — the
+React SPAs (Vite / Next), which render their own markup (custom components, native `<select>`,
+Bootstrap classes) and cannot link `checkboxes.css` / `searchable-dropdown.css`. Instead they:
+
+1. **Link the tokens at runtime** from the embedded `generic.app` (served by `GenericUiServlet`), and
+   reference `var(--sbb-*)` in their own component CSS:
+
+   ```html
+   <link rel="stylesheet" href="/polarion/<ext>-app/ui/generic/css/control-tokens.css" />
+   ```
+   ```css
+   .my-combo        { border: 1px solid var(--sbb-control-border, #c9c9c9); border-radius: var(--sbb-control-radius, 0); }
+   .my-combo:hover  { box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, .2)); }
+   ```
+
+2. **For real combobox parity**, wrap a native `<select>` with the vanilla `SearchableDropdown`,
+   loaded via a runtime dynamic import (bundler-ignored so the build does not try to resolve the URL),
+   and link `searchable-dropdown.css`. The `<select>` stays framework-controlled; the component
+   mirrors the selection back and dispatches `change`:
+
+   ```js
+   const SD = (await import(/* webpackIgnore: true */ /* @vite-ignore */
+     '/polarion/<ext>-app/ui/generic/js/modules/SearchableDropdown.js')).default;
+   new SD({ element: selectEl, rememberSelection: false });
+   ```
+
+Because both the tokens and the dropdown module are consumed **at runtime**, `generic` stays the
+single source of truth — there is no JS package to publish and no build-time coupling. Always ship
+the literal fallback in the SPA's `var()` calls so it still renders in a dev server running outside
+Polarion (where `/polarion/*` 404s).
+
 #### Shared control CSS is self-provided by `SearchableDropdown` (versioned)
 
 The shared control CSS reaches a page as global `<link>`s. Historically that only happened via an
