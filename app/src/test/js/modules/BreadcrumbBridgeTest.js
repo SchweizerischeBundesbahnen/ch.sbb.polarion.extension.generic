@@ -123,6 +123,39 @@ describe('BreadcrumbBridge', function () {
     expect(custom.style.display).to.not.equal('none');
   });
 
+  it('re-applies the swap when GWT re-renders the breadcrumb (observer stays connected)', async function () {
+    boot('https://host/polarion/xml-repair-app/');
+    const original = addOriginal();
+    handle = install(CONFIG);
+    expect(original.style.display).to.equal('none');
+
+    // GWT re-render: the old node is replaced by a fresh one that defaults to visible.
+    original.remove();
+    const fresh = addOriginal();
+    await new Promise((resolve) => setTimeout(resolve, 0)); // flush the observer
+
+    expect(fresh.style.display).to.equal('none');
+    const custom = document.getElementById('sbb-breadcrumb-' + MARKER);
+    expect(custom.style.display).to.not.equal('none');
+  });
+
+  it('never mistakes its own built breadcrumb for the GWT element', function () {
+    boot('https://host/polarion/xml-repair-app/');
+    const original = addOriginal();
+    handle = install(CONFIG);
+    const custom = document.getElementById('sbb-breadcrumb-' + MARKER);
+    expect(custom.querySelector('.polarion-ApplicationHeader-breadcrumbTitle').textContent).to.equal('XML-Repair');
+
+    // GWT momentarily removes its node; a sync fires meanwhile. The built breadcrumb carries the
+    // same class but is excluded via [data-sbb-bridge], so findOriginal() returns null and sync()
+    // leaves the custom breadcrumb untouched instead of hiding its own content.
+    original.remove();
+    handle.sync();
+
+    expect(custom.style.display).to.not.equal('none');
+    expect(custom.querySelector('.polarion-ApplicationHeader-breadcrumbTitle')).to.exist;
+  });
+
   it('destroy() removes the custom breadcrumb and lets a fresh install run again', function () {
     boot('https://host/polarion/xml-repair-app/');
     addOriginal();

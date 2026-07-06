@@ -51,7 +51,10 @@
     }
 
     function findOriginal() {
-      return document.querySelector('.polarion-ApplicationHeader-breadcrumb');
+      // Exclude our own replacement (built with the same GWT class, see buildBreadcrumb): otherwise,
+      // while GWT has transiently removed its node, this would match the built one nested in `custom`
+      // and sync() would hide it, blanking the breadcrumb.
+      return document.querySelector('.polarion-ApplicationHeader-breadcrumb:not([data-sbb-bridge])');
     }
 
     // Build the replacement breadcrumb once, via the DOM (no innerHTML), so the app-supplied title
@@ -61,6 +64,8 @@
     function buildBreadcrumb() {
       var wrap = document.createElement('div');
       wrap.className = 'polarion-ApplicationHeader-breadcrumb';
+      // Marks this as our replacement so findOriginal() never mistakes it for the GWT element.
+      wrap.setAttribute('data-sbb-bridge', '');
 
       if (iconSrc) {
         var imagePanel = document.createElement('div');
@@ -147,15 +152,14 @@
     window.addEventListener('popstate', sync);
     window.addEventListener('hashchange', sync);
 
-    // The original breadcrumb is rendered by GWT and may not exist yet — observe until it appears,
-    // then sync (and keep syncing on later re-renders while the app URL is active).
+    // The original breadcrumb is rendered by GWT and may not exist yet, and GWT can re-render it
+    // later without a URL change. So keep the observer connected and re-sync on every mutation
+    // (sync() is a cheap no-op once the state already matches, so this cannot loop). Falls back to
+    // documentElement in case the script runs before <body> is parsed.
     var observer = new MutationObserver(function () {
-      if (findOriginal()) {
-        observer.disconnect();
-        sync();
-      }
+      sync();
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
 
     sync();
 
