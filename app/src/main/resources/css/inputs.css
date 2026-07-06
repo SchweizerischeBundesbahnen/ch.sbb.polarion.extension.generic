@@ -43,21 +43,21 @@
 
 /* The shared soft elevation shadow — mirrors the combobox trigger — shown on hover so every text
    input across all extensions gets the same subtle lift. */
-.modal__container input[type="text"]:not(.sd-trigger):not(.search-box):hover,
-.modal__container input[type="number"]:hover,
-.modal__container input[type="password"]:hover,
-.modal__container input[type="search"]:hover,
-.standard-admin-page input[type="text"]:not(.sd-trigger):not(.search-box):hover,
-.standard-admin-page input[type="number"]:hover,
-.standard-admin-page input[type="password"]:hover,
-.standard-admin-page input[type="search"]:hover,
-.form-wrapper input[type="text"]:not(.sd-trigger):not(.search-box):hover,
-.form-wrapper input[type="number"]:hover,
-.form-wrapper input[type="password"]:hover,
-.form-wrapper input[type="search"]:hover,
-.modal__container input:not([type]):not(.sd-trigger):not(.search-box):hover,
-.standard-admin-page input:not([type]):not(.sd-trigger):not(.search-box):hover,
-.form-wrapper input:not([type]):not(.sd-trigger):not(.search-box):hover {
+.modal__container input[type="text"]:not(.sd-trigger):not(.search-box):not(:disabled):hover,
+.modal__container input[type="number"]:not(:disabled):hover,
+.modal__container input[type="password"]:not(:disabled):hover,
+.modal__container input[type="search"]:not(:disabled):hover,
+.standard-admin-page input[type="text"]:not(.sd-trigger):not(.search-box):not(:disabled):hover,
+.standard-admin-page input[type="number"]:not(:disabled):hover,
+.standard-admin-page input[type="password"]:not(:disabled):hover,
+.standard-admin-page input[type="search"]:not(:disabled):hover,
+.form-wrapper input[type="text"]:not(.sd-trigger):not(.search-box):not(:disabled):hover,
+.form-wrapper input[type="number"]:not(:disabled):hover,
+.form-wrapper input[type="password"]:not(:disabled):hover,
+.form-wrapper input[type="search"]:not(:disabled):hover,
+.modal__container input:not([type]):not(.sd-trigger):not(.search-box):not(:disabled):hover,
+.standard-admin-page input:not([type]):not(.sd-trigger):not(.search-box):not(:disabled):hover,
+.form-wrapper input:not([type]):not(.sd-trigger):not(.search-box):not(:disabled):hover {
     box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.2);
 }
 
