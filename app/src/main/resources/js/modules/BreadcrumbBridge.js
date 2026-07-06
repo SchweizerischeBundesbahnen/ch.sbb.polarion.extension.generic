@@ -38,15 +38,26 @@
 
     var customId = 'sbb-breadcrumb-' + marker;
 
-    function show(el) {
-      if (el && el.style.display === 'none') {
-        el.style.display = '';
+    var styleId = 'sbb-breadcrumb-style-' + marker;
+
+    // Hide the real GWT breadcrumb(s) with a stylesheet rule rather than a per-element inline style:
+    // GWT re-renders and resets its own element's inline style, which would revive a JS display:none
+    // and leave both breadcrumbs showing. A `!important` rule survives that. Our own replacement
+    // carries data-sbb-bridge and is excluded from the rule.
+    function enableHiding() {
+      if (document.getElementById(styleId)) {
+        return;
       }
+      var style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = '.polarion-ApplicationHeader-breadcrumb:not([data-sbb-bridge]){display:none !important;}';
+      (document.head || document.documentElement).appendChild(style);
     }
 
-    function hide(el) {
-      if (el && el.style.display !== 'none') {
-        el.style.display = 'none';
+    function disableHiding() {
+      var style = document.getElementById(styleId);
+      if (style && style.parentNode) {
+        style.parentNode.removeChild(style);
       }
     }
 
@@ -124,29 +135,35 @@
     }
 
     function sync() {
+      if (!isAppUrl()) {
+        // Not our page: stop hiding the GWT breadcrumb and tuck our replacement away.
+        disableHiding();
+        var existing = document.getElementById(customId);
+        if (existing) {
+          existing.style.display = 'none';
+        }
+        return;
+      }
+
+      // Our page: hide the real breadcrumb (the rule applies even before GWT renders it, so there is
+      // no flash) and mount our replacement once there is a real breadcrumb to anchor it to.
+      enableHiding();
       var original = findOriginal();
       if (!original) {
-        return;
+        return; // GWT hasn't rendered the breadcrumb yet — the observer re-runs sync when it does.
       }
       var custom = ensureCustom(original);
       if (!custom) {
         return;
       }
-
-      if (isAppUrl()) {
-        hide(original);
-        show(custom);
-        if (!builtBreadcrumb) {
-          builtBreadcrumb = buildBreadcrumb();
-        }
-        if (custom.firstChild !== builtBreadcrumb) {
-          custom.textContent = '';
-          custom.appendChild(builtBreadcrumb);
-        }
-      } else {
-        show(original);
-        hide(custom);
+      if (!builtBreadcrumb) {
+        builtBreadcrumb = buildBreadcrumb();
       }
+      if (custom.firstChild !== builtBreadcrumb) {
+        custom.textContent = '';
+        custom.appendChild(builtBreadcrumb);
+      }
+      custom.style.display = '';
     }
 
     window.addEventListener('popstate', sync);
@@ -169,6 +186,8 @@
         window.removeEventListener('popstate', sync);
         window.removeEventListener('hashchange', sync);
         observer.disconnect();
+        // Remove the hiding rule so the GWT breadcrumb comes back (rather than leaving a blank slot).
+        disableHiding();
         var custom = document.getElementById(customId);
         if (custom && custom.parentNode) {
           custom.parentNode.removeChild(custom);
