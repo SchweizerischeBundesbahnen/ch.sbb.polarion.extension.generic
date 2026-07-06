@@ -476,6 +476,12 @@ export default class SearchableDropdown {
         this.trigger.addEventListener('keydown', e => {
             if (this.isOpen) {
                 this._handleKeydown(e);
+            } else if (this.editable && e.key === 'Enter') {
+                // Editable, popup closed (free text that matches no suggestion): _handleEnter only
+                // runs while the popup is open, so commit the typed value here. preventDefault stops
+                // an enclosing <form> from submitting with the stale wrapped-<input> value.
+                e.preventDefault();
+                this._commitEditableValue();
             } else if (e.key === 'ArrowDown' || (!this.editable && (e.key === 'Enter' || e.key === ' '))) {
                 e.preventDefault();
                 this._open();

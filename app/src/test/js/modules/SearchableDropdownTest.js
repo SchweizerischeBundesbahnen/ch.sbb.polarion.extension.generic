@@ -1302,6 +1302,26 @@ describe('SearchableDropdown', function () {
             dd.destroy();
         });
 
+        it('Enter commits the free text while the popup is closed (no matches)', function () {
+            const input = editableInput('');
+            let fired = 0; input.addEventListener('change', () => fired++);
+            const dd = new SearchableDropdown({
+                element: input, editable: true, rememberSelection: false,
+                items: [{ value: 'A', label: 'A' }]
+            });
+            // Free text matching no suggestion → popup stays closed.
+            dd.trigger.value = 'ZZ';
+            dd.trigger.dispatchEvent(new Event('input'));
+            expect(dd.isOpen).to.be.false;
+            // Enter must still commit (and preventDefault the event so a form can't submit stale).
+            const evt = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+            dd.trigger.dispatchEvent(evt);
+            expect(input.value).to.equal('ZZ');
+            expect(fired).to.equal(1);
+            expect(evt.defaultPrevented).to.be.true;
+            dd.destroy();
+        });
+
         it('blur commits the free text once, and a second blur with no change does nothing', function () {
             const input = editableInput('');
             let fired = 0; input.addEventListener('change', () => fired++);
