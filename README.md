@@ -589,36 +589,50 @@ outline (secondary) / filled (primary) buttons — add **`standard-dialog`** to 
 The `.standard-dialog` rules live in `css/micromodal.css` and are **opt-in**, so exporter popups —
 which scope their own look under `.modal__container.<ext>` (e.g. `.pdf-exporter`) — are unaffected.
 
-#### `BreadcrumbBridge` — app-header breadcrumb for SPA extensions
+#### `BreadcrumbBridge` — app-header breadcrumb for topic extensions
 
 `js/modules/BreadcrumbBridge.js` replaces the GWT app-header breadcrumb
-(`.polarion-ApplicationHeader-breadcrumb`) with the extension's own title/icon while the app's URL is
-active. Polarion renders that breadcrumb in the **top** window, but an extension SPA runs in an
-iframe, so the SPA injects this **classic** script into the parent document (it needs
-`document.currentScript` to read its config, so it is deliberately *not* an ES module). It is the
-single shared implementation of what used to be a copy-pasted `<ext>-breadcrumb-bridge.js` per
-extension.
+(`.polarion-ApplicationHeader-breadcrumb`) — which shows a generic "home" for an extension topic —
+with the extension's own name/icon while the extension's URL is active. It mirrors Polarion's own
+breadcrumb shape:
 
-Inject it into the parent and configure it via `data-*` attributes (auto-install):
+- a **root** topic → `[icon] Title` (30px icon)
+- a **sub** topic → `Parent › [small icon] Title` (17px icon)
+
+Polarion renders that breadcrumb in the shell window, but an extension topic runs in a frame, so the
+topic page injects this **classic** script into the shell (it needs `document.currentScript` to read
+its config, so it is deliberately *not* an ES module). It is the single shared implementation of what
+used to be a copy-pasted `<ext>-breadcrumb-bridge.js` per extension. It **never** activates on
+Polarion's own Administration pages (`#/administration/…`), which render their breadcrumb correctly.
+
+Inject it into the shell and configure it via `data-*` attributes (auto-install), or — once loaded —
+call `install()` directly so a sub-topic can re-label without re-loading the module:
 
 ```js
-// From the SPA (e.g. a small React effect), running inside the iframe:
-const doc = window.parent.document;
-if (doc?.head && !doc.getElementById('breadcrumb-bridge-<ext>')) {
+// From the topic page (React effect in the SPA, or an inline script in a topic JSP):
+const shell = window.top;
+const cfg = { marker: '<ext>', title: 'My Extension',
+              // parent: 'My Extension',                 // set for a sub-topic → "Parent › title"
+              icon: '/polarion/<ext>-admin/ui/images/menu/30x30/_parent.svg' };
+if (shell.SbbBreadcrumbBridge) {
+  shell.SbbBreadcrumbBridge.install(cfg);                // already loaded → install/update in place
+} else {
+  const doc = shell.document;
   const s = doc.createElement('script');
-  s.id = 'breadcrumb-bridge-<ext>';
-  s.src = '/polarion/<ext>-app/ui/generic/js/modules/BreadcrumbBridge.js';
-  s.dataset.marker = '<ext>';                 // substring identifying the app in the URL/hash
-  s.dataset.title = 'My Extension';           // breadcrumb title text
-  s.dataset.icon = '/polarion/<ext>-admin/ui/images/menu/30x30/_parent.svg'; // optional
+  s.id = 'sbb-breadcrumb-bridge-loader';
+  s.src = '/polarion/<ext>/ui/generic/js/modules/BreadcrumbBridge.js';
+  s.dataset.marker = cfg.marker;
+  s.dataset.title = cfg.title;
+  if (cfg.parent) s.dataset.parent = cfg.parent;
+  if (cfg.icon) s.dataset.icon = cfg.icon;
   doc.head.appendChild(s);
 }
 ```
 
-It is idempotent per `marker` (re-injecting is a no-op) and waits for the GWT breadcrumb via a
-`MutationObserver`, so it is safe to inject early. It also exposes
-`window.SbbBreadcrumbBridge.install({ marker, title, icon })` for direct callers, returning an
-`{ sync, destroy }` handle.
+Re-installing with the same `marker` **updates** the title/parent/icon (so navigating between an
+extension's sub-topics re-labels the breadcrumb). It hides the real breadcrumb with a `!important`
+stylesheet rule (surviving GWT re-renders) and keeps a `MutationObserver` connected, so it is safe to
+inject early. `install(...)` returns an `{ sync, update, destroy }` handle.
 
 #### Deprecated components
 
