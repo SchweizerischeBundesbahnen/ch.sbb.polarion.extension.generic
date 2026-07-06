@@ -17,7 +17,9 @@ export default class SearchableDropdown {
                     rememberSelection = true,
                     preserveOptionClasses = false,
                     allowEmpty = false,
-                    clearable = false
+                    clearable = false,
+                    editable = false,
+                    inputFilter = null
                 }) {
         if (!element && !selectContainer) {
             throw new Error('SearchableDropdown: element or selectContainer is required');
@@ -83,6 +85,15 @@ export default class SearchableDropdown {
 
         this.placeholder = placeholder;
         this.searchable = searchable;
+        // Editable (creatable) single-select: the trigger becomes a typeable input, the popup search
+        // box is dropped (the trigger itself is the filter), and a free value not in the list can be
+        // committed on Enter/blur. Meaningless for multi-select. `inputFilter(value) => value`
+        // sanitises what the user types (e.g. digits-only, Latin-only).
+        this.editable = editable && !multiselect;
+        this.inputFilter = typeof inputFilter === 'function' ? inputFilter : null;
+        // The dedicated popup search box exists only when searchable AND not editable (an editable
+        // dropdown filters from the trigger instead).
+        this._hasSearchBox = this.searchable && !this.editable;
         // Mirror each source option's CSS class onto the rendered option (and, in select mode, the
         // trigger when selected) — e.g. a global-scope config is marked with the `parent` class,
         // which renders a small italic "global" marker. Always on in build mode so classes added
@@ -150,11 +161,18 @@ export default class SearchableDropdown {
         if (this.buildMode) {
             // Render straight into the consumer-provided container.
             this.container.classList.add('searchable-dropdown');
+            if (this.editable) {
+                this.container.classList.add('editable');
+            }
             return;
         }
 
         this.container = document.createElement('div');
         this.container.className = 'searchable-dropdown';
+        // An editable trigger is a free-text field, not a click-to-open combobox — drop the chevron.
+        if (this.editable) {
+            this.container.classList.add('editable');
+        }
 
         this.originalElement.parentNode.insertBefore(
             this.container,
@@ -183,34 +201,36 @@ export default class SearchableDropdown {
                 && !Array.from(this.originalElement.options).some(o => o.defaultSelected)) {
                 this.originalElement.selectedIndex = -1;
             }
+        }
 
-            // Mirror the element's current visibility onto the container...
+        // Mirror the element's current visibility onto the container...
+        this.container.style.display = this.originalElement.style.display || '';
+        this.container.style.visibility = this.originalElement.style.visibility || '';
+
+        // ...then visually hide the wrapped element (a <select>, or an <input> in editable mode)
+        // WITHOUT touching display/visibility, so consumer-driven display/visibility changes
+        // (displayIf, visibleIf, inline onchange handlers) stay observable and can be mirrored onto
+        // the container. Remember the original inline style so destroy() can restore the element.
+        this._originalElementCssText = this.originalElement.style.cssText;
+        this.originalElement.style.position = 'absolute';
+        this.originalElement.style.width = '1px';
+        this.originalElement.style.height = '1px';
+        this.originalElement.style.overflow = 'hidden';
+        this.originalElement.style.opacity = '0';
+        this.originalElement.style.pointerEvents = 'none';
+
+        this._visibilityObserver = new MutationObserver(() => {
             this.container.style.display = this.originalElement.style.display || '';
             this.container.style.visibility = this.originalElement.style.visibility || '';
+            this._syncDisabled();
+            this._syncTitle();
+        });
+        this._visibilityObserver.observe(this.originalElement, {
+            attributes: true,
+            attributeFilter: ['style', 'disabled', 'title']
+        });
 
-            // ...then visually hide the native <select> WITHOUT touching display/visibility,
-            // so consumer-driven display/visibility changes (displayIf, visibleIf, inline
-            // onchange handlers) stay observable and can be mirrored onto the container.
-            // Remember the original inline style so destroy() can restore the <select>.
-            this._originalElementCssText = this.originalElement.style.cssText;
-            this.originalElement.style.position = 'absolute';
-            this.originalElement.style.width = '1px';
-            this.originalElement.style.height = '1px';
-            this.originalElement.style.overflow = 'hidden';
-            this.originalElement.style.opacity = '0';
-            this.originalElement.style.pointerEvents = 'none';
-
-            this._visibilityObserver = new MutationObserver(() => {
-                this.container.style.display = this.originalElement.style.display || '';
-                this.container.style.visibility = this.originalElement.style.visibility || '';
-                this._syncDisabled();
-                this._syncTitle();
-            });
-            this._visibilityObserver.observe(this.originalElement, {
-                attributes: true,
-                attributeFilter: ['style', 'disabled', 'title']
-            });
-
+        if (this.isSelect) {
             // Keep in sync when the <select>'s options are (re)populated dynamically
             this._optionsObserver = new MutationObserver(() => {
                 this.items = this._extractItemsFromSelect(this.originalElement);
@@ -262,7 +282,10 @@ export default class SearchableDropdown {
             this.trigger.type = 'text';
             this.trigger.className = 'sd-trigger';
             this.trigger.placeholder = this.placeholder;
-            this.trigger.readOnly = true;
+            this.trigger.readOnly = !this.editable;
+            if (this.editable) {
+                this.trigger.setAttribute('autocomplete', 'off');
+            }
         }
         if (this.buildMode && this.container.id) {
             this.trigger.id = this.container.id + '_sd-trigger';
@@ -287,7 +310,7 @@ export default class SearchableDropdown {
         this.optionsEl = document.createElement('div');
         this.optionsEl.className = 'options';
 
-        if (this.searchable) {
+        if (this._hasSearchBox) {
             // Search row on top of the popup: search box + erase icon
             // (mirrors Polarion's JComboBox-SearchBox / JComboBox-EraseIcon)
             const searchRow = document.createElement('div');
@@ -381,6 +404,9 @@ export default class SearchableDropdown {
             if (selected) {
                 this.trigger.value = selected.label;
             }
+        } else if (this.editable && !this.buildMode && this.originalElement) {
+            // Editable mode wraps a plain <input>; seed the trigger with its current free value.
+            this.trigger.value = this.originalElement.value || '';
         }
         this._applyTriggerClass();
         this._refreshTriggerIcon();
@@ -407,36 +433,65 @@ export default class SearchableDropdown {
     }
 
     _bindEvents() {
-        // Clicking the trigger opens/closes the popup
-        this.trigger.addEventListener('mousedown', e => {
-            e.preventDefault(); // critical: prevents focus-triggered reopen
-            if (this.isOpen) {
+        if (this.editable) {
+            // Editable trigger: focus surfaces the suggestion list only when the field is empty (a
+            // fresh pick). Clicking into a field that already holds a value just places the caret to
+            // edit it — no dropdown of the value the user already chose. Typing then sanitises +
+            // re-filters, and blur commits the free text. Clicking an option preventDefaults its
+            // mousedown, so blur does not fire on a pick — only on a genuine focus-out.
+            this.trigger.addEventListener('focus', () => {
+                if (!this.trigger.value) {
+                    this._syncEditablePopup();
+                }
+            });
+            this.trigger.addEventListener('input', () => {
+                if (this.inputFilter) {
+                    const clean = this.inputFilter(this.trigger.value);
+                    if (clean !== this.trigger.value) {
+                        this.trigger.value = clean;
+                    }
+                }
+                this.activeIndex = -1;
+                this._syncEditablePopup();
+                this._updateClearButton();
+            });
+            this.trigger.addEventListener('blur', () => {
+                this._commitEditableValue();
                 this._close();
-            } else {
-                this._open();
-            }
-        });
+            });
+        } else {
+            // Clicking the trigger opens/closes the popup
+            this.trigger.addEventListener('mousedown', e => {
+                e.preventDefault(); // critical: prevents focus-triggered reopen
+                if (this.isOpen) {
+                    this._close();
+                } else {
+                    this._open();
+                }
+            });
+        }
 
-        // Keyboard navigation. When searchable the focus is on the search box; otherwise it stays on
-        // the trigger — so the trigger also handles keys, both to open the closed popup and to drive
-        // an open one (arrows/enter/escape) when there is no search box.
+        // Keyboard: an open popup is driven by arrows/enter/escape; a closed one opens on ArrowDown
+        // (and, for the non-editable trigger where those keys carry no text, on Enter/Space too).
         this.trigger.addEventListener('keydown', e => {
             if (this.isOpen) {
                 this._handleKeydown(e);
-            } else if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+            } else if (this.editable && e.key === 'Enter') {
+                // Editable, popup closed (free text that matches no suggestion): _handleEnter only
+                // runs while the popup is open, so commit the typed value here. preventDefault stops
+                // an enclosing <form> from submitting with the stale wrapped-<input> value.
+                e.preventDefault();
+                this._commitEditableValue();
+            } else if (e.key === 'ArrowDown' || (!this.editable && (e.key === 'Enter' || e.key === ' '))) {
                 e.preventDefault();
                 this._open();
             }
         });
 
-        if (this.searchable) {
+        if (this._hasSearchBox) {
             this.searchInput.addEventListener('input', () => {
-                const query = this.searchInput.value.toLowerCase();
-                const filtered = this.items.filter(item =>
-                    item.label.toLowerCase().includes(query)
-                );
                 this.activeIndex = -1;
-                this._renderOptions(filtered);
+                this._renderOptions(this._filterItems(this.searchInput.value));
             });
 
             this.searchInput.addEventListener('keydown', e => this._handleKeydown(e));
@@ -475,9 +530,60 @@ export default class SearchableDropdown {
         }
     }
 
+    // Items whose label contains the query (case-insensitive). Empty query → all items. Shared by
+    // the popup search box and the editable trigger.
+    _filterItems(query) {
+        const q = (query || '').toLowerCase();
+        if (!q) {
+            return this.items;
+        }
+        return this.items.filter(item => item.label.toLowerCase().includes(q));
+    }
+
+    // Editable mode only: reconcile the suggestion popup with the current trigger text. If nothing
+    // matches, the popup closes rather than showing an empty "No matches" box — free text is allowed,
+    // so a non-matching entry (e.g. the column "AA" against an A–Z hint list) is valid, not an error,
+    // and there is simply nothing to suggest. Otherwise it opens (or re-renders) with the matches.
+    _syncEditablePopup() {
+        const matches = this._filterItems(this.trigger.value);
+        if (matches.length === 0) {
+            this._close();
+        } else if (this.isOpen) {
+            this._renderOptions(matches);
+        } else {
+            this._open();
+        }
+    }
+
+    // Editable mode only: mirror the free text currently in the trigger onto the wrapped <input>
+    // (editable wraps an <input>, not a <select>) and fire change so consumers pick it up. No-op if
+    // the value is unchanged.
+    _commitEditableValue() {
+        // Only reached from the editable trigger's blur/Enter. Build-mode editable has no <input> to
+        // mirror onto, so there is nothing to commit.
+        if (!this.originalElement) {
+            return;
+        }
+        if (this.originalElement.value !== this.trigger.value) {
+            this.originalElement.value = this.trigger.value;
+            this.originalElement.dispatchEvent(new Event('change', { bubbles: true }));
+            this._fireChangeListener();
+        }
+    }
+
     _renderOptions(list) {
         this.itemsEl.innerHTML = '';
         this._visibleItems = list;
+
+        // Empty state: with no options the popup would otherwise be an invisible zero-height box
+        // (there is no search row to give it height in editable mode), so it looks like nothing
+        // dropped. Show a placeholder row instead.
+        if (list.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'sd-empty';
+            empty.textContent = 'No matches';
+            this.itemsEl.appendChild(empty);
+        }
 
         list.forEach((item, index) => {
             const option = document.createElement('div');
@@ -608,7 +714,7 @@ export default class SearchableDropdown {
     // Point aria-activedescendant (on whichever element has focus) at the highlighted option so
     // screen readers announce it during arrow-key navigation.
     _updateActiveDescendant() {
-        const target = this.searchable ? this.searchInput : this.trigger;
+        const target = this._hasSearchBox ? this.searchInput : this.trigger;
         const active = this.activeIndex >= 0 ? this.itemsEl.children[this.activeIndex] : null;
         if (active && active.id) {
             target.setAttribute('aria-activedescendant', active.id);
@@ -653,6 +759,10 @@ export default class SearchableDropdown {
         const item = this._visibleItems[this.activeIndex];
         if (item) {
             this.selectItem(item);
+        } else if (this.editable) {
+            // No option highlighted → commit the free text in the trigger and close.
+            this._commitEditableValue();
+            this._close();
         }
     }
 
@@ -679,19 +789,29 @@ export default class SearchableDropdown {
         if (this.isSelect && this.originalElement.disabled) {
             return;
         }
+        // Editable mode with no suggestion matching the current free text: nothing to show, so stay
+        // closed instead of opening an empty popup (keyboard ArrowDown path; _syncEditablePopup
+        // guards the focus/input paths).
+        // The list actually rendered below: the filtered subset in editable mode, all items
+        // otherwise. Compute it once so the pre-highlight index and the render agree.
+        const list = this.editable ? this._filterItems(this.trigger.value) : this.items;
+        if (this.editable && list.length === 0) {
+            // Nothing matches the free text — stay closed (free-text entry, nothing to suggest).
+            return;
+        }
         this.isOpen = true;
         this.container.classList.add('open');
         this.trigger.setAttribute('aria-expanded', 'true');
         // Highlight the currently selected item on open (single-select only, and only if something
-        // is actually selected). The highlight then follows the mouse/keyboard. Multi-select shows
-        // its state via checkboxes, so nothing is pre-highlighted.
+        // is actually selected). The index must be resolved against `list` — the array that gets
+        // rendered — not the full items array, or a filtered editable list highlights the wrong row.
         this.activeIndex = (!this.multiselect && this.trigger.value)
-            ? this.items.findIndex(item => item.value === this.value)
+            ? list.findIndex(item => item.value === this.value)
             : -1;
-        if (this.searchable) {
+        if (this._hasSearchBox) {
             this.searchInput.value = '';
         }
-        this._renderOptions(this.items);
+        this._renderOptions(list);
         this._show();
         // Reposition the portal while open if the page scrolls or resizes (capture phase catches
         // scrolling in nested containers such as the document side panel).
@@ -706,7 +826,7 @@ export default class SearchableDropdown {
         window.addEventListener('resize', this._repositionHandler);
         // Move focus so keyboard navigation works: to the search box if present, otherwise to the
         // trigger itself (the trigger's mousedown preventDefault suppressed the click-focus).
-        if (this.searchable) {
+        if (this._hasSearchBox) {
             this.searchInput.focus();
         } else {
             this.trigger.focus();
@@ -721,7 +841,7 @@ export default class SearchableDropdown {
         this.container.classList.remove('open');
         this.trigger.setAttribute('aria-expanded', 'false');
         this.trigger.removeAttribute('aria-activedescendant');
-        if (this.searchable) {
+        if (this._hasSearchBox) {
             this.searchInput.removeAttribute('aria-activedescendant');
         }
         this._hide();
@@ -907,6 +1027,16 @@ export default class SearchableDropdown {
             this._updateTriggerFromSelection();
             return;
         }
+        if (this.editable) {
+            // Editable wraps a free-text <input>: the element's value is authoritative (and may be
+            // text matching no item), so mirror it onto the trigger verbatim. Reading originalElement
+            // (not the trigger) reflects programmatic updates; skipping the label lookup avoids
+            // blanking a free value that isn't in the item list.
+            this.trigger.value = this.originalElement.value || '';
+            this._applyTriggerClass();
+            this._refreshTriggerIcon();
+            return;
+        }
         if (this.isSelect && !this.allowEmpty && this.originalElement.selectedIndex === -1 && this.originalElement.options.length > 0) {
             // Native single-select left blank (value cleared) — keep the first option selected
             // (unless allowEmpty lets it stay unselected to show the placeholder).
@@ -960,7 +1090,9 @@ export default class SearchableDropdown {
             this.items.forEach(i => i.selected = !!item && i.value === item.value);
             this._updateTriggerFromSelection();
         } else {
-            this.trigger.value = item ? item.label : '';
+            // An editable trigger shows the committed value (e.g. a revision number), not the label
+            // (which may be "12345 — description"); a plain dropdown shows the label.
+            this.trigger.value = item ? (this.editable ? String(item.value) : item.label) : '';
             this._applyTriggerClass();
             this._refreshTriggerIcon();
         }
@@ -981,6 +1113,10 @@ export default class SearchableDropdown {
             this.originalElement.dispatchEvent(
                 new Event('change', { bubbles: true })
             );
+        } else if (this.editable && this.originalElement) {
+            // Editable wraps a plain <input>: mirror the picked value onto it and fire change.
+            this.originalElement.value = item ? String(item.value) : '';
+            this.originalElement.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
         this._saveSelection(item ? item.value : null);
@@ -1142,6 +1278,12 @@ export default class SearchableDropdown {
             }
         } else {
             this.trigger.value = val;
+            if (this.editable && this.originalElement) {
+                // Editable wraps a live <input>: mirror the programmatic value onto it too, so the
+                // backing element isn't left stale until the next blur (and a later syncFromElement
+                // won't revert the trigger to the old element value).
+                this.originalElement.value = val;
+            }
         }
         this._refreshTriggerIcon();
     }

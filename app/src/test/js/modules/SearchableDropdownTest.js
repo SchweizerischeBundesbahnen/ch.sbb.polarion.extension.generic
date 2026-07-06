@@ -939,7 +939,8 @@ describe('SearchableDropdown', function () {
             dropdown.addOption('a', 'A');
             dropdown._open();
             dropdown.empty();
-            expect(dropdown.itemsEl.children.length).to.equal(0);
+            expect(dropdown.itemsEl.querySelectorAll('.option').length).to.equal(0);
+            expect(dropdown.itemsEl.querySelector('.sd-empty')).to.exist;
             dropdown.destroy();
         });
     });
@@ -1152,6 +1153,261 @@ describe('SearchableDropdown', function () {
             handle.label.classList.add('parent');
             expect(dropdown.itemsEl.querySelector('.option').classList.contains('parent')).to.be.true;
             dropdown.destroy();
+        });
+    });
+
+    describe('editable (free-text) mode', function () {
+        function editableInput(initial) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            if (initial !== undefined) input.value = initial;
+            document.body.appendChild(input);
+            return input;
+        }
+
+        it('has an editable trigger, no popup search box, and seeds from the input value', function () {
+            const dd = new SearchableDropdown({
+                element: editableInput('42'), editable: true, rememberSelection: false,
+                items: [{ value: '1', label: 'One' }, { value: '2', label: 'Two' }]
+            });
+            expect(dd.editable).to.be.true;
+            expect(dd.trigger.readOnly).to.be.false;
+            expect(dd._hasSearchBox).to.be.false;
+            expect(dd.searchInput).to.be.undefined;
+            expect(dd.trigger.value).to.equal('42');
+            // The container is flagged .editable so CSS can drop the combobox chevron.
+            expect(dd.container.classList.contains('editable')).to.be.true;
+            dd.destroy();
+        });
+
+        it('focus opens the full list', function () {
+            const dd = new SearchableDropdown({
+                element: editableInput(''), editable: true, rememberSelection: false,
+                items: [{ value: '1', label: 'One' }, { value: '2', label: 'Two' }]
+            });
+            dd.trigger.dispatchEvent(new Event('focus'));
+            expect(dd.isOpen).to.be.true;
+            expect(dd.itemsEl.children.length).to.equal(2);
+            dd.destroy();
+        });
+
+        it('focus on a field that already holds a value does not open the popup', function () {
+            const dd = new SearchableDropdown({
+                element: editableInput('A'), editable: true, rememberSelection: false,
+                items: [{ value: 'A', label: 'A' }, { value: 'B', label: 'B' }]
+            });
+            dd.trigger.dispatchEvent(new Event('focus'));
+            expect(dd.isOpen).to.be.false;
+            dd.destroy();
+        });
+
+        it('typing sanitises via inputFilter and filters the list', function () {
+            const dd = new SearchableDropdown({
+                element: editableInput(''), editable: true, rememberSelection: false,
+                inputFilter: v => v.replace(/\D/g, ''),
+                items: [{ value: '10', label: '10 ten' }, { value: '22', label: '22 two' }]
+            });
+            dd.trigger.value = '1a0';
+            dd.trigger.dispatchEvent(new Event('input'));
+            expect(dd.trigger.value).to.equal('10');
+            expect(dd.isOpen).to.be.true;
+            expect(dd.itemsEl.children.length).to.equal(1);
+            dd.destroy();
+        });
+
+        it('typing without an inputFilter still filters', function () {
+            const dd = new SearchableDropdown({
+                element: editableInput(''), editable: true, rememberSelection: false,
+                items: [{ value: 'a', label: 'Apple' }, { value: 'b', label: 'Banana' }]
+            });
+            dd.trigger.value = 'ban';
+            dd.trigger.dispatchEvent(new Event('input'));
+            expect(dd.trigger.value).to.equal('ban');
+            expect(dd.itemsEl.children.length).to.equal(1);
+            dd.destroy();
+        });
+
+        it('typing a value matching no suggestion closes the popup (no "No matches" box)', function () {
+            const az = Array.from({ length: 26 }, (_, i) => {
+                const l = String.fromCharCode(65 + i);
+                return { value: l, label: l };
+            });
+            const dd = new SearchableDropdown({
+                element: editableInput(''), editable: true, rememberSelection: false,
+                inputFilter: v => v.replace(/[^A-Za-z]/g, '').toUpperCase(),
+                items: az
+            });
+            // "A" matches an A–Z hint → popup open with the single suggestion.
+            dd.trigger.value = 'A';
+            dd.trigger.dispatchEvent(new Event('input'));
+            expect(dd.isOpen).to.be.true;
+            expect(dd.itemsEl.children.length).to.equal(1);
+            // Extend to "AA" — valid free text, no single-letter hint matches → popup closes, and it
+            // must NOT show the "No matches" empty state.
+            dd.trigger.value = 'AA';
+            dd.trigger.dispatchEvent(new Event('input'));
+            expect(dd.isOpen).to.be.false;
+            expect(dd.itemsEl.querySelector('.sd-empty')).to.equal(null);
+            dd.destroy();
+        });
+
+        it('_open() stays closed when no suggestion matches the seeded free text', function () {
+            const dd = new SearchableDropdown({
+                element: editableInput('AA'), editable: true, rememberSelection: false,
+                items: [{ value: 'A', label: 'A' }, { value: 'B', label: 'B' }]
+            });
+            dd._open();
+            expect(dd.isOpen).to.be.false;
+            dd.destroy();
+        });
+
+        it('_open() pre-highlights the matching option against the FILTERED list, not full items', function () {
+            const dd = new SearchableDropdown({
+                element: editableInput('api'), editable: true, rememberSelection: false,
+                items: [{ value: 'apple', label: 'apple (A)' }, { value: 'api', label: 'api (I)' }]
+            });
+            dd._open();
+            // Only 'api (I)' matches the filter → rendered at index 0. activeIndex must point at it
+            // (using the full-items index 1 would mark nothing active).
+            expect(dd.itemsEl.querySelectorAll('.option').length).to.equal(1);
+            expect(dd.activeIndex).to.equal(0);
+            const active = dd.itemsEl.querySelector('.option.active');
+            expect(active).to.exist;
+            expect(active.textContent).to.contain('api');
+            dd.destroy();
+        });
+
+        it('syncFromElement mirrors the wrapped input value verbatim (free text, not label)', function () {
+            const input = editableInput('');
+            const dd = new SearchableDropdown({
+                element: input, editable: true, rememberSelection: false,
+                items: [{ value: 'A', label: 'Alpha' }]
+            });
+            // Free text not in the item list must survive (old code blanked it to '').
+            input.value = 'ZZ';
+            dd.syncFromElement();
+            expect(dd.trigger.value).to.equal('ZZ');
+            // A value that IS an item shows as its raw value, not the label.
+            input.value = 'A';
+            dd.syncFromElement();
+            expect(dd.trigger.value).to.equal('A');
+            // Clearing the wrapped input clears the trigger.
+            input.value = '';
+            dd.syncFromElement();
+            expect(dd.trigger.value).to.equal('');
+            dd.destroy();
+        });
+
+        it('the value setter mirrors onto the wrapped input in editable mode', function () {
+            const input = editableInput('');
+            const dd = new SearchableDropdown({
+                element: input, editable: true, rememberSelection: false,
+                items: [{ value: 'A', label: 'A' }]
+            });
+            dd.value = 'ZZ';
+            expect(dd.trigger.value).to.equal('ZZ');
+            expect(input.value).to.equal('ZZ'); // backing <input> kept in sync, not left stale
+            dd.destroy();
+        });
+
+        it('selecting an option commits its value (not label) and mirrors onto the input', function () {
+            const input = editableInput('');
+            let fired = 0; input.addEventListener('change', () => fired++);
+            const dd = new SearchableDropdown({
+                element: input, editable: true, rememberSelection: false,
+                items: [{ value: '12345', label: '12345 revision' }]
+            });
+            dd.selectItem(dd.items[0]);
+            expect(dd.trigger.value).to.equal('12345');
+            expect(input.value).to.equal('12345');
+            expect(fired).to.equal(1);
+            dd.destroy();
+        });
+
+        it('Enter on a highlighted option selects it', function () {
+            const input = editableInput('');
+            const dd = new SearchableDropdown({
+                element: input, editable: true, rememberSelection: false,
+                items: [{ value: 'x', label: 'X' }]
+            });
+            dd._open();
+            dd.activeIndex = 0;
+            dd._handleEnter();
+            expect(input.value).to.equal('x');
+            dd.destroy();
+        });
+
+        it('Enter with no highlighted option commits the free text', function () {
+            const input = editableInput('');
+            const dd = new SearchableDropdown({
+                element: input, editable: true, rememberSelection: false,
+                items: [{ value: '1', label: 'One' }]
+            });
+            dd._open();
+            dd.trigger.value = '999';
+            dd.activeIndex = -1;
+            dd._handleEnter();
+            expect(input.value).to.equal('999');
+            dd.destroy();
+        });
+
+        it('Enter commits the free text while the popup is closed (no matches)', function () {
+            const input = editableInput('');
+            let fired = 0; input.addEventListener('change', () => fired++);
+            const dd = new SearchableDropdown({
+                element: input, editable: true, rememberSelection: false,
+                items: [{ value: 'A', label: 'A' }]
+            });
+            // Free text matching no suggestion → popup stays closed.
+            dd.trigger.value = 'ZZ';
+            dd.trigger.dispatchEvent(new Event('input'));
+            expect(dd.isOpen).to.be.false;
+            // Enter must still commit (and preventDefault the event so a form can't submit stale).
+            const evt = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+            dd.trigger.dispatchEvent(evt);
+            expect(input.value).to.equal('ZZ');
+            expect(fired).to.equal(1);
+            expect(evt.defaultPrevented).to.be.true;
+            dd.destroy();
+        });
+
+        it('blur commits the free text once, and a second blur with no change does nothing', function () {
+            const input = editableInput('');
+            let fired = 0; input.addEventListener('change', () => fired++);
+            const dd = new SearchableDropdown({ element: input, editable: true, rememberSelection: false, items: [] });
+            dd.trigger.value = 'abc';
+            dd.trigger.dispatchEvent(new Event('blur'));
+            expect(input.value).to.equal('abc');
+            expect(fired).to.equal(1);
+            dd.trigger.dispatchEvent(new Event('blur'));
+            expect(fired).to.equal(1);
+            dd.destroy();
+        });
+
+        it('selectItem(null) clears the editable field and the wrapped input', function () {
+            const input = editableInput('');
+            const dd = new SearchableDropdown({
+                element: input, editable: true, rememberSelection: false,
+                items: [{ value: '7', label: 'Seven' }]
+            });
+            dd.selectItem(dd.items[0]);
+            expect(input.value).to.equal('7');
+            dd.selectItem(null);
+            expect(dd.trigger.value).to.equal('');
+            expect(input.value).to.equal('');
+            dd.destroy();
+        });
+
+        it('build-mode editable has no <input> to mirror onto — blur is a no-op', function () {
+            const dd = new SearchableDropdown({
+                selectContainer: document.getElementById('build-container'),
+                editable: true, rememberSelection: false
+            });
+            dd.addOption('a', 'Apple');
+            expect(dd.originalElement).to.equal(null);
+            dd.trigger.value = 'free';
+            expect(() => dd.trigger.dispatchEvent(new Event('blur'))).to.not.throw();
+            dd.destroy();
         });
     });
 });

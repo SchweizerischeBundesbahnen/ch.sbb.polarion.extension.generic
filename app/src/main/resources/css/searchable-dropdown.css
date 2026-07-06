@@ -31,6 +31,22 @@
     box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
 }
 
+/* An editable (creatable) trigger is a real text field, not a click-to-open button. */
+.searchable-dropdown > input.sd-trigger:not([readonly]) {
+    cursor: text;
+}
+
+/* An editable trigger can be focused while the popup is closed (e.g. free text that matches no
+   suggestion), so it needs its own focus styling — the .open rule below wouldn't apply. Blue border
+   plus the same soft elevation the text inputs use on focus (inputs.css), not the heavier open-state
+   shadow — an editable field stays focused after a pick, so a strong shadow would linger. Suppress
+   the browser's default outline. */
+.searchable-dropdown > input.sd-trigger:not([readonly]):focus {
+    border-color: var(--sbb-control-border-focus, #1491eb);
+    box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
+    outline: none;
+}
+
 /* Open state — Polarion JSSelector-ComboOpen (blue border + stronger shadow) */
 .searchable-dropdown.open > .sd-trigger {
     border-color: var(--sbb-control-border-focus, #1491eb);
@@ -131,6 +147,16 @@
     height: 16px;
     background: var(--sbb-combo-chevron, url("/polarion/ria/images/combo_box_old.png")) center / contain no-repeat;
     pointer-events: none;
+}
+
+/* Editable mode is a free-text field, not a click-to-open combobox: drop the dropdown chevron and
+   reclaim the space it reserved on the right. */
+.searchable-dropdown.editable::after {
+    display: none;
+}
+
+.searchable-dropdown.editable > input.sd-trigger {
+    padding-right: .5rem;
 }
 
 /* Optional clear (×) button — reset a single-select back to its placeholder. Opt-in via the
@@ -235,6 +261,15 @@
 .sd-portal .items {
     max-height: 180px;
     overflow-y: auto;
+}
+
+/* Empty-state row shown when no options match (notably in editable mode, which has no search row
+   to give the popup height). */
+.sd-portal .sd-empty {
+    padding: 6px 12px;
+    text-align: center;
+    color: var(--sbb-control-placeholder, #7c7c7c);
+    font-size: var(--sbb-control-font-size, 13px);
 }
 
 /* Option item */
