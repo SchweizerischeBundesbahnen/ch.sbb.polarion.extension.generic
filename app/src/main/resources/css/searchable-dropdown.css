@@ -65,12 +65,12 @@
    selections stay visible instead of being truncated into a single comma-joined line. */
 .searchable-dropdown > .sd-trigger-multi {
     width: 100%;
-    min-height: 23px;
+    min-height: var(--sbb-control-height, 23px);
     box-sizing: border-box;
     padding: 1px 2rem 1px 3px;
-    border: 1px solid #c9c9c9;
-    border-radius: 0;
-    background-color: #fff;
+    border: 1px solid var(--sbb-control-border, #c9c9c9);
+    border-radius: var(--sbb-control-radius, 0);
+    background-color: var(--sbb-control-bg, #fff);
     cursor: pointer;
     display: flex;
     flex-wrap: wrap;
@@ -78,9 +78,9 @@
     /* Uniform spacing between chips (row and column). */
     gap: 4px;
     font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: var(--sbb-control-font-size, 13px);
+    font-weight: var(--sbb-control-font-weight, 600);
+    color: var(--sbb-control-text, #1a1a1a);
 }
 
 .searchable-dropdown > .sd-trigger-multi .sd-placeholder {
@@ -216,10 +216,10 @@
     padding: 4px 6px;
     border: 1px solid var(--sbb-control-border-focus, #1491eb);
     border-radius: var(--sbb-control-radius, 0);
-    background-color: #fff;
+    background-color: var(--sbb-control-bg, #fff);
     font-family: inherit;
-    font-size: 13px;
-    color: #1a1a1a;
+    font-size: var(--sbb-control-font-size, 13px);
+    color: var(--sbb-control-text, #1a1a1a);
     outline: none;
 }
 
