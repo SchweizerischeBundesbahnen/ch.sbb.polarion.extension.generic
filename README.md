@@ -449,6 +449,16 @@ its `placeholder`; pairs naturally with `allowEmpty`),
 CSS class onto the rendered option — e.g. the `parent` class renders a global-scope configuration
 with an italic `global` marker).
 
+**Editable (free-text) mode** — `editable: true` turns the single-select into a *creatable*
+combobox: the trigger becomes a typeable field (the popup's separate search box is dropped — the
+trigger itself filters), focus opens the suggestion list, and a value **not** in the list can be
+committed (on Enter and on blur). Picking an option commits the option's `value` (the `label` is
+shown only in the list). Because a free value cannot live in a `<select>`, editable mode wraps a
+plain `<input>` (the already-supported non-`<select>` element mode) or build mode — the wrapped
+`<input>` is kept in sync and receives `change`. Pass `inputFilter: (value) => value` to sanitise
+what is typed (catches typing *and* paste), e.g. digits-only `v => v.replace(/\D/g, '')` or
+Latin-only `v => v.replace(/[^A-Za-z]/g, '')`.
+
 Per-option **icons**: give a source `<option>` a `data-icon="…"` (element mode) or pass a third
 argument to `addOption(value, text, icon)` (build mode); the icon is shown to the left of the label
 in the list and on the closed single-select trigger. For an icon that sits on a coloured tile (e.g.

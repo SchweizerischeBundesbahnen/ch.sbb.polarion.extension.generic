@@ -51,3 +51,5 @@ node_modules/
 .classpath
 .factorypath
 .settings/
+
+/app/coverage/
