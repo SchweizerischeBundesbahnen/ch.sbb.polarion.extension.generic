@@ -35,17 +35,17 @@ export function createSearchableSelect(selectElement, options = {}) {
  * drop their copy-pasted (and drifted) `dropdown-utils.js`. `ctx` is the extension's ExtensionContext
  * (only `getElementById` is used).
  */
-export function initSearchableDropdowns(ctx, singleIds, multiSelectId) {
+export function initSearchableDropdowns(ctx, singleIds, multiSelectId, options = {}) {
   (singleIds || []).forEach((id) => {
     const element = ctx.getElementById(id);
     if (element) {
-      new SearchableDropdown({ element, placeholder: '', rememberSelection: false });
+      createSearchableSelect(element, { placeholder: '', ...options });
     }
   });
   if (multiSelectId) {
     const element = ctx.getElementById(multiSelectId);
     if (element) {
-      new SearchableDropdown({ element, placeholder: '', rememberSelection: false, multiselect: true });
+      createSearchableSelect(element, { placeholder: '', ...options, multiselect: true });
     }
   }
 }

@@ -62,4 +62,14 @@ describe('createSearchableSelect', function () {
     expect(m.nextElementSibling.classList.contains('searchable-dropdown')).to.be.true;
     expect(m.nextElementSibling.querySelector('.sd-trigger-multi')).to.exist; // rendered as multi-select
   });
+
+  it('initSearchableDropdowns inherits the shared defaults and passes options through', function () {
+    const s = selectWith(['a', 'b']); s.id = 's';
+    const ctx = { getElementById: (id) => document.getElementById(id) };
+    initSearchableDropdowns(ctx, ['s'], null, { allowEmpty: true });
+    const sd = s._searchableDropdown;
+    expect(sd.preserveOptionClasses).to.be.true; // inherited from createSearchableSelect (not dropped)
+    expect(sd.searchable).to.be.true;
+    expect(sd.allowEmpty).to.be.true;            // passed through via the options arg
+  });
 });

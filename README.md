@@ -519,15 +519,22 @@ Bootstrap classes) and cannot link `checkboxes.css` / `searchable-dropdown.css`.
    mirrors the selection back and dispatches `change`. Use the shared **`searchableSelect.js`** factory
    (`createSearchableSelect`) rather than calling `new SearchableDropdown(...)` per app — it owns the
    defaults every combobox uses (`searchable`, `preserveOptionClasses`, no remembered selection). Derive
-   the module URL from the SPA's own location so there is **no hardcoded `/<ext>-app/` segment** — the
-   wrapper is then identical across every extension:
+   the module URL from **this module's own served URL** (`import.meta.url`) so there is **no hardcoded
+   `/<ext>-app/` segment** — the wrapper is then identical across every extension. (Derive from
+   `import.meta.url`, not `location.pathname`: the module URL is always under `…/ui/…` and is stable
+   regardless of the SPA's client-side route.)
 
    ```js
-   const base = window.location.pathname.replace(/\/ui\/.*$/, '/ui/generic/js/modules/');
+   const base = new URL('.', import.meta.url).href.replace(/\/ui\/.*$/, '/ui/generic/js/modules/');
    const { createSearchableSelect } = await import(/* webpackIgnore: true */ /* @vite-ignore */ base + 'searchableSelect.js');
    const sd = createSearchableSelect(selectEl, { allowEmpty: true, placeholder: 'Pick…' });
    // sd.selectValue(value) to sync from framework state; sd.destroy() on unmount.
    ```
+
+   Server webapps that upgrade a fixed set of `<select>`s by id (the exporters) use the batch helper
+   from the same module — `initSearchableDropdowns(ctx, singleIds, multiSelectId, options?)` — which
+   wraps each via `createSearchableSelect` (so they share the same defaults) and forwards `options`
+   (e.g. `{ allowEmpty: true }`) to every one.
 
 Because both the tokens and the dropdown module are consumed **at runtime**, `generic` stays the
 single source of truth — there is no JS package to publish and no build-time coupling. Always ship
