@@ -792,22 +792,26 @@ export default class SearchableDropdown {
         // Editable mode with no suggestion matching the current free text: nothing to show, so stay
         // closed instead of opening an empty popup (keyboard ArrowDown path; _syncEditablePopup
         // guards the focus/input paths).
-        if (this.editable && this._filterItems(this.trigger.value).length === 0) {
+        // The list actually rendered below: the filtered subset in editable mode, all items
+        // otherwise. Compute it once so the pre-highlight index and the render agree.
+        const list = this.editable ? this._filterItems(this.trigger.value) : this.items;
+        if (this.editable && list.length === 0) {
+            // Nothing matches the free text — stay closed (free-text entry, nothing to suggest).
             return;
         }
         this.isOpen = true;
         this.container.classList.add('open');
         this.trigger.setAttribute('aria-expanded', 'true');
         // Highlight the currently selected item on open (single-select only, and only if something
-        // is actually selected). The highlight then follows the mouse/keyboard. Multi-select shows
-        // its state via checkboxes, so nothing is pre-highlighted.
+        // is actually selected). The index must be resolved against `list` — the array that gets
+        // rendered — not the full items array, or a filtered editable list highlights the wrong row.
         this.activeIndex = (!this.multiselect && this.trigger.value)
-            ? this.items.findIndex(item => item.value === this.value)
+            ? list.findIndex(item => item.value === this.value)
             : -1;
         if (this._hasSearchBox) {
             this.searchInput.value = '';
         }
-        this._renderOptions(this.editable ? this._filterItems(this.trigger.value) : this.items);
+        this._renderOptions(list);
         this._show();
         // Reposition the portal while open if the page scrolls or resizes (capture phase catches
         // scrolling in nested containers such as the document side panel).
@@ -1021,6 +1025,16 @@ export default class SearchableDropdown {
         if (this.multiselect) {
             this.items = this._extractItemsFromSelect(this.originalElement);
             this._updateTriggerFromSelection();
+            return;
+        }
+        if (this.editable) {
+            // Editable wraps a free-text <input>: the element's value is authoritative (and may be
+            // text matching no item), so mirror it onto the trigger verbatim. Reading originalElement
+            // (not the trigger) reflects programmatic updates; skipping the label lookup avoids
+            // blanking a free value that isn't in the item list.
+            this.trigger.value = this.originalElement.value || '';
+            this._applyTriggerClass();
+            this._refreshTriggerIcon();
             return;
         }
         if (this.isSelect && !this.allowEmpty && this.originalElement.selectedIndex === -1 && this.originalElement.options.length > 0) {

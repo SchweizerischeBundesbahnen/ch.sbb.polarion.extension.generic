@@ -1261,6 +1261,43 @@ describe('SearchableDropdown', function () {
             dd.destroy();
         });
 
+        it('_open() pre-highlights the matching option against the FILTERED list, not full items', function () {
+            const dd = new SearchableDropdown({
+                element: editableInput('api'), editable: true, rememberSelection: false,
+                items: [{ value: 'apple', label: 'apple (A)' }, { value: 'api', label: 'api (I)' }]
+            });
+            dd._open();
+            // Only 'api (I)' matches the filter → rendered at index 0. activeIndex must point at it
+            // (using the full-items index 1 would mark nothing active).
+            expect(dd.itemsEl.querySelectorAll('.option').length).to.equal(1);
+            expect(dd.activeIndex).to.equal(0);
+            const active = dd.itemsEl.querySelector('.option.active');
+            expect(active).to.exist;
+            expect(active.textContent).to.contain('api');
+            dd.destroy();
+        });
+
+        it('syncFromElement mirrors the wrapped input value verbatim (free text, not label)', function () {
+            const input = editableInput('');
+            const dd = new SearchableDropdown({
+                element: input, editable: true, rememberSelection: false,
+                items: [{ value: 'A', label: 'Alpha' }]
+            });
+            // Free text not in the item list must survive (old code blanked it to '').
+            input.value = 'ZZ';
+            dd.syncFromElement();
+            expect(dd.trigger.value).to.equal('ZZ');
+            // A value that IS an item shows as its raw value, not the label.
+            input.value = 'A';
+            dd.syncFromElement();
+            expect(dd.trigger.value).to.equal('A');
+            // Clearing the wrapped input clears the trigger.
+            input.value = '';
+            dd.syncFromElement();
+            expect(dd.trigger.value).to.equal('');
+            dd.destroy();
+        });
+
         it('selecting an option commits its value (not label) and mirrors onto the input', function () {
             const input = editableInput('');
             let fired = 0; input.addEventListener('change', () => fired++);
