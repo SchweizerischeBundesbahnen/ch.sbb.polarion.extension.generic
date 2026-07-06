@@ -516,12 +516,17 @@ Bootstrap classes) and cannot link `checkboxes.css` / `searchable-dropdown.css`.
 2. **For real combobox parity**, wrap a native `<select>` with the vanilla `SearchableDropdown`,
    loaded via a runtime dynamic import (bundler-ignored so the build does not try to resolve the URL),
    and link `searchable-dropdown.css`. The `<select>` stays framework-controlled; the component
-   mirrors the selection back and dispatches `change`:
+   mirrors the selection back and dispatches `change`. Use the shared **`searchableSelect.js`** factory
+   (`createSearchableSelect`) rather than calling `new SearchableDropdown(...)` per app — it owns the
+   defaults every combobox uses (`searchable`, `preserveOptionClasses`, no remembered selection). Derive
+   the module URL from the SPA's own location so there is **no hardcoded `/<ext>-app/` segment** — the
+   wrapper is then identical across every extension:
 
    ```js
-   const SD = (await import(/* webpackIgnore: true */ /* @vite-ignore */
-     '/polarion/<ext>-app/ui/generic/js/modules/SearchableDropdown.js')).default;
-   new SD({ element: selectEl, rememberSelection: false });
+   const base = window.location.pathname.replace(/\/ui\/.*$/, '/ui/generic/js/modules/');
+   const { createSearchableSelect } = await import(/* webpackIgnore: true */ /* @vite-ignore */ base + 'searchableSelect.js');
+   const sd = createSearchableSelect(selectEl, { allowEmpty: true, placeholder: 'Pick…' });
+   // sd.selectValue(value) to sync from framework state; sd.destroy() on unmount.
    ```
 
 Because both the tokens and the dropdown module are consumed **at runtime**, `generic` stays the
