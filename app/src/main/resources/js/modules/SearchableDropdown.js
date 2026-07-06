@@ -1278,6 +1278,12 @@ export default class SearchableDropdown {
             }
         } else {
             this.trigger.value = val;
+            if (this.editable && this.originalElement) {
+                // Editable wraps a live <input>: mirror the programmatic value onto it too, so the
+                // backing element isn't left stale until the next blur (and a later syncFromElement
+                // won't revert the trigger to the old element value).
+                this.originalElement.value = val;
+            }
         }
         this._refreshTriggerIcon();
     }

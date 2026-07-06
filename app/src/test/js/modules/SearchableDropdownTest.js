@@ -1298,6 +1298,18 @@ describe('SearchableDropdown', function () {
             dd.destroy();
         });
 
+        it('the value setter mirrors onto the wrapped input in editable mode', function () {
+            const input = editableInput('');
+            const dd = new SearchableDropdown({
+                element: input, editable: true, rememberSelection: false,
+                items: [{ value: 'A', label: 'A' }]
+            });
+            dd.value = 'ZZ';
+            expect(dd.trigger.value).to.equal('ZZ');
+            expect(input.value).to.equal('ZZ'); // backing <input> kept in sync, not left stale
+            dd.destroy();
+        });
+
         it('selecting an option commits its value (not label) and mirrors onto the input', function () {
             const input = editableInput('');
             let fired = 0; input.addEventListener('change', () => fired++);
