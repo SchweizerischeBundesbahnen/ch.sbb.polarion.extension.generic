@@ -1,43 +1,55 @@
 /*
- * Shared breadcrumb bridge for React/SPA extensions.
+ * Shared breadcrumb bridge for SPA / topic-page extensions.
  *
  * Polarion renders the app-header breadcrumb (`.polarion-ApplicationHeader-breadcrumb`) with GWT in
- * the TOP window. An extension SPA lives in an iframe, so to show its own breadcrumb it injects this
- * classic script into the parent document; the script then swaps the GWT breadcrumb for the app's
- * own while the app's URL is active. Previously every extension shipped a copy-pasted
- * `<ext>-breadcrumb-bridge.js`; this is the single shared implementation.
+ * the parent window, but for an extension topic opened in the project navigation it shows a generic
+ * "home" instead of the extension's own name. This script, injected into the parent document, swaps
+ * that breadcrumb for the extension's own while the extension's URL is active. It replaces what used
+ * to be a copy-pasted `<ext>-breadcrumb-bridge.js` per extension.
+ *
+ * It mirrors Polarion's own breadcrumb shape:
+ *   - a ROOT topic   ->  [icon] Title                       (30px icon)
+ *   - a SUB topic     ->  Parent  ›  [small icon] Title       (17px icon)
  *
  * NOTE: this is intentionally NOT an ES module (no import/export) — it is injected into the parent
  * page as a classic <script> so that `document.currentScript` is available to read its config.
  *
  * Two ways to use it:
- *   1. Classic-script auto-install — inject it with data-* attributes; it configures itself from the
- *      injecting <script>:
- *        data-marker (required) substring identifying the app in the URL/hash (e.g. "xml-repair")
+ *   1. Classic-script auto-install — inject it with data-* attributes:
+ *        data-marker (required) substring identifying the app in the URL/hash (e.g. "diff-tool")
  *        data-title  (required) breadcrumb title text
+ *        data-parent (optional) parent topic name; when set, renders "parent › [icon] title"
  *        data-icon   (optional) icon URL shown left of the title
- *   2. Direct call — `window.SbbBreadcrumbBridge.install({ marker, title, icon })`.
+ *   2. Direct call — `window.SbbBreadcrumbBridge.install({ marker, title, parent, icon })`.
  *
- * install() is idempotent per marker (re-installing returns the existing instance) and returns an
- * { sync, destroy } handle.
+ * Re-installing/re-injecting with the same marker UPDATES the title/parent/icon (so navigating
+ * between an extension's sub-topics re-labels the breadcrumb) and returns the existing instance.
+ * install() returns an { sync, update, destroy } handle. It never activates on Polarion's own
+ * Administration pages (URL under `#/administration`), which render their breadcrumb correctly.
  */
 (function () {
   function installBreadcrumbBridge(config) {
     config = config || {};
     var marker = config.marker;
-    var title = config.title;
-    var iconSrc = config.icon || '';
-    if (!marker || !title) {
+    if (!marker || !config.title) {
       return null;
     }
 
     var installedFlag = '__sbbBreadcrumbBridge_' + marker;
     if (window[installedFlag]) {
+      window[installedFlag].update(config);
       return window[installedFlag];
     }
 
-    var customId = 'sbb-breadcrumb-' + marker;
+    // Mutable config so re-injection (e.g. navigating to a sub-topic) can re-label without a fresh
+    // install.
+    var current = {
+      title: config.title,
+      parent: config.parent || '',
+      icon: config.icon || ''
+    };
 
+    var customId = 'sbb-breadcrumb-' + marker;
     var styleId = 'sbb-breadcrumb-style-' + marker;
 
     // Hide the real GWT breadcrumb(s) with a stylesheet rule rather than a per-element inline style:
@@ -68,9 +80,32 @@
       return document.querySelector('.polarion-ApplicationHeader-breadcrumb:not([data-sbb-bridge])');
     }
 
-    // Build the replacement breadcrumb once, via the DOM (no innerHTML), so the app-supplied title
-    // and icon can never be interpreted as markup.
+    // Build the replacement breadcrumb, via the DOM (no innerHTML), so the app-supplied title and
+    // icon can never be interpreted as markup. Rebuilt whenever the config changes.
     var builtBreadcrumb = null;
+
+    function appendIconAndTitle(wrap, iconSize) {
+      if (current.icon) {
+        var imagePanel = document.createElement('div');
+        imagePanel.className = 'polarion-ApplicationHeader-imagePanel';
+        var img = document.createElement('img');
+        img.src = current.icon;
+        img.alt = '';
+        img.className = 'gwt-Image';
+        img.style.width = iconSize;
+        img.style.height = iconSize;
+        imagePanel.appendChild(img);
+        wrap.appendChild(imagePanel);
+      }
+      var titlePanel = document.createElement('div');
+      titlePanel.className = 'polarion-ApplicationHeader-breadcrumbTitlePanel';
+      var titleEl = document.createElement('div');
+      titleEl.className = 'polarion-ApplicationHeader-breadcrumbTitle';
+      titleEl.title = current.title;
+      titleEl.textContent = current.title;
+      titlePanel.appendChild(titleEl);
+      wrap.appendChild(titlePanel);
+    }
 
     function buildBreadcrumb() {
       var wrap = document.createElement('div');
@@ -78,28 +113,28 @@
       // Marks this as our replacement so findOriginal() never mistakes it for the GWT element.
       wrap.setAttribute('data-sbb-bridge', '');
 
-      if (iconSrc) {
-        var imagePanel = document.createElement('div');
-        imagePanel.className = 'polarion-ApplicationHeader-imagePanel';
-        var img = document.createElement('img');
-        img.src = iconSrc;
-        img.alt = '';
-        img.className = 'gwt-Image';
-        img.style.width = '30px';
-        img.style.height = '30px';
-        imagePanel.appendChild(img);
-        wrap.appendChild(imagePanel);
+      var isSub = !!current.parent;
+      if (isSub) {
+        // Parent name, then a separator, matching Polarion's "Parent › child" sub-topic breadcrumb.
+        var parentPanel = document.createElement('div');
+        parentPanel.className = 'polarion-ApplicationHeader-breadcrumbTitlePanel';
+        var parentTitle = document.createElement('div');
+        parentTitle.className = 'polarion-ApplicationHeader-breadcrumbTitle';
+        parentTitle.title = current.parent;
+        parentTitle.textContent = current.parent;
+        parentPanel.appendChild(parentTitle);
+        wrap.appendChild(parentPanel);
+
+        var sep = document.createElement('div');
+        sep.className = 'polarion-ApplicationHeader-breadcrumbSeparator';
+        sep.textContent = '›'; // ›
+        sep.style.margin = '0 8px';
+        sep.style.opacity = '0.75';
+        wrap.appendChild(sep);
       }
 
-      var titlePanel = document.createElement('div');
-      titlePanel.className = 'polarion-ApplicationHeader-breadcrumbTitlePanel';
-      var titleEl = document.createElement('div');
-      titleEl.className = 'polarion-ApplicationHeader-breadcrumbTitle';
-      titleEl.title = title;
-      titleEl.textContent = title;
-      titlePanel.appendChild(titleEl);
-      wrap.appendChild(titlePanel);
-
+      // Sub-topics use a small icon (like Polarion's topic icons); roots use the large one.
+      appendIconAndTitle(wrap, isSub ? '17px' : '30px');
       return wrap;
     }
 
@@ -128,10 +163,13 @@
 
     function isAppUrl() {
       var loc = window.location;
-      return (
-        (loc.hash && loc.hash.indexOf(marker) !== -1) ||
-        loc.href.indexOf(marker) !== -1
-      );
+      var hash = loc.hash || '';
+      // Polarion's Administration renders the correct breadcrumb itself — never override it there
+      // (the admin URL is `#/administration/<ext>/...`, which also contains our marker).
+      if (hash.indexOf('/administration') !== -1 || loc.href.indexOf('/#/administration') !== -1) {
+        return false;
+      }
+      return hash.indexOf(marker) !== -1 || loc.href.indexOf(marker) !== -1;
     }
 
     function sync() {
@@ -166,6 +204,17 @@
       custom.style.display = '';
     }
 
+    function update(cfg) {
+      cfg = cfg || {};
+      if (cfg.title) {
+        current.title = cfg.title;
+      }
+      current.parent = cfg.parent || '';
+      current.icon = cfg.icon || '';
+      builtBreadcrumb = null; // force a rebuild with the new config on the next sync
+      sync();
+    }
+
     window.addEventListener('popstate', sync);
     window.addEventListener('hashchange', sync);
 
@@ -182,6 +231,7 @@
 
     var api = {
       sync: sync,
+      update: update,
       destroy: function () {
         window.removeEventListener('popstate', sync);
         window.removeEventListener('hashchange', sync);
@@ -208,6 +258,7 @@
     installBreadcrumbBridge({
       marker: script.getAttribute('data-marker'),
       title: script.getAttribute('data-title'),
+      parent: script.getAttribute('data-parent') || '',
       icon: script.getAttribute('data-icon') || ''
     });
   }

@@ -164,6 +164,56 @@ describe('BreadcrumbBridge', function () {
     expect(customEl().querySelector('.polarion-ApplicationHeader-breadcrumbTitle')).to.exist;
   });
 
+  it('does not activate on Polarion Administration pages', function () {
+    // The admin URL is `#/administration/<ext>/...`, which also contains the marker — but Polarion
+    // renders the correct breadcrumb there, so the bridge must stay out.
+    boot('https://host/polarion/#/administration/xml-repair/settings');
+    addOriginal();
+    handle = install(CONFIG);
+    expect(styleTag()).to.equal(null);
+    expect(customEl()).to.equal(null);
+  });
+
+  it('renders a sub-topic as "parent › small-icon title"', function () {
+    boot('https://host/polarion/#/project/x/xml-repair/details');
+    addOriginal();
+    handle = install({ marker: MARKER, title: 'Details', parent: 'XML-Repair', icon: '/i.svg' });
+
+    const custom = customEl();
+    const titles = custom.querySelectorAll('.polarion-ApplicationHeader-breadcrumbTitle');
+    expect(titles.length).to.equal(2);
+    expect(titles[0].textContent).to.equal('XML-Repair'); // parent segment
+    expect(titles[1].textContent).to.equal('Details');    // current topic
+    expect(custom.querySelector('.polarion-ApplicationHeader-breadcrumbSeparator')).to.exist;
+    expect(custom.querySelector('img').style.width).to.equal('17px'); // small sub icon
+  });
+
+  it('root topics use the large icon and no parent segment', function () {
+    boot('https://host/polarion/xml-repair-app/');
+    addOriginal();
+    handle = install(CONFIG);
+    const custom = customEl();
+    expect(custom.querySelectorAll('.polarion-ApplicationHeader-breadcrumbTitle').length).to.equal(1);
+    expect(custom.querySelector('.polarion-ApplicationHeader-breadcrumbSeparator')).to.equal(null);
+    expect(custom.querySelector('img').style.width).to.equal('30px');
+  });
+
+  it('re-installing with the same marker re-labels (sub-topic switch) and reuses the instance', function () {
+    boot('https://host/polarion/xml-repair-app/');
+    addOriginal();
+    handle = install({ marker: MARKER, title: 'Root', icon: '/i.svg' });
+    let titles = customEl().querySelectorAll('.polarion-ApplicationHeader-breadcrumbTitle');
+    expect(titles.length).to.equal(1);
+    expect(titles[0].textContent).to.equal('Root');
+
+    const same = install({ marker: MARKER, title: 'Child', parent: 'Root', icon: '/i.svg' });
+    expect(same).to.equal(handle); // same instance, updated in place
+    titles = customEl().querySelectorAll('.polarion-ApplicationHeader-breadcrumbTitle');
+    expect(titles.length).to.equal(2);
+    expect(titles[0].textContent).to.equal('Root');  // parent
+    expect(titles[1].textContent).to.equal('Child'); // new current topic
+  });
+
   it('destroy() restores the GWT breadcrumb and lets a fresh install run again', function () {
     boot('https://host/polarion/xml-repair-app/');
     addOriginal();
