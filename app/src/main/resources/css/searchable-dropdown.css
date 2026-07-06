@@ -10,31 +10,31 @@
 /* Trigger — the closed combobox (Polarion JSSelector-Combo) */
 .searchable-dropdown > input.sd-trigger {
     width: 100%;
-    height: 23px;
+    height: var(--sbb-control-height, 23px);
     box-sizing: border-box;
     padding: 2px 2rem 2px .5rem;
-    border: 1px solid #c9c9c9;
-    border-radius: 0;
-    background-color: #fff;
+    border: 1px solid var(--sbb-control-border, #c9c9c9);
+    border-radius: var(--sbb-control-radius, 0);
+    background-color: var(--sbb-control-bg, #fff);
     cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: var(--sbb-control-font-size, 13px);
+    font-weight: var(--sbb-control-font-weight, 600);
+    color: var(--sbb-control-text, #1a1a1a);
     transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 /* Soft elevation shadow on hover — same lift as the text inputs (inputs.css). */
 .searchable-dropdown:not(.disabled) > .sd-trigger:hover {
-    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.2);
+    box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
 }
 
 /* Open state — Polarion JSSelector-ComboOpen (blue border + stronger shadow) */
 .searchable-dropdown.open > .sd-trigger {
-    border-color: #1491EB;
-    box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.3);
+    border-color: var(--sbb-control-border-focus, #1491eb);
+    box-shadow: var(--sbb-control-shadow-active, 0 3px 6px 0 rgba(0, 0, 0, 0.3));
     outline: none;
 }
 
@@ -65,12 +65,12 @@
    selections stay visible instead of being truncated into a single comma-joined line. */
 .searchable-dropdown > .sd-trigger-multi {
     width: 100%;
-    min-height: 23px;
+    min-height: var(--sbb-control-height, 23px);
     box-sizing: border-box;
     padding: 1px 2rem 1px 3px;
-    border: 1px solid #c9c9c9;
-    border-radius: 0;
-    background-color: #fff;
+    border: 1px solid var(--sbb-control-border, #c9c9c9);
+    border-radius: var(--sbb-control-radius, 0);
+    background-color: var(--sbb-control-bg, #fff);
     cursor: pointer;
     display: flex;
     flex-wrap: wrap;
@@ -78,13 +78,13 @@
     /* Uniform spacing between chips (row and column). */
     gap: 4px;
     font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: var(--sbb-control-font-size, 13px);
+    font-weight: var(--sbb-control-font-weight, 600);
+    color: var(--sbb-control-text, #1a1a1a);
 }
 
 .searchable-dropdown > .sd-trigger-multi .sd-placeholder {
-    color: #7c7c7c;
+    color: var(--sbb-control-placeholder, #7c7c7c);
     padding-left: 3px;
 }
 
@@ -95,8 +95,8 @@
     max-width: 100%;
     box-sizing: border-box;
     padding: 0 3px 0 5px;
-    background: #ebf7f8;
-    border: 1px solid #b6dfe3;
+    background: var(--sbb-chip-bg, #ebf7f8);
+    border: 1px solid var(--sbb-chip-border, #b6dfe3);
     border-radius: 0;
     font-size: 12px;
     font-weight: 600;
@@ -111,13 +111,13 @@
 
 .searchable-dropdown .sd-chip-remove {
     cursor: pointer;
-    color: #5c8a90;
+    color: var(--sbb-chip-remove, #5c8a90);
     font-weight: 700;
     line-height: 1;
 }
 
 .searchable-dropdown .sd-chip-remove:hover {
-    color: #1a1a1a;
+    color: var(--sbb-control-text, #1a1a1a);
 }
 
 /* Arrow on the trigger — Polarion combo_box_old.png */
@@ -129,7 +129,7 @@
     transform: translateY(-50%);
     width: 16px;
     height: 16px;
-    background: transparent url("/polarion/ria/images/combo_box_old.png") center / contain no-repeat;
+    background: var(--sbb-combo-chevron, url("/polarion/ria/images/combo_box_old.png")) center / contain no-repeat;
     pointer-events: none;
 }
 
@@ -157,7 +157,7 @@
 }
 
 .searchable-dropdown .sd-clear:hover {
-    color: #1a1a1a;
+    color: var(--sbb-control-text, #1a1a1a);
     background: #e6e6e6;
 }
 
@@ -184,9 +184,9 @@
     /* Popup width is driven by the longest option, but never narrower than the trigger + 35px */
     min-width: calc(100% + 35px);
     width: max-content;
-    background: #fff;
-    border: 1px solid #CCCCD4;
-    border-radius: 0;
+    background: var(--sbb-control-bg, #fff);
+    border: 1px solid var(--sbb-combo-popup-border, #ccccd4);
+    border-radius: var(--sbb-control-radius, 0);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -214,12 +214,12 @@
     min-width: 0;
     box-sizing: border-box;
     padding: 4px 6px;
-    border: 1px solid #1491EB;
-    border-radius: 0;
-    background-color: #fff;
+    border: 1px solid var(--sbb-control-border-focus, #1491eb);
+    border-radius: var(--sbb-control-radius, 0);
+    background-color: var(--sbb-control-bg, #fff);
     font-family: inherit;
-    font-size: 13px;
-    color: #1a1a1a;
+    font-size: var(--sbb-control-font-size, 13px);
+    color: var(--sbb-control-text, #1a1a1a);
     outline: none;
 }
 
@@ -242,9 +242,9 @@
     padding: 6px 12px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: var(--sbb-control-font-size, 13px);
+    font-weight: var(--sbb-control-font-weight, 600);
+    color: var(--sbb-control-text, #1a1a1a);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -253,7 +253,7 @@
 /* Highlight — exact Polarion .polarion-JComboBox-ItemOver colour.
    Only one option is highlighted at a time (follows mouse/keyboard), managed via the .active class. */
 .sd-portal .option.active {
-    background-color: #ebf7f8;
+    background-color: var(--sbb-option-hover, #ebf7f8);
 }
 
 /* Disabled option (<option disabled>): dimmed and non-interactive; keyboard nav skips it. */
@@ -296,12 +296,12 @@
     appearance: none;
     width: 15px;
     height: 15px;
-    background: url(/polarion/ria/images/checkbox/unchecked.png) no-repeat center;
-    background-size: 15px 15px;
+    background: var(--sbb-checkbox-unchecked, url(/polarion/ria/images/checkbox/unchecked.png)) no-repeat center;
+    background-size: var(--sbb-toggle-size, 15px) var(--sbb-toggle-size, 15px);
 }
 
 .sd-portal .option.multiselect-option input[type="checkbox"]:checked {
-    background-image: url(/polarion/ria/images/checkbox/checked.png);
+    background-image: var(--sbb-checkbox-checked, url(/polarion/ria/images/checkbox/checked.png));
 }
 
 .sd-portal .option.multiselect-option .option-label {

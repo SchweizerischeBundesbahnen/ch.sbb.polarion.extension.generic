@@ -1,0 +1,58 @@
+/*
+ * Control design tokens — the single source of the Polarion 2606 control look.
+ *
+ * generic's own control stylesheets (checkboxes.css, radios.css, inputs.css,
+ * searchable-dropdown.css) consume these variables, so this file is the one place
+ * to restyle every native control across the whole extension ecosystem.
+ *
+ * It is also meant to be reused by extensions whose UI is NOT built from our
+ * class-based CSS — notably the React SPAs (xml-repair, integrity-scanner,
+ * diff-tool), which render their own markup (custom IconSelect, native <select>)
+ * and therefore cannot simply link checkboxes.css/searchable-dropdown.css. Those
+ * apps link THIS file at runtime (/polarion/<ext>/ui/generic/css/control-tokens.css)
+ * and reference the same var(--sbb-*) values, so a restyle here propagates to them.
+ *
+ * Every token ships with a literal fallback (var(--x, <literal>)) so any consumer
+ * that fails to load this file — e.g. a Vite dev server running outside Polarion,
+ * where /polarion/* 404s — still renders the intended look.
+ */
+:root {
+    /* Typography (shared by every control) */
+    --sbb-control-font-family: "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif;
+    --sbb-control-font-size: 13px;
+    --sbb-control-font-weight: 600;
+    --sbb-control-text: #1a1a1a;
+    --sbb-control-placeholder: #7c7c7c;
+
+    /* Text inputs + combobox trigger */
+    --sbb-control-height: 23px;
+    --sbb-control-bg: #ffffff;
+    --sbb-control-border: #c9c9c9;
+    --sbb-control-border-focus: #1491eb;
+    --sbb-control-radius: 0;
+
+    /* Elevation */
+    --sbb-control-shadow-hover: 0 2px 6px 0 rgba(0, 0, 0, 0.2);
+    --sbb-control-shadow-active: 0 3px 6px 0 rgba(0, 0, 0, 0.3);
+
+    /* Checkbox (Polarion images) + radio (CSS-drawn) */
+    --sbb-toggle-size: 15px;
+    --sbb-checkbox-unchecked: url(/polarion/ria/images/checkbox/unchecked.png);
+    --sbb-checkbox-checked: url(/polarion/ria/images/checkbox/checked.png);
+    --sbb-checkbox-indeterminate: url(/polarion/ria/images/checkbox/grayed.png);
+    --sbb-radio-border: #c9c9c9;
+    --sbb-radio-dot: #595959;
+
+    /* Combobox popup + options */
+    --sbb-combo-chevron: url(/polarion/ria/images/combo_box_old.png);
+    --sbb-combo-popup-border: #ccccd4;
+    /* Light teal hover / selection tint — the base that --sbb-option-hover and --sbb-chip-bg
+       derive from, and the token the React SPAs reference for dropdown-row hovers. */
+    --sbb-hover-tint: #ebf7f8;
+    --sbb-option-hover: var(--sbb-hover-tint, #ebf7f8);
+
+    /* Multi-select chips */
+    --sbb-chip-bg: var(--sbb-hover-tint, #ebf7f8);
+    --sbb-chip-border: #b6dfe3;
+    --sbb-chip-remove: #5c8a90;
+}
