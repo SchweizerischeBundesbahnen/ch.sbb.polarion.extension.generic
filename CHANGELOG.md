@@ -1,5 +1,23 @@
 # Changelog
 
+## [15.3.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.2.1...v15.3.0) (2026-07-07)
+
+
+### Features
+
+* add editable free-text mode to searchable dropdown ([#502](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/502)) ([2d44404](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2d44404d1ac6bbd38bf84eea6144aa254e543045)), closes [#501](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/501)
+* add optional icon background support in searchable dropdown ([#500](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/500)) ([8ea1034](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/8ea103451101ab23ad34dcaa41dd48adda97ca49)), closes [#499](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/499)
+* add shared BreadcrumbBridge module ([#506](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/506)) ([f0f25d6](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/f0f25d625548f2279e222b1f5ddc6ea0a17fc7da)), closes [#503](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/503)
+* add shared styling for data tables and loading spinner ([#508](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/508)) ([7bddd3e](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/7bddd3e8830d3d00ca5e34d827a3eee4828d6f54)), closes [#505](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/505)
+* introduce control design tokens for consistent styling ([#498](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/498)) ([9796014](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/9796014d62239cc03f2c9ac91489855471548574)), closes [#497](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/497)
+* unify duplicated form controls across extensions ([#507](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/507)) ([f635c04](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/f635c04564b4cedd656f0197d712bb1d3c18f8f8)), closes [#504](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/504)
+
+
+### Bug Fixes
+
+* admin-page UI polish (row centering, role pickers, shared modal) ([#493](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/493)) ([59bfb76](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/59bfb760d79aba4af17b166ec953b0ce3e2ab880)), closes [#492](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/492)
+* soft hover/focus shadow to inputs and comboboxes ([#495](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/495)) ([08a7709](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/08a7709c4b4fde93c63c90f25d1b90e5d3030499))
+
 ## [15.2.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.2.0...v15.2.1) (2026-07-03)
 
 
