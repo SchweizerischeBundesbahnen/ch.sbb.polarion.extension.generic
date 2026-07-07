@@ -30,6 +30,21 @@ export function createSearchableSelect(selectElement, options = {}) {
 }
 
 /*
+ * Editable (free-text / creatable) sibling of createSearchableSelect: wraps a text <input> so the
+ * user can type a free value OR pick from a filtered suggestion list. The framework-agnostic core of
+ * the React `SearchableInput` and the vanilla excel `ColumnInput`. Callers pass an `inputFilter`
+ * (value => sanitised value) and `items`/`placeholder` as needed.
+ */
+export function createEditableSelect(inputElement, options = {}) {
+  return new SearchableDropdown({
+    element: inputElement,
+    editable: true,
+    rememberSelection: false,
+    ...options
+  });
+}
+
+/*
  * Convenience for the exporters (pdf / docx / strictdoc), which upgrade a fixed set of <select>s by
  * id — a batch of single-selects plus one optional `<select multiple>`. Shared here so the exporters
  * drop their copy-pasted (and drifted) `dropdown-utils.js`. `ctx` is the extension's ExtensionContext

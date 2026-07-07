@@ -482,7 +482,7 @@ automatically, so a pane that re-initialises its dropdowns won't stack duplicate
 #### Shared control styling
 
 `css/common.css` (`@import` it, or link it from admin JSPs) pulls in the neutral, Polarion-matched
-styles for `checkboxes.css`, `radios.css`, `inputs.css` and `searchable-dropdown.css`, plus the
+styles for `checkboxes.css`, `radios.css`, `inputs.css`, `searchable-dropdown.css` and `tables.css`, plus the
 `.toolbar-button` styling. The checkbox / radio / input rules are intentionally **scoped** to the
 UI wrappers `.modal__container` (popups), `.standard-admin-page` (admin pages) and `.form-wrapper`
 (document-properties side panels) so they never restyle Polarion's own controls — put the matching
@@ -535,6 +535,25 @@ Bootstrap classes) and cannot link `checkboxes.css` / `searchable-dropdown.css`.
    from the same module — `initSearchableDropdowns(ctx, singleIds, multiSelectId, options?)` — which
    wraps each via `createSearchableSelect` (so they share the same defaults) and forwards `options`
    (e.g. `{ allowEmpty: true }`) to every one.
+
+   For an **editable / free-text** field (type a value or pick a filtered suggestion), the same module
+   exports `createEditableSelect(inputEl, { inputFilter, items, placeholder })` — it wraps a text
+   `<input>` as an editable dropdown (`editable: true`). It is the shared core of the React
+   `SearchableInput` and the vanilla excel `ColumnInput`.
+
+3. **Loading spinner**: reference `var(--sbb-spinner)` (the Polarion progress wheel) or add the
+   `.sbb-spinner` class instead of hardcoding `/polarion/ria/images/progressWheel48.svg`, so the asset
+   is swappable in one place (both are defined in `control-tokens.css`).
+
+4. **Data tables**: give a results/list `<table>` the `sbb-table` class (`css/tables.css`, also
+   `@import`ed by `common.css`) for the shared Polarion look — outer frame, tinted header, row
+   separators and a hover tint, all driven by the `--sbb-table-*` tokens. Add `sbb-table--grid` for
+   full spreadsheet cell borders or `sbb-table--compact` for denser rows; the extension keeps only its
+   own column widths and row-state highlights. React SPAs link it at runtime like the other sheets:
+
+   ```html
+   <link rel="stylesheet" href="/polarion/<ext>-app/ui/generic/css/tables.css" />
+   ```
 
 Because both the tokens and the dropdown module are consumed **at runtime**, `generic` stays the
 single source of truth — there is no JS package to publish and no build-time coupling. Always ship

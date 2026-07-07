@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { JSDOM } from 'jsdom';
-import { createSearchableSelect, initSearchableDropdowns } from '../../../main/resources/js/modules/searchableSelect.js';
+import { createSearchableSelect, createEditableSelect, initSearchableDropdowns } from '../../../main/resources/js/modules/searchableSelect.js';
 
 describe('createSearchableSelect', function () {
   let dom;
@@ -61,6 +61,39 @@ describe('createSearchableSelect', function () {
     expect(s2.nextElementSibling.classList.contains('searchable-dropdown')).to.be.true;
     expect(m.nextElementSibling.classList.contains('searchable-dropdown')).to.be.true;
     expect(m.nextElementSibling.querySelector('.sd-trigger-multi')).to.exist; // rendered as multi-select
+  });
+
+  it('createEditableSelect wraps an <input> as an editable free-text dropdown', function () {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = '';
+    document.body.appendChild(input);
+    const sd = createEditableSelect(input, {
+      inputFilter: (v) => v.replace(/\D/g, ''),
+      items: [{ value: '1', label: 'One' }]
+    });
+    expect(sd.editable).to.be.true;
+    expect(sd.originalElement).to.equal(input);
+    expect(typeof sd.inputFilter).to.equal('function');
+    sd.destroy();
+  });
+
+  it('createEditableSelect mirrors the wrapped input disabled state onto the editable trigger', function () {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.disabled = true;
+    document.body.appendChild(input);
+    const sd = createEditableSelect(input, { items: [{ value: '1', label: 'One' }] });
+    // The editable trigger is a real text input, so a disabled wrapped <input> must disable it too
+    // (otherwise the hidden input is disabled but the visible trigger stays typeable).
+    expect(sd.trigger.disabled).to.be.true;
+    expect(sd.container.classList.contains('disabled')).to.be.true;
+    // Re-enabling the wrapped input propagates through _syncDisabled (the observer's handler).
+    input.disabled = false;
+    sd._syncDisabled();
+    expect(sd.trigger.disabled).to.be.false;
+    expect(sd.container.classList.contains('disabled')).to.be.false;
+    sd.destroy();
   });
 
   it('initSearchableDropdowns inherits the shared defaults and passes options through', function () {
