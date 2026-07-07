@@ -1,0 +1,64 @@
+/*
+ * Shared data-table look for extension list/results grids.
+ *
+ * Opt in by adding the `sbb-table` class to a `<table>`; the extension keeps owning its
+ * layout-specific rules (column widths, row-state highlights, nested rows). Colors come from
+ * control-tokens.css so the header tint and borders are tuned in one place.
+ *
+ * Base           — horizontal row separators + outer frame (the modern Polarion 2606 list look).
+ * `sbb-table--grid`    — full cell borders (spreadsheet style), for dense multi-column grids.
+ * `sbb-table--compact` — smaller font + tighter padding, for high-row-count tables.
+ */
+
+.sbb-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: #fff;
+    border: 1px solid var(--sbb-table-border, #dddddd);
+    border-radius: 3px;
+}
+
+.sbb-table th {
+    padding: 7px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--sbb-table-header-text, #495057);
+    background: var(--sbb-table-header-bg, #e8e8e3);
+    border-bottom: 1px solid var(--sbb-table-border, #dddddd);
+}
+
+.sbb-table td {
+    padding: 7px 10px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--sbb-table-border, #dddddd);
+}
+
+.sbb-table tbody tr:last-child > td {
+    border-bottom: none;
+}
+
+.sbb-table tbody tr:hover > td {
+    background: var(--sbb-table-row-hover, #ebf7f8);
+}
+
+/* Spreadsheet-style full cell borders. */
+.sbb-table--grid,
+.sbb-table--grid th,
+.sbb-table--grid td {
+    border: 1px solid var(--sbb-table-border, #dddddd);
+}
+
+.sbb-table--grid {
+    border-radius: 0;
+}
+
+/* Denser variant for long lists. */
+.sbb-table--compact {
+    font-size: 12px;
+}
+
+.sbb-table--compact th,
+.sbb-table--compact td {
+    padding: 6px 8px;
+}

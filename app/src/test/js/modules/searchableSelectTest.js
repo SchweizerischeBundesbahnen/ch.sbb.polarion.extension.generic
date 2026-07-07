@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { JSDOM } from 'jsdom';
-import { createSearchableSelect, initSearchableDropdowns } from '../../../main/resources/js/modules/searchableSelect.js';
+import { createSearchableSelect, createEditableSelect, initSearchableDropdowns } from '../../../main/resources/js/modules/searchableSelect.js';
 
 describe('createSearchableSelect', function () {
   let dom;
@@ -61,6 +61,21 @@ describe('createSearchableSelect', function () {
     expect(s2.nextElementSibling.classList.contains('searchable-dropdown')).to.be.true;
     expect(m.nextElementSibling.classList.contains('searchable-dropdown')).to.be.true;
     expect(m.nextElementSibling.querySelector('.sd-trigger-multi')).to.exist; // rendered as multi-select
+  });
+
+  it('createEditableSelect wraps an <input> as an editable free-text dropdown', function () {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = '';
+    document.body.appendChild(input);
+    const sd = createEditableSelect(input, {
+      inputFilter: (v) => v.replace(/\D/g, ''),
+      items: [{ value: '1', label: 'One' }]
+    });
+    expect(sd.editable).to.be.true;
+    expect(sd.originalElement).to.equal(input);
+    expect(typeof sd.inputFilter).to.equal('function');
+    sd.destroy();
   });
 
   it('initSearchableDropdowns inherits the shared defaults and passes options through', function () {

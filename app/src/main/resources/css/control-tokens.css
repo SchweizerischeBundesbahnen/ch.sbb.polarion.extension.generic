@@ -55,4 +55,23 @@
     --sbb-chip-bg: var(--sbb-hover-tint, #ebf7f8);
     --sbb-chip-border: #b6dfe3;
     --sbb-chip-remove: #5c8a90;
+
+    /* Loading spinner — the Polarion 2606 progress wheel, so extensions stop hardcoding the asset
+       path and can swap it in one place. Use via `background: var(--sbb-spinner)` or the .sbb-spinner
+       class below. */
+    --sbb-spinner: url(/polarion/ria/images/progressWheel48.svg);
+
+    /* Data tables — the shared list/results table look (see tables.css), so extensions stop
+       re-deriving the same header tint / border color for every results grid. */
+    --sbb-table-header-bg: #e8e8e3;
+    --sbb-table-header-text: #495057;
+    --sbb-table-border: #dddddd;
+    --sbb-table-row-hover: var(--sbb-hover-tint, #ebf7f8);
+}
+
+/* Spinner utility: a CSS-background progress wheel (prefer this over an <img> so the markup stays
+   semantic and the asset is swappable in one place). Size it via width/height on the element. */
+.sbb-spinner {
+    display: inline-block;
+    background: var(--sbb-spinner, url(/polarion/ria/images/progressWheel48.svg)) center / contain no-repeat;
 }
