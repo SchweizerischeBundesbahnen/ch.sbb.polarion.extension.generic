@@ -243,15 +243,22 @@ export default class SearchableDropdown {
         }
     }
 
-    // Mirror the wrapped <select>'s disabled state onto the container (dimmed + non-interactive via
+    // Mirror the wrapped element's disabled state onto the container (dimmed + non-interactive via
     // the .disabled CSS class). Driven by the visibility MutationObserver when the attribute toggles.
+    // The select trigger is readonly (click-to-open), so the .disabled class is enough; the editable
+    // trigger is a real text <input>, so it must also be natively disabled or the user could still
+    // type into it while the wrapped <input disabled> is hidden.
     _syncDisabled() {
-        if (!this.isSelect) {
+        // Build-mode dropdowns have no wrapped element to mirror from.
+        if (!this.originalElement) {
             return;
         }
         const disabled = this.originalElement.disabled;
         this.container.classList.toggle('disabled', disabled);
         this.trigger.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+        if (this.editable) {
+            this.trigger.disabled = disabled;
+        }
         if (disabled && this.isOpen) {
             this._close();
         }

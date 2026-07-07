@@ -78,6 +78,24 @@ describe('createSearchableSelect', function () {
     sd.destroy();
   });
 
+  it('createEditableSelect mirrors the wrapped input disabled state onto the editable trigger', function () {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.disabled = true;
+    document.body.appendChild(input);
+    const sd = createEditableSelect(input, { items: [{ value: '1', label: 'One' }] });
+    // The editable trigger is a real text input, so a disabled wrapped <input> must disable it too
+    // (otherwise the hidden input is disabled but the visible trigger stays typeable).
+    expect(sd.trigger.disabled).to.be.true;
+    expect(sd.container.classList.contains('disabled')).to.be.true;
+    // Re-enabling the wrapped input propagates through _syncDisabled (the observer's handler).
+    input.disabled = false;
+    sd._syncDisabled();
+    expect(sd.trigger.disabled).to.be.false;
+    expect(sd.container.classList.contains('disabled')).to.be.false;
+    sd.destroy();
+  });
+
   it('initSearchableDropdowns inherits the shared defaults and passes options through', function () {
     const s = selectWith(['a', 'b']); s.id = 's';
     const ctx = { getElementById: (id) => document.getElementById(id) };
