@@ -31,10 +31,68 @@
     background-image: var(--sbb-checkbox-checked, url(/polarion/ria/images/checkbox/checked.png));
 }
 
+/* Polarion ships no indeterminate checkbox image (the old grayed.png is a 404 in 2606); the
+   --sbb-checkbox-indeterminate token draws a dash over the plain unchecked box. The inline fallback
+   keeps it working in contexts that load checkboxes.css without control-tokens.css. */
 .modal__container input[type="checkbox"]:indeterminate,
 .standard-admin-page input[type="checkbox"]:indeterminate,
 .form-wrapper input[type="checkbox"]:indeterminate {
-    background-image: var(--sbb-checkbox-indeterminate, url(/polarion/ria/images/checkbox/grayed.png));
+    background: var(--sbb-checkbox-indeterminate,
+        linear-gradient(var(--sbb-checkbox-mark, #595959), var(--sbb-checkbox-mark, #595959)) no-repeat center / 9px 2px,
+        var(--sbb-checkbox-unchecked, url(/polarion/ria/images/checkbox/unchecked.png)) no-repeat center / var(--sbb-toggle-size, 15px) var(--sbb-toggle-size, 15px));
+}
+
+/* Disabled: render with Polarion's greyed read-only images so the control visibly reads as
+   non-selectable (a plain unchecked box otherwise looks identical to an enabled one). */
+.modal__container input[type="checkbox"]:disabled,
+.standard-admin-page input[type="checkbox"]:disabled,
+.form-wrapper input[type="checkbox"]:disabled {
+    cursor: default;
+    background-image: var(--sbb-checkbox-unchecked-readonly, url(/polarion/ria/images/checkbox/unchecked_readonly.png));
+}
+
+.modal__container input[type="checkbox"]:disabled:checked,
+.standard-admin-page input[type="checkbox"]:disabled:checked,
+.form-wrapper input[type="checkbox"]:disabled:checked {
+    background-image: var(--sbb-checkbox-checked-readonly, url(/polarion/ria/images/checkbox/checked_readonly.png));
+}
+
+.modal__container input[type="checkbox"]:disabled:indeterminate,
+.standard-admin-page input[type="checkbox"]:disabled:indeterminate,
+.form-wrapper input[type="checkbox"]:disabled:indeterminate {
+    background-image:
+        linear-gradient(var(--sbb-checkbox-mark-disabled, #a6a6a6), var(--sbb-checkbox-mark-disabled, #a6a6a6)),
+        var(--sbb-checkbox-unchecked-readonly, url(/polarion/ria/images/checkbox/unchecked_readonly.png));
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 9px 2px, var(--sbb-toggle-size, 15px) var(--sbb-toggle-size, 15px);
+}
+
+/* Keyboard focus: Polarion's focus-ring images via :focus-visible, so the ring shows on keyboard
+   navigation but not on a plain mouse click. The image itself is the focus indicator, so the
+   default outline is suppressed. */
+.modal__container input[type="checkbox"]:focus-visible,
+.standard-admin-page input[type="checkbox"]:focus-visible,
+.form-wrapper input[type="checkbox"]:focus-visible {
+    outline: none;
+    background-image: var(--sbb-checkbox-unchecked-focus, url(/polarion/ria/images/checkbox/unchecked_focus.png));
+}
+
+.modal__container input[type="checkbox"]:focus-visible:checked,
+.standard-admin-page input[type="checkbox"]:focus-visible:checked,
+.form-wrapper input[type="checkbox"]:focus-visible:checked {
+    background-image: var(--sbb-checkbox-checked-focus, url(/polarion/ria/images/checkbox/checked_focus.png));
+}
+
+/* Indeterminate + keyboard focus: dash over the focused box. Needs its own rule because :focus-visible
+   alone only swaps background-image and would leave the indeterminate rule's background-size behind,
+   squashing the focus image. */
+.modal__container input[type="checkbox"]:focus-visible:indeterminate,
+.standard-admin-page input[type="checkbox"]:focus-visible:indeterminate,
+.form-wrapper input[type="checkbox"]:focus-visible:indeterminate {
+    background:
+        linear-gradient(var(--sbb-checkbox-mark, #595959), var(--sbb-checkbox-mark, #595959)) no-repeat center / 9px 2px,
+        var(--sbb-checkbox-unchecked-focus, url(/polarion/ria/images/checkbox/unchecked_focus.png)) no-repeat center / var(--sbb-toggle-size, 15px) var(--sbb-toggle-size, 15px);
 }
 
 /* Keep the checkbox vertically centered with its label text. */

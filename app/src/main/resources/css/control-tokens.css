@@ -39,7 +39,17 @@
     --sbb-toggle-size: 15px;
     --sbb-checkbox-unchecked: url(/polarion/ria/images/checkbox/unchecked.png);
     --sbb-checkbox-checked: url(/polarion/ria/images/checkbox/checked.png);
-    --sbb-checkbox-indeterminate: url(/polarion/ria/images/checkbox/grayed.png);
+    --sbb-checkbox-unchecked-readonly: url(/polarion/ria/images/checkbox/unchecked_readonly.png);
+    --sbb-checkbox-checked-readonly: url(/polarion/ria/images/checkbox/checked_readonly.png);
+    --sbb-checkbox-unchecked-focus: url(/polarion/ria/images/checkbox/unchecked_focus.png);
+    --sbb-checkbox-checked-focus: url(/polarion/ria/images/checkbox/checked_focus.png);
+    --sbb-checkbox-mark: #595959;
+    --sbb-checkbox-mark-disabled: #a6a6a6;
+    /* Polarion has no indeterminate image (grayed.png is a 404 in 2606), so it is the plain unchecked
+       box with a --sbb-checkbox-mark dash drawn over it. Override this token to change the look. */
+    --sbb-checkbox-indeterminate:
+        linear-gradient(var(--sbb-checkbox-mark), var(--sbb-checkbox-mark)) no-repeat center / 9px 2px,
+        var(--sbb-checkbox-unchecked) no-repeat center / var(--sbb-toggle-size) var(--sbb-toggle-size);
     --sbb-radio-border: #c9c9c9;
     --sbb-radio-dot: #595959;
 
