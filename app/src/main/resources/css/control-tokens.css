@@ -43,13 +43,14 @@
     --sbb-checkbox-checked-readonly: url(/polarion/ria/images/checkbox/checked_readonly.png);
     --sbb-checkbox-unchecked-focus: url(/polarion/ria/images/checkbox/unchecked_focus.png);
     --sbb-checkbox-checked-focus: url(/polarion/ria/images/checkbox/checked_focus.png);
-    --sbb-checkbox-mark: #595959;
-    --sbb-checkbox-mark-disabled: #a6a6a6;
-    /* Polarion has no indeterminate image (grayed.png is a 404 in 2606), so it is the plain unchecked
-       box with a --sbb-checkbox-mark dash drawn over it. Override this token to change the look. */
-    --sbb-checkbox-indeterminate:
-        linear-gradient(var(--sbb-checkbox-mark), var(--sbb-checkbox-mark)) no-repeat center / 9px 2px,
-        var(--sbb-checkbox-unchecked) no-repeat center / var(--sbb-toggle-size) var(--sbb-toggle-size);
+    /* Polarion has no indeterminate checkbox image, so generic ships the
+       unchecked / readonly / focus boxes with a dash baked in (images/checkbox-indeterminate*.png,
+       derived pixel-for-pixel from Polarion's own images). Single images (valid via background and
+       background-image), with URLs relative to this stylesheet so they resolve under each consumer's
+       own /ui/generic/ mount. */
+    --sbb-checkbox-indeterminate: url(../images/checkbox-indeterminate.png);
+    --sbb-checkbox-indeterminate-readonly: url(../images/checkbox-indeterminate-readonly.png);
+    --sbb-checkbox-indeterminate-focus: url(../images/checkbox-indeterminate-focus.png);
     --sbb-radio-border: #c9c9c9;
     --sbb-radio-dot: #595959;
 
