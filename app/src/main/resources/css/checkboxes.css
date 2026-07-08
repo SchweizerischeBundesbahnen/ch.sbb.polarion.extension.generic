@@ -31,10 +31,59 @@
     background-image: var(--sbb-checkbox-checked, url(/polarion/ria/images/checkbox/checked.png));
 }
 
+/* Polarion ships no indeterminate checkbox image; generic
+   provides one (the unchecked box with a dash baked in) as --sbb-checkbox-indeterminate. The fallback
+   URL is relative to this stylesheet so it resolves under the consumer's own /ui/generic/ mount even
+   when control-tokens.css is not loaded. */
 .modal__container input[type="checkbox"]:indeterminate,
 .standard-admin-page input[type="checkbox"]:indeterminate,
 .form-wrapper input[type="checkbox"]:indeterminate {
-    background-image: var(--sbb-checkbox-indeterminate, url(/polarion/ria/images/checkbox/grayed.png));
+    background-image: var(--sbb-checkbox-indeterminate, url(../images/checkbox-indeterminate.png));
+}
+
+/* Disabled: render with Polarion's greyed read-only images so the control visibly reads as
+   non-selectable (a plain unchecked box otherwise looks identical to an enabled one). */
+.modal__container input[type="checkbox"]:disabled,
+.standard-admin-page input[type="checkbox"]:disabled,
+.form-wrapper input[type="checkbox"]:disabled {
+    cursor: default;
+    background-image: var(--sbb-checkbox-unchecked-readonly, url(/polarion/ria/images/checkbox/unchecked_readonly.png));
+}
+
+.modal__container input[type="checkbox"]:disabled:checked,
+.standard-admin-page input[type="checkbox"]:disabled:checked,
+.form-wrapper input[type="checkbox"]:disabled:checked {
+    background-image: var(--sbb-checkbox-checked-readonly, url(/polarion/ria/images/checkbox/checked_readonly.png));
+}
+
+.modal__container input[type="checkbox"]:disabled:indeterminate,
+.standard-admin-page input[type="checkbox"]:disabled:indeterminate,
+.form-wrapper input[type="checkbox"]:disabled:indeterminate {
+    background-image: var(--sbb-checkbox-indeterminate-readonly, url(../images/checkbox-indeterminate-readonly.png));
+}
+
+/* Keyboard focus: Polarion's focus-ring images via :focus-visible, so the ring shows on keyboard
+   navigation but not on a plain mouse click. The image itself is the focus indicator, so the
+   default outline is suppressed. */
+.modal__container input[type="checkbox"]:focus-visible,
+.standard-admin-page input[type="checkbox"]:focus-visible,
+.form-wrapper input[type="checkbox"]:focus-visible {
+    outline: none;
+    background-image: var(--sbb-checkbox-unchecked-focus, url(/polarion/ria/images/checkbox/unchecked_focus.png));
+}
+
+.modal__container input[type="checkbox"]:focus-visible:checked,
+.standard-admin-page input[type="checkbox"]:focus-visible:checked,
+.form-wrapper input[type="checkbox"]:focus-visible:checked {
+    background-image: var(--sbb-checkbox-checked-focus, url(/polarion/ria/images/checkbox/checked_focus.png));
+}
+
+/* Indeterminate + keyboard focus: the focused box with a dash (own rule so :focus-visible does not
+   override it with the plain focus image). */
+.modal__container input[type="checkbox"]:focus-visible:indeterminate,
+.standard-admin-page input[type="checkbox"]:focus-visible:indeterminate,
+.form-wrapper input[type="checkbox"]:focus-visible:indeterminate {
+    background-image: var(--sbb-checkbox-indeterminate-focus, url(../images/checkbox-indeterminate-focus.png));
 }
 
 /* Keep the checkbox vertically centered with its label text. */
