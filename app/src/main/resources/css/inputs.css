@@ -88,10 +88,12 @@
  * js/modules/NumericSpinner.js (vanilla) or a consumer's React component; both use these classes.
  * Self-contained (base input look + 2606 focus) so it works regardless of the surrounding scope.
  */
+/* Block so the wrapped input keeps the width it had before (e.g. a width:100% field stays full-width);
+   the spinner is overlaid absolutely, so it never changes the field's box. A consumer that wants a
+   narrow number field sets a width on .sbb-number itself. */
 .sbb-number {
     position: relative;
-    display: inline-flex;
-    align-items: stretch;
+    display: block;
 }
 .sbb-number > input[type="number"] {
     width: 100%;
