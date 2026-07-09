@@ -242,7 +242,7 @@ code-input {
 /* Alert triangle icon via ::before, so JS-populated alerts (exporter popups set textContent) get it
    too. Floated left → the message text wraps beside it. Warning may be standalone (interceptor);
    error only appears inside .notifications (exporter popups / the generic notifications block).
-   Outlined SVGs; literal fallbacks so they render where control-tokens.css is not linked. */
+   The --sbb-*-icon tokens come from control-tokens.css, which common.css @imports at its top. */
 .alert-warning::before,
 .notifications .alert-error::before {
     content: "";
