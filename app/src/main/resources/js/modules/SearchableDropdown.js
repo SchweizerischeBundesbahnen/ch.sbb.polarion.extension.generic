@@ -334,10 +334,8 @@ export default class SearchableDropdown {
             // popup's max-content width; flex:1 then stretches it to the list width.
             this.searchInput.size = 1;
 
-            this.eraseIcon = document.createElement('img');
+            this.eraseIcon = document.createElement('span');
             this.eraseIcon.className = 'erase';
-            this.eraseIcon.src = '/polarion/ria/images/search_combo_erase.png';
-            this.eraseIcon.alt = '';
             this.eraseIcon.addEventListener('mousedown', e => {
                 e.preventDefault();
                 this.searchInput.value = '';
