@@ -39,6 +39,7 @@ describe('ConfigurationsPane', function () {
             callAsync: sinon.stub(),
             setCookie: sinon.spy(),
             getCookie: sinon.stub().returns(null),
+            disableIf: sinon.spy(),
             extension: 'testExtension',
             setting: 'testSetting',
             scope: 'testScope',
