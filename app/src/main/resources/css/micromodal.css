@@ -172,39 +172,39 @@
    exactly. Fallbacks are literal because micromodal.css is loaded standalone in popups. */
 .modal__container.standard-dialog .modal__btn {
   background-color: #fff;
-  color: var(--sbb-btn-accent, #007993);
-  border: 1px solid var(--sbb-btn-accent, #007993);
-  border-radius: var(--sbb-btn-radius, 2px);
+  color: var(--sbb-btn-accent);
+  border: 1px solid var(--sbb-btn-accent);
+  border-radius: var(--sbb-btn-radius);
   font-weight: 700;
   font-size: 14px;
   min-width: 80px;
   padding: 7px 16px 10px;
-  box-shadow: var(--sbb-btn-dlg-shadow, 0 1px 2px rgba(0, 0, 0, 0.3));
+  box-shadow: var(--sbb-btn-dlg-shadow);
 }
 
 .modal__container.standard-dialog .modal__btn:hover,
 .modal__container.standard-dialog .modal__btn:focus {
-  background-color: var(--sbb-btn-accent-secondary-hover, #d1fff2);
-  box-shadow: var(--sbb-btn-dlg-shadow-hover, 0 3px 6px rgba(0, 0, 0, 0.3));
+  background-color: var(--sbb-btn-accent-secondary-hover);
+  box-shadow: var(--sbb-btn-dlg-shadow-hover);
   transform: none;
 }
 
 .modal__container.standard-dialog .modal__btn:active {
-  background-color: var(--sbb-btn-accent-secondary-active, #b8f2e2);
+  background-color: var(--sbb-btn-accent-secondary-active);
 }
 
 .modal__container.standard-dialog .modal__btn-primary {
-  background-color: var(--sbb-btn-accent, #007993);
+  background-color: var(--sbb-btn-accent);
   color: #fff;
 }
 
 .modal__container.standard-dialog .modal__btn-primary:hover,
 .modal__container.standard-dialog .modal__btn-primary:focus {
-  background-color: var(--sbb-btn-accent-primary-hover, #196269);
+  background-color: var(--sbb-btn-accent-primary-hover);
 }
 
 .modal__container.standard-dialog .modal__btn-primary:active {
-  background-color: var(--sbb-btn-accent-primary-active, #16565c);
+  background-color: var(--sbb-btn-accent-primary-active);
 }
 
 

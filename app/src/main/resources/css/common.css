@@ -231,29 +231,27 @@ code-input {
     width: calc(100% - 32px);
 }
 
-.notifications .alert > span {
-    vertical-align: super;
-    padding-left: 5px;
-}
-
-/* Alert icon as a CSS background (crisp inline SVG triangle) instead of a raster <img>. The type
-   (warning/error) is taken from the parent .alert-* class. Not scoped to .notifications so a
-   standalone .alert-warning/.alert-error (e.g. an admin page's own alert) gets it too. Literal
-   fallbacks so it still shows where control-tokens.css is not linked. */
-.alert-icon {
+/* Alert triangle icon via ::before, so JS-populated alerts (exporter popups set textContent) get it
+   too. Floated left → the message text wraps beside it. Warning may be standalone (interceptor);
+   error only appears inside .notifications (exporter popups / the generic notifications block).
+   Outlined SVGs; literal fallbacks so they render where control-tokens.css is not linked. */
+.alert-warning::before,
+.notifications .alert-error::before {
+    content: "";
     display: inline-block;
-    width: 16px;
-    height: 16px;
     vertical-align: middle;
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
     background: center / contain no-repeat;
 }
 
-.alert-warning .alert-icon {
-    background-image: var(--sbb-warning-icon, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjZjVhNjIzIiBkPSJNNy4xNCAyLjUgMS4zIDEyLjU1Yy0uNDIuNzIuMSAxLjYzLjk0IDEuNjNoMTEuNTJjLjg0IDAgMS4zNi0uOS45NC0xLjYzTDguODYgMi41YTEgMSAwIDAgMC0xLjcyIDB6Ii8+PHJlY3QgeD0iNy4yNSIgeT0iNS45IiB3aWR0aD0iMS41IiBoZWlnaHQ9IjQuMiIgcng9Ii43NSIgZmlsbD0iIzRhMzYwMCIvPjxjaXJjbGUgY3g9IjgiIGN5PSIxMS44NSIgcj0iLjkiIGZpbGw9IiM0YTM2MDAiLz48L3N2Zz4="));
+.alert-warning::before {
+    background-image: var(--sbb-warning-icon);
 }
 
-.alert-error .alert-icon {
-    background-image: var(--sbb-error-icon, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjZDkzYTJiIiBkPSJNNy4xNCAyLjUgMS4zIDEyLjU1Yy0uNDIuNzIuMSAxLjYzLjk0IDEuNjNoMTEuNTJjLjg0IDAgMS4zNi0uOS45NC0xLjYzTDguODYgMi41YTEgMSAwIDAgMC0xLjcyIDB6Ii8+PHJlY3QgeD0iNy4yNSIgeT0iNS45IiB3aWR0aD0iMS41IiBoZWlnaHQ9IjQuMiIgcng9Ii43NSIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjgiIGN5PSIxMS44NSIgcj0iLjkiIGZpbGw9IiNmZmYiLz48L3N2Zz4="));
+.notifications .alert-error::before {
+    background-image: var(--sbb-error-icon);
 }
 
 .notifications .alert-error {
@@ -382,7 +380,7 @@ pre[class*=language-] {
     display: inline-block;
     width: 15px;
     height: 15px;
-    background: var(--sbb-revision-revert-icon, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjNWE5ZDU0IiBkPSJNOCAzLjRjMi41IDAgNC42IDIgNC42IDQuNlMxMC41IDEyLjYgOCAxMi42Yy0xLjkgMC0zLjYtMS4yLTQuMy0yLjlhLjg1Ljg1IDAgMCAxIDEuNi0uNmMuNDIgMS4xIDEuNSAxLjggMi43IDEuOCAxLjYgMCAyLjktMS4zIDIuOS0yLjlTOS42IDUuMSA4IDUuMXYxLjZMNC42IDQuMyA4IDEuOHoiLz48L3N2Zz4=")) center / contain no-repeat;
+    background: var(--sbb-revision-revert-icon) center / contain no-repeat;
 }
 
 .revision-number {

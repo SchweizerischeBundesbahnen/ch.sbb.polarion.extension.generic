@@ -27,16 +27,16 @@
 .standard-admin-page input:not([type]):not(.sd-trigger):not(.search-box),
 .form-wrapper input:not([type]):not(.sd-trigger):not(.search-box) {
     box-sizing: border-box;
-    height: var(--sbb-control-height, 23px);
-    border: 1px solid var(--sbb-control-border, #c9c9c9);
+    height: var(--sbb-control-height);
+    border: 1px solid var(--sbb-control-border);
     /* Square corners to match Polarion's own text inputs (its inputs are not rounded). */
-    border-radius: var(--sbb-control-radius, 0);
+    border-radius: var(--sbb-control-radius);
     padding: 2px 6px;
-    background-color: var(--sbb-control-bg, #fff);
-    font-family: var(--sbb-control-font-family, "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif);
-    font-size: var(--sbb-control-font-size, 13px);
-    font-weight: var(--sbb-control-font-weight, 600);
-    color: var(--sbb-control-text, #1a1a1a);
+    background-color: var(--sbb-control-bg);
+    font-family: var(--sbb-control-font-family);
+    font-size: var(--sbb-control-font-size);
+    font-weight: var(--sbb-control-font-weight);
+    color: var(--sbb-control-text);
     /* Soft elevation shadow appears on hover/focus (added below). */
     transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
@@ -58,7 +58,7 @@
 .modal__container input:not([type]):not(.sd-trigger):not(.search-box):not(:disabled):hover,
 .standard-admin-page input:not([type]):not(.sd-trigger):not(.search-box):not(:disabled):hover,
 .form-wrapper input:not([type]):not(.sd-trigger):not(.search-box):not(:disabled):hover {
-    box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
+    box-shadow: var(--sbb-control-shadow-hover);
 }
 
 .modal__container input[type="text"]:not(.sd-trigger):not(.search-box):focus,
@@ -76,9 +76,9 @@
 .modal__container input:not([type]):not(.sd-trigger):not(.search-box):focus,
 .standard-admin-page input:not([type]):not(.sd-trigger):not(.search-box):focus,
 .form-wrapper input:not([type]):not(.sd-trigger):not(.search-box):focus {
-    border-color: var(--sbb-control-border-focus, #1491eb);
+    border-color: var(--sbb-control-border-focus);
     outline: none;
-    box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
+    box-shadow: var(--sbb-control-shadow-hover);
 }
 
 /*
@@ -98,11 +98,11 @@
 .sbb-number > input[type="number"] {
     width: 100%;
     box-sizing: border-box;
-    height: var(--sbb-control-height, 23px);
+    height: var(--sbb-control-height);
     padding: 2px 22px 2px 8px;
-    border: 1px solid var(--sbb-control-border, #c9c9c9);
-    border-radius: var(--sbb-control-radius, 2px);
-    font: var(--sbb-control-font-weight, 600) var(--sbb-control-font-size, 13px) 'Segoe UI', 'Selawik', 'Open Sans', Arial, sans-serif;
+    border: 1px solid var(--sbb-control-border);
+    border-radius: var(--sbb-control-radius);
+    font: var(--sbb-control-font-weight) var(--sbb-control-font-size) 'Segoe UI', 'Selawik', 'Open Sans', Arial, sans-serif;
     background: #fff;
     transition: box-shadow .15s ease, border-color .15s ease;
     -moz-appearance: textfield;
@@ -114,12 +114,12 @@
     margin: 0;
 }
 .sbb-number > input[type="number"]:not(:disabled):hover {
-    box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
+    box-shadow: var(--sbb-control-shadow-hover);
 }
 .sbb-number > input[type="number"]:focus {
     outline: none;
-    border-color: var(--sbb-control-border-focus, #1491eb);
-    box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
+    border-color: var(--sbb-control-border-focus);
+    box-shadow: var(--sbb-control-shadow-hover);
 }
 .sbb-number .sbb-number-spin {
     position: absolute;
@@ -150,7 +150,7 @@
     display: block;
 }
 .sbb-number .sbb-number-spin button:hover {
-    background: var(--sbb-hover-tint, #ebf7f8);
+    background: var(--sbb-hover-tint);
     color: #1a1a1a;
 }
 .sbb-number .sbb-number-spin button:active {

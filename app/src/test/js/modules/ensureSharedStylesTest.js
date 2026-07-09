@@ -6,6 +6,7 @@ describe('ensureSharedStyles', function () {
     let dom;
 
     const IDS = [
+        'generic-control-tokens',
         'generic-checkbox-styles',
         'generic-radios-styles',
         'generic-inputs-styles',

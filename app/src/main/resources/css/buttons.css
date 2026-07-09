@@ -27,15 +27,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: var(--sbb-btn-height, 28px);
+    height: var(--sbb-btn-height);
     min-width: 28px;
     margin: 0;
     padding: 0 6px;
-    border: 1px solid var(--sbb-btn-border, #dedede);
-    border-radius: var(--sbb-btn-radius, 2px);
-    background: var(--sbb-btn-control-bg, #f5f5f5);
-    color: var(--sbb-btn-control-text, #595959);
-    font-family: var(--sbb-control-font-family, "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif);
+    border: 1px solid var(--sbb-btn-border);
+    border-radius: var(--sbb-btn-radius);
+    background: var(--sbb-btn-control-bg);
+    color: var(--sbb-btn-control-text);
+    font-family: var(--sbb-control-font-family);
     font-size: 12px;
     font-weight: bold;
     line-height: 16px;
@@ -47,10 +47,14 @@
     transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
-/* Preserve the admin toolbar's inter-button spacing (the old .toolbar-button had margin-right: 5px). */
+/* Preserve the admin toolbar's inter-button spacing (the old .toolbar-button had margin-right: 5px).
+   line-height matches the 28px control height (minus borders) so the label + icon stay vertically
+   centred even when the button is forced to display:inline-block (the toggled config buttons carry
+   an inline style="display:inline-block", which would otherwise defeat the flex centring). */
 .sbb-btn--control,
 .toolbar-button {
     margin-right: 5px;
+    line-height: 26px;
 }
 
 /* Action = transparent, CONTENT-SIZED (no fixed height), left-aligned — .polarion-ToolbarButton. */
@@ -69,11 +73,11 @@
    be deleted with no visual change (matches the original content-sized transparent button). */
 .buttons-wrapper button,
 .editor-buttons button {
-    border: 1px solid var(--sbb-btn-border, #dedede);
-    border-radius: var(--sbb-btn-radius, 2px);
+    border: 1px solid var(--sbb-btn-border);
+    border-radius: var(--sbb-btn-radius);
     background: transparent;
-    color: var(--sbb-btn-control-text, #595959);
-    font-family: var(--sbb-control-font-family, "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif);
+    color: var(--sbb-btn-control-text);
+    font-family: var(--sbb-control-font-family);
     font-size: 12px;
     font-weight: bold;
     padding: 4px 8px;
@@ -89,9 +93,9 @@
 .toolbar-button:not([disabled]):not(:disabled):hover,
 .buttons-wrapper button:not([disabled]):not(:disabled):hover,
 .editor-buttons button:not([disabled]):not(:disabled):hover {
-    background: var(--sbb-btn-hover-bg, #f7f7f7);
-    border-color: var(--sbb-btn-hover-border, #cecece);
-    box-shadow: var(--sbb-btn-hover-shadow, 0 0 2px #e0dede);
+    background: var(--sbb-btn-hover-bg);
+    border-color: var(--sbb-btn-hover-border);
+    box-shadow: var(--sbb-btn-hover-shadow);
 }
 
 /* Control / action disabled — fade over the default look; hover is a no-op (guarded above).
@@ -107,7 +111,7 @@
 .buttons-wrapper button[disabled],
 .editor-buttons button:disabled,
 .editor-buttons button[disabled] {
-    opacity: var(--sbb-btn-disabled-opacity, 0.5);
+    opacity: var(--sbb-btn-disabled-opacity);
     box-shadow: none;
     cursor: default;
 }
@@ -117,7 +121,7 @@
 .buttons-wrapper button:focus-visible,
 .editor-buttons button:focus-visible {
     outline: none;
-    box-shadow: var(--sbb-btn-focus-ring, 0 0 0 2px rgba(0, 121, 147, 0.35));
+    box-shadow: var(--sbb-btn-focus-ring);
 }
 
 /* Optional inline-SVG icon helper (new markup). Legacy <img class="button-image"> keeps its own rule. */
@@ -142,41 +146,41 @@
     min-width: 80px;
     margin: 0;
     padding: 7px 16px 10px;
-    border: 1px solid var(--sbb-btn-accent, #007993);
-    border-radius: var(--sbb-btn-radius, 2px);
-    font-family: var(--sbb-control-font-family, "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif);
+    border: 1px solid var(--sbb-btn-accent);
+    border-radius: var(--sbb-btn-radius);
+    font-family: var(--sbb-control-font-family);
     font-size: 14px;
     font-weight: bold;
     line-height: 1.15;
     text-shadow: none;
     white-space: nowrap;
     cursor: pointer;
-    box-shadow: var(--sbb-btn-dlg-shadow, 0 1px 2px rgba(0, 0, 0, 0.3));
+    box-shadow: var(--sbb-btn-dlg-shadow);
     transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 
 .sbb-btn--secondary {
     background: #fff;
-    color: var(--sbb-btn-accent, #007993);
+    color: var(--sbb-btn-accent);
 }
 .sbb-btn--secondary:not(:disabled):not(.-disabled):hover {
-    background: var(--sbb-btn-accent-secondary-hover, #d1fff2);
-    box-shadow: var(--sbb-btn-dlg-shadow-hover, 0 3px 6px rgba(0, 0, 0, 0.3));
+    background: var(--sbb-btn-accent-secondary-hover);
+    box-shadow: var(--sbb-btn-dlg-shadow-hover);
 }
 .sbb-btn--secondary:not(:disabled):not(.-disabled):active {
-    background: var(--sbb-btn-accent-secondary-active, #b8f2e2);
+    background: var(--sbb-btn-accent-secondary-active);
 }
 
 .sbb-btn--primary {
-    background: var(--sbb-btn-accent, #007993);
+    background: var(--sbb-btn-accent);
     color: #fff;
 }
 .sbb-btn--primary:not(:disabled):not(.-disabled):hover {
-    background: var(--sbb-btn-accent-primary-hover, #196269);
-    box-shadow: var(--sbb-btn-dlg-shadow-hover, 0 3px 6px rgba(0, 0, 0, 0.3));
+    background: var(--sbb-btn-accent-primary-hover);
+    box-shadow: var(--sbb-btn-dlg-shadow-hover);
 }
 .sbb-btn--primary:not(:disabled):not(.-disabled):active {
-    background: var(--sbb-btn-accent-primary-active, #16565c);
+    background: var(--sbb-btn-accent-primary-active);
 }
 
 /* Dialog disabled — Polarion's flat gray; hover never changes it. `opacity: 1` resets the base
@@ -189,9 +193,9 @@
 .sbb-btn--secondary.-disabled,
 .sbb-btn--secondary:disabled:hover {
     opacity: 1;
-    background: var(--sbb-btn-dlg-disabled-bg, #dedee3);
-    border-color: var(--sbb-btn-dlg-disabled-fg, #9999a9);
-    color: var(--sbb-btn-dlg-disabled-fg, #9999a9);
+    background: var(--sbb-btn-dlg-disabled-bg);
+    border-color: var(--sbb-btn-dlg-disabled-fg);
+    color: var(--sbb-btn-dlg-disabled-fg);
     box-shadow: none;
     cursor: default;
 }
@@ -206,7 +210,7 @@
     padding: 0;
     border: 0;
     background: none;
-    color: var(--sbb-btn-accent, #007993);
+    color: var(--sbb-btn-accent);
     font: inherit;
     text-align: left;
     text-shadow: none;
@@ -216,13 +220,13 @@
     box-shadow: none;
 }
 .sbb-btn--link:not(:disabled):not(.-disabled):hover {
-    color: var(--sbb-btn-link-hover, #005159);
+    color: var(--sbb-btn-link-hover);
     text-decoration: underline;
 }
 .sbb-btn--link:disabled,
 .sbb-btn--link.-disabled {
     opacity: 1;
-    color: var(--sbb-btn-dlg-disabled-fg, #9999a9);
+    color: var(--sbb-btn-dlg-disabled-fg);
     text-decoration: none;
     cursor: default;
 }
