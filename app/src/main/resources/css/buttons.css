@@ -81,21 +81,6 @@
     transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
-/* Legacy action disabled — matches the consumers' original look, so a downstream that deletes its
-   local CSS in favour of these aliases still renders a visibly disabled button. */
-.buttons-wrapper button:disabled,
-.buttons-wrapper button[disabled],
-.editor-buttons button:disabled,
-.editor-buttons button[disabled] {
-    color: #c9d1d7;
-    text-shadow: #fff 1px 1px 0.01em;
-    cursor: default;
-}
-.buttons-wrapper button:disabled img,
-.editor-buttons button:disabled img {
-    opacity: 0.3;
-}
-
 /* Shared hover (.polarion-ToolbarButton-Over): subtle lift + darker border + soft shadow.
    Guarded with :not(:disabled) so a disabled control/action never picks up the hover paint. */
 .sbb-btn:not(:disabled):not(.sbb-btn--primary):not(.sbb-btn--secondary):not(.sbb-btn--link):hover,
@@ -109,13 +94,19 @@
     box-shadow: var(--sbb-btn-hover-shadow, 0 0 2px #e0dede);
 }
 
-/* Control / action disabled — fade over the default look; hover is a no-op (guarded above). */
+/* Control / action disabled — fade over the default look; hover is a no-op (guarded above).
+   The legacy .buttons-wrapper / .editor-buttons aliases share it, so a consumer can drop its own
+   :disabled rule and still get a visibly disabled (faded, default-cursor) button. */
 .sbb-btn:disabled,
 .sbb-btn.-disabled,
 .sbb-btn--control:disabled,
 .sbb-btn--action:disabled,
 .toolbar-button:disabled,
-.toolbar-button[disabled] {
+.toolbar-button[disabled],
+.buttons-wrapper button:disabled,
+.buttons-wrapper button[disabled],
+.editor-buttons button:disabled,
+.editor-buttons button[disabled] {
     opacity: var(--sbb-btn-disabled-opacity, 0.5);
     box-shadow: none;
     cursor: default;
