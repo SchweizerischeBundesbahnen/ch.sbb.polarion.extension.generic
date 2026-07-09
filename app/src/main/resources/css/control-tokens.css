@@ -59,8 +59,12 @@
     --sbb-revision-revert-icon: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjNWE5ZDU0IiBkPSJNOCAzLjRjMi41IDAgNC42IDIgNC42IDQuNlMxMC41IDEyLjYgOCAxMi42Yy0xLjkgMC0zLjYtMS4yLTQuMy0yLjlhLjg1Ljg1IDAgMCAxIDEuNi0uNmMuNDIgMS4xIDEuNSAxLjggMi43IDEuOCAxLjYgMCAyLjktMS4zIDIuOS0yLjlTOS42IDUuMSA4IDUuMXYxLjZMNC42IDQuMyA4IDEuOHoiLz48L3N2Zz4=");
     /* Notification alert icons — clean inline-SVG triangles replacing raster /polarion/ria/images/
        icon-indicatorWarning16.png (warning) and warning.gif (error). */
-    --sbb-warning-icon: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjZjVhNjIzIiBkPSJNNy4xNCAyLjUgMS4zIDEyLjU1Yy0uNDIuNzIuMSAxLjYzLjk0IDEuNjNoMTEuNTJjLjg0IDAgMS4zNi0uOS45NC0xLjYzTDguODYgMi41YTEgMSAwIDAgMC0xLjcyIDB6Ii8+PHJlY3QgeD0iNy4yNSIgeT0iNS45IiB3aWR0aD0iMS41IiBoZWlnaHQ9IjQuMiIgcng9Ii43NSIgZmlsbD0iIzRhMzYwMCIvPjxjaXJjbGUgY3g9IjgiIGN5PSIxMS44NSIgcj0iLjkiIGZpbGw9IiM0YTM2MDAiLz48L3N2Zz4=");
-    --sbb-error-icon: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjZDkzYTJiIiBkPSJNNy4xNCAyLjUgMS4zIDEyLjU1Yy0uNDIuNzIuMSAxLjYzLjk0IDEuNjNoMTEuNTJjLjg0IDAgMS4zNi0uOS45NC0xLjYzTDguODYgMi41YTEgMSAwIDAgMC0xLjcyIDB6Ii8+PHJlY3QgeD0iNy4yNSIgeT0iNS45IiB3aWR0aD0iMS41IiBoZWlnaHQ9IjQuMiIgcng9Ii43NSIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjgiIGN5PSIxMS44NSIgcj0iLjkiIGZpbGw9IiNmZmYiLz48L3N2Zz4=");
+    --sbb-warning-icon: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjZjVhNjIzIiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTcuMjIgMy4xIDEuNzUgMTIuNmMtLjQuNy4xIDEuNTUuODcgMS41NWgxMC43NmMuNzcgMCAxLjI3LS44NS44Ny0xLjU1TDguNzggMy4xYS45LjkgMCAwIDAtMS41NiAweiIvPjxyZWN0IHg9IjcuMjUiIHk9IjYuMSIgd2lkdGg9IjEuNSIgaGVpZ2h0PSI0IiByeD0iLjc1IiBmaWxsPSIjMWExYTFhIi8+PGNpcmNsZSBjeD0iOCIgY3k9IjExLjkiIHI9Ii45NSIgZmlsbD0iIzFhMWExYSIvPjwvc3ZnPg==");
+    --sbb-error-icon: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjZDkzYTJiIiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTcuMjIgMy4xIDEuNzUgMTIuNmMtLjQuNy4xIDEuNTUuODcgMS41NWgxMC43NmMuNzcgMCAxLjI3LS44NS44Ny0xLjU1TDguNzggMy4xYS45LjkgMCAwIDAtMS41NiAweiIvPjxyZWN0IHg9IjcuMjUiIHk9IjYuMSIgd2lkdGg9IjEuNSIgaGVpZ2h0PSI0IiByeD0iLjc1IiBmaWxsPSIjZmZmIi8+PGNpcmNsZSBjeD0iOCIgY3k9IjExLjkiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==");
+    /* Table add / remove controls — clean inline-SVG replacing raster /polarion/ria/images/control/
+       tablePlus.png (green +) and tableMinus.png (magenta −). Use via the .sbb-icon-table-* classes. */
+    --sbb-table-plus-icon: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cmVjdCBmaWxsPSIjN2RhYjAwIiB4PSI2IiB5PSIzIiB3aWR0aD0iNCIgaGVpZ2h0PSIxMCIvPjxyZWN0IGZpbGw9IiM3ZGFiMDAiIHg9IjMiIHk9IjYiIHdpZHRoPSIxMCIgaGVpZ2h0PSI0Ii8+PC9zdmc+");
+    --sbb-table-minus-icon: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cmVjdCBmaWxsPSIjYWIwMDg1IiB4PSIzIiB5PSI2IiB3aWR0aD0iMTAiIGhlaWdodD0iNCIvPjwvc3ZnPg==");
     --sbb-combo-popup-border: #ccccd4;
     /* Light teal hover / selection tint — the base that --sbb-option-hover and --sbb-chip-bg
        derive from, and the token the React SPAs reference for dropdown-row hovers. */
@@ -115,4 +119,22 @@
 .sbb-spinner {
     display: inline-block;
     background: var(--sbb-spinner, url(/polarion/ria/images/progressWheel48.svg)) center / contain no-repeat;
+}
+
+/* Table add / remove icons — CSS-background utility (16x16, self-contained) for the "+" / "−" row
+   controls. Use on a <span> in place of the old <img src=".../tablePlus.png">. Literal fallbacks so
+   they render where control-tokens.css is the only generic stylesheet linked. */
+.sbb-icon-table-plus,
+.sbb-icon-table-minus {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    background: center / contain no-repeat;
+}
+.sbb-icon-table-plus {
+    background-image: var(--sbb-table-plus-icon, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cmVjdCBmaWxsPSIjN2RhYjAwIiB4PSI2IiB5PSIzIiB3aWR0aD0iNCIgaGVpZ2h0PSIxMCIvPjxyZWN0IGZpbGw9IiM3ZGFiMDAiIHg9IjMiIHk9IjYiIHdpZHRoPSIxMCIgaGVpZ2h0PSI0Ii8+PC9zdmc+"));
+}
+.sbb-icon-table-minus {
+    background-image: var(--sbb-table-minus-icon, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cmVjdCBmaWxsPSIjYWIwMDg1IiB4PSIzIiB5PSI2IiB3aWR0aD0iMTAiIGhlaWdodD0iNCIvPjwvc3ZnPg=="));
 }

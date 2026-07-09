@@ -14,7 +14,7 @@
                 <img class="button-image" src="/polarion/ria/images/actions/delete.gif?bundle=<%= bundleTimestamp %>">Delete
             </button>
             <button id="configurations-button-create" class="new-configuration toolbar-button" style="display: inline-block" onclick="Configurations.newConfiguration()">
-                <img class="button-image" src="/polarion/ria/images/control/tablePlus.png?bundle=<%= bundleTimestamp %>">Add new
+                <span class="button-image sbb-icon-table-plus" role="img" aria-label="Add"></span>Add new
             </button>
         </div>
         <div id="default-note" class="note" style="display: none">Default <span class="configuration-label">configuration</span> can't be renamed or deleted</div>
