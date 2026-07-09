@@ -13,5 +13,10 @@
     "test": "mocha src/test/js/**/*.js"
   },
   "type": "module",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=20.19.0",
+    "npm": ">=11"
+  },
+  "packageManager": "npm@11.6.1"
 }
