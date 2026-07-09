@@ -51,7 +51,7 @@
     --sbb-radio-dot: #595959;
 
     /* Combobox popup + options */
-    --sbb-combo-chevron: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIuMCA1MTIuMCI+PHBhdGggdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTYuMCwwLjApIiBmaWxsPSIjNDY0NjQ2IiBkPSJNMTM3LjQgMzc0LjZjMTIuNSAxMi41IDMyLjggMTIuNSA0NS4zIDBsMTI4LTEyOGM5LjItOS4yIDExLjktMjIuOSA2LjktMzQuOXMtMTYuNi0xOS44LTI5LjYtMTkuOEwzMiAxOTJjLTEyLjkgMC0yNC42IDcuOC0yOS42IDE5LjhzLTIuMiAyNS43IDYuOSAzNC45bDEyOCAxMjh6Ii8+PC9zdmc+");
+    --sbb-combo-chevron: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTQuNCA2LjI3IEwxMS42IDYuMjcgTDggMTAuNDcgWiIgZmlsbD0iIzQ2NDY0NiIvPjwvc3ZnPg==");
     --sbb-combo-erase: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjI1NiIgZmlsbD0iIzAwNzk5MyIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDk0LjcyLDQwLjk2MDAwMDAwMDAwMDAxKSBzY2FsZSgwLjg0KSI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTM0Mi42IDE1MC42YzEyLjUtMTIuNSAxMi41LTMyLjggMC00NS4zcy0zMi44LTEyLjUtNDUuMyAwTDE5MiAyMTAuNyA4Ni42IDEwNS40Yy0xMi41LTEyLjUtMzIuOC0xMi41LTQ1LjMgMHMtMTIuNSAzMi44IDAgNDUuM0wxNDYuNyAyNTYgNDEuNCAzNjEuNGMtMTIuNSAxMi41LTEyLjUgMzIuOCAwIDQ1LjNzMzIuOCAxMi41IDQ1LjMgMEwxOTIgMzAxLjMgMjk3LjQgNDA2LjZjMTIuNSAxMi41IDMyLjggMTIuNSA0NS4zIDBzMTIuNS0zMi44IDAtNDUuM0wyMzcuMyAyNTYgMzQyLjYgMTUwLjZ6Ii8+PC9nPjwvc3ZnPg==");
     --sbb-combo-popup-border: #ccccd4;
     /* Light teal hover / selection tint — the base that --sbb-option-hover and --sbb-chip-bg

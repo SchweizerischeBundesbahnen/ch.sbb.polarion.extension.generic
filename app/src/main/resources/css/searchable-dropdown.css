@@ -145,7 +145,7 @@
     transform: translateY(-50%);
     width: 16px;
     height: 16px;
-    background: var(--sbb-combo-chevron, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIuMCA1MTIuMCI+PHBhdGggdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTYuMCwwLjApIiBmaWxsPSIjNDY0NjQ2IiBkPSJNMTM3LjQgMzc0LjZjMTIuNSAxMi41IDMyLjggMTIuNSA0NS4zIDBsMTI4LTEyOGM5LjItOS4yIDExLjktMjIuOSA2LjktMzQuOXMtMTYuNi0xOS44LTI5LjYtMTkuOEwzMiAxOTJjLTEyLjkgMC0yNC42IDcuOC0yOS42IDE5LjhzLTIuMiAyNS43IDYuOSAzNC45bDEyOCAxMjh6Ii8+PC9zdmc+")) center / contain no-repeat;
+    background: var(--sbb-combo-chevron, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTQuNCA2LjI3IEwxMS42IDYuMjcgTDggMTAuNDcgWiIgZmlsbD0iIzQ2NDY0NiIvPjwvc3ZnPg==")) center / contain no-repeat;
     pointer-events: none;
 }
 
