@@ -161,8 +161,9 @@
         <sonar.coverage.exclusions>**/rest/controller/**</sonar.coverage.exclusions>
 
         <frontend-maven-plugin.version>2.0.1</frontend-maven-plugin.version>
-        <frontend-maven-plugin.nodeVersion>v20.19.5</frontend-maven-plugin.nodeVersion>
-        <frontend-maven-plugin.npmVersion>10.9.4</frontend-maven-plugin.npmVersion>
+        <!-- When bumping nodeVersion/npmVersion, keep app/package.json ("engines" and "packageManager") in sync. -->
+        <frontend-maven-plugin.nodeVersion>v24.11.0</frontend-maven-plugin.nodeVersion>
+        <frontend-maven-plugin.npmVersion>11.6.1</frontend-maven-plugin.npmVersion>
     </properties>
 
     <profiles>
