@@ -53,13 +53,15 @@
     margin-right: 5px;
 }
 
-/* Action = transparent, CONTENT-SIZED (no fixed height) — .polarion-ToolbarButton. */
+/* Action = transparent, CONTENT-SIZED (no fixed height), left-aligned — .polarion-ToolbarButton. */
 .sbb-btn--action {
     height: auto;
     min-width: 0;
     padding: 4px 8px;
     background: transparent;
     text-shadow: none;
+    justify-content: flex-start;
+    text-align: left;
 }
 
 /* Legacy action aliases (.buttons-wrapper / .editor-buttons buttons) — CHROME ONLY, keeping each
@@ -77,6 +79,21 @@
     padding: 4px 8px;
     cursor: pointer;
     transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+/* Legacy action disabled — matches the consumers' original look, so a downstream that deletes its
+   local CSS in favour of these aliases still renders a visibly disabled button. */
+.buttons-wrapper button:disabled,
+.buttons-wrapper button[disabled],
+.editor-buttons button:disabled,
+.editor-buttons button[disabled] {
+    color: #c9d1d7;
+    text-shadow: #fff 1px 1px 0.01em;
+    cursor: default;
+}
+.buttons-wrapper button:disabled img,
+.editor-buttons button:disabled img {
+    opacity: 0.3;
 }
 
 /* Shared hover (.polarion-ToolbarButton-Over): subtle lift + darker border + soft shadow.
@@ -171,13 +188,16 @@
     background: var(--sbb-btn-accent-primary-active, #16565c);
 }
 
-/* Dialog disabled — Polarion's flat gray; hover never changes it. */
+/* Dialog disabled — Polarion's flat gray; hover never changes it. `opacity: 1` resets the base
+   `.sbb-btn:disabled` fade (which also matches a `.sbb-btn.sbb-btn--primary` element), so the button
+   is a solid gray rather than a semi-transparent teal. */
 .sbb-btn--primary:disabled,
 .sbb-btn--primary.-disabled,
 .sbb-btn--primary:disabled:hover,
 .sbb-btn--secondary:disabled,
 .sbb-btn--secondary.-disabled,
 .sbb-btn--secondary:disabled:hover {
+    opacity: 1;
     background: var(--sbb-btn-dlg-disabled-bg, #dedee3);
     border-color: var(--sbb-btn-dlg-disabled-fg, #9999a9);
     color: var(--sbb-btn-dlg-disabled-fg, #9999a9);
@@ -210,6 +230,7 @@
 }
 .sbb-btn--link:disabled,
 .sbb-btn--link.-disabled {
+    opacity: 1;
     color: var(--sbb-btn-dlg-disabled-fg, #9999a9);
     text-decoration: none;
     cursor: default;

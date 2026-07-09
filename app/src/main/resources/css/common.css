@@ -57,7 +57,6 @@
     --polarion-table-cell-border: #DDDDDD; /* data-cell column separator */
     --polarion-table-row-alt: #F3F3F0;   /* zebra odd-row (repo-browser #F3F3F0/white) */
     --polarion-table-row-hover: #EBF7F8; /* row hover light-teal */
-    --polarion-button-bg: #F5F5F5;       /* toolbar button fill — flat (matches 2606 .polarion-generalToolbarButton; was unset/white) */
 }
 
 a, td, div, li, ul, input, button, option {
