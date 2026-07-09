@@ -378,8 +378,7 @@ pre[class*=language-] {
     cursor: pointer;
 }
 
-/* Revert arrow rendered as a CSS background (crisp inline SVG) instead of a raster <img>.
-   Literal fallback so it still shows where control-tokens.css is not linked (e.g. popups). */
+/* Revert arrow rendered as a CSS background (crisp inline SVG) instead of a raster <img>. */
 .revert-to-revision-icon {
     display: inline-block;
     width: 15px;
