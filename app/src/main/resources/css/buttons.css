@@ -68,11 +68,15 @@
     text-align: left;
 }
 
-/* Legacy action aliases (.buttons-wrapper / .editor-buttons buttons) — CHROME ONLY, keeping each
-   consumer's own inline-block layout, divider and icon rules. This lets the duplicated local chrome
-   be deleted with no visual change (matches the original content-sized transparent button). */
+/* Legacy action aliases (.buttons-wrapper / .editor-buttons buttons) — chrome + inner flex centring,
+   keeping each consumer's own divider (a sibling .divider element, unaffected by the button's inner
+   layout) and icon rules. inline-flex + align-items:center vertically centres an icon+label pair
+   (e.g. diff-tool's "＋ Create Document"), which plain inline-block left above the button's axis. */
 .buttons-wrapper button,
 .editor-buttons button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid var(--sbb-btn-border);
     border-radius: var(--sbb-btn-radius);
     background: transparent;
