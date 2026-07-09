@@ -15,7 +15,7 @@
     border-collapse: collapse;
     font-size: 13px;
     background: #fff;
-    border: 1px solid var(--sbb-table-border, #dddddd);
+    border: 1px solid var(--sbb-table-border);
     border-radius: 3px;
 }
 
@@ -23,15 +23,15 @@
     padding: 7px 10px;
     text-align: left;
     font-weight: 600;
-    color: var(--sbb-table-header-text, #495057);
-    background: var(--sbb-table-header-bg, #e8e8e3);
-    border-bottom: 1px solid var(--sbb-table-border, #dddddd);
+    color: var(--sbb-table-header-text);
+    background: var(--sbb-table-header-bg);
+    border-bottom: 1px solid var(--sbb-table-border);
 }
 
 .sbb-table td {
     padding: 7px 10px;
     vertical-align: top;
-    border-bottom: 1px solid var(--sbb-table-border, #dddddd);
+    border-bottom: 1px solid var(--sbb-table-border);
 }
 
 .sbb-table tbody tr:last-child > td {
@@ -39,14 +39,14 @@
 }
 
 .sbb-table tbody tr:hover > td {
-    background: var(--sbb-table-row-hover, #ebf7f8);
+    background: var(--sbb-table-row-hover);
 }
 
 /* Spreadsheet-style full cell borders. */
 .sbb-table--grid,
 .sbb-table--grid th,
 .sbb-table--grid td {
-    border: 1px solid var(--sbb-table-border, #dddddd);
+    border: 1px solid var(--sbb-table-border);
 }
 
 .sbb-table--grid {

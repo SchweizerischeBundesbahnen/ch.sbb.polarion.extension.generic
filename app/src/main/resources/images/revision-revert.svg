@@ -1,0 +1,11 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg fill="#000000" width="16px" height="16px" viewBox="0 0 14 14" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <g id="SVGRepo_bgCarrier" stroke-width="0"/>
+    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+    <g id="SVGRepo_iconCarrier" transform="translate(0 14) scale(1 -1)">
+        <g fill="green">
+            <path d="M1.00000006 5.28333335l4.66666662-3.89999996V9.1833333z"/>
+            <path d="M8.66666665 3.95000003H4.66666669v2.66666664h3.99999996c.93333332 0 1.66666665.73333333 1.66666665 1.66666665s-.73333333 1.66666665-1.66666665 1.66666665h-.99999999v2.66666664h.99999999c2.39999998 0 4.33333329-1.93333331 4.33333329-4.33333329 0-2.39999998-1.93333331-4.33333329-4.33333329-4.33333329z"/>
+        </g>
+    </g>
+</svg>

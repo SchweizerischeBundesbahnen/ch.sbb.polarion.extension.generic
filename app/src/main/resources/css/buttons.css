@@ -1,0 +1,236 @@
+/*
+ * Unified button system — one shared source for every extension button, matching the three looks
+ * Polarion 2606 uses natively. All colours/metrics are sampled live from the platform's own CSS:
+ *   control   → .polarion-generalToolbarButton   (gray fill, admin / toolbar)
+ *   action    → .polarion-ToolbarButton / -FormButton (transparent, on white content)
+ *   primary   → .polarion-JSWizardButton-Primary  (teal filled, dialog)
+ *   secondary → .polarion-JSWizardButton          (teal outline, dialog)
+ *   link      → .polarion-Hyperlink               (teal text)
+ *
+ * Usage: `<button class="sbb-btn sbb-btn--control">`. `.sbb-btn` alone renders the control look.
+ *
+ * Back-compat: the legacy per-extension selectors (.toolbar-button, .buttons-wrapper button,
+ * .editor-buttons button) are aliased here, so existing markup gets the unified look with NO change
+ * and the duplicated local copies can simply be deleted downstream.
+ *
+ * Self-contained: every token carries a literal fallback (var(--x, <literal>)), so this file works
+ * standalone in popups (no common.css :root) and can be linked directly by the React SPAs.
+ */
+
+/* ==================================== Control (default) ==================================== */
+/* Gray fill, fixed 28px — .polarion-generalToolbarButton. `.sbb-btn` alone renders this look. */
+.sbb-btn,
+.sbb-btn--control,
+.sbb-btn--action,
+.toolbar-button {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--sbb-btn-height);
+    min-width: 28px;
+    margin: 0;
+    padding: 0 6px;
+    border: 1px solid var(--sbb-btn-border);
+    border-radius: var(--sbb-btn-radius);
+    background: var(--sbb-btn-control-bg);
+    color: var(--sbb-btn-control-text);
+    font-family: var(--sbb-control-font-family);
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 16px;
+    text-align: center;
+    text-shadow: #fff 1px 1px 0.01em;
+    vertical-align: middle;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+/* Preserve the admin toolbar's inter-button spacing (the old .toolbar-button had margin-right: 5px).
+   line-height matches the 28px control height (minus borders) so the label + icon stay vertically
+   centred even when the button is forced to display:inline-block (the toggled config buttons carry
+   an inline style="display:inline-block", which would otherwise defeat the flex centring). */
+.sbb-btn--control,
+.toolbar-button {
+    margin-right: 5px;
+    line-height: 26px;
+}
+
+/* Action = transparent, CONTENT-SIZED (no fixed height), left-aligned — .polarion-ToolbarButton. */
+.sbb-btn--action {
+    height: auto;
+    min-width: 0;
+    padding: 4px 8px;
+    background: transparent;
+    text-shadow: none;
+    justify-content: flex-start;
+    text-align: left;
+}
+
+/* Legacy action aliases (.buttons-wrapper / .editor-buttons buttons) — chrome + inner flex centring,
+   keeping each consumer's own divider (a sibling .divider element, unaffected by the button's inner
+   layout) and icon rules. inline-flex + align-items:center vertically centres an icon+label pair
+   (e.g. diff-tool's "＋ Create Document"), which plain inline-block left above the button's axis. */
+.buttons-wrapper button,
+.editor-buttons button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--sbb-btn-border);
+    border-radius: var(--sbb-btn-radius);
+    background: transparent;
+    color: var(--sbb-btn-control-text);
+    font-family: var(--sbb-control-font-family);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+/* Shared hover (.polarion-ToolbarButton-Over): subtle lift + darker border + soft shadow.
+   Guarded with :not(:disabled) so a disabled control/action never picks up the hover paint. */
+.sbb-btn:not(:disabled):not(.-disabled):not(.sbb-btn--primary):not(.sbb-btn--secondary):not(.sbb-btn--link):hover,
+.sbb-btn--control:not(:disabled):not(.-disabled):hover,
+.sbb-btn--action:not(:disabled):not(.-disabled):hover,
+.toolbar-button:not([disabled]):not(:disabled):hover,
+.buttons-wrapper button:not([disabled]):not(:disabled):hover,
+.editor-buttons button:not([disabled]):not(:disabled):hover {
+    background: var(--sbb-btn-hover-bg);
+    border-color: var(--sbb-btn-hover-border);
+    box-shadow: var(--sbb-btn-hover-shadow);
+}
+
+/* Control / action disabled — fade over the default look; hover is a no-op (guarded above).
+   The legacy .buttons-wrapper / .editor-buttons aliases share it, so a consumer can drop its own
+   :disabled rule and still get a visibly disabled (faded, default-cursor) button. */
+.sbb-btn:disabled,
+.sbb-btn.-disabled,
+.sbb-btn--control:disabled,
+.sbb-btn--action:disabled,
+.toolbar-button:disabled,
+.toolbar-button[disabled],
+.buttons-wrapper button:disabled,
+.buttons-wrapper button[disabled],
+.editor-buttons button:disabled,
+.editor-buttons button[disabled] {
+    opacity: var(--sbb-btn-disabled-opacity);
+    box-shadow: none;
+    cursor: default;
+}
+
+.sbb-btn:focus-visible,
+.toolbar-button:focus-visible,
+.buttons-wrapper button:focus-visible,
+.editor-buttons button:focus-visible {
+    outline: none;
+    box-shadow: var(--sbb-btn-focus-ring);
+}
+
+/* Optional inline-SVG icon helper (new markup). Legacy <img class="button-image"> keeps its own rule. */
+.sbb-btn__icon {
+    width: 15px;
+    height: 15px;
+    display: block;
+    flex: 0 0 auto;
+}
+.sbb-btn__icon:not(:only-child) {
+    margin-right: 6px;
+}
+
+/* ================================ Dialog — primary / secondary ================================ */
+.sbb-btn--primary,
+.sbb-btn--secondary {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    min-width: 80px;
+    margin: 0;
+    padding: 7px 16px 10px;
+    border: 1px solid var(--sbb-btn-accent);
+    border-radius: var(--sbb-btn-radius);
+    font-family: var(--sbb-control-font-family);
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1.15;
+    text-shadow: none;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: var(--sbb-btn-dlg-shadow);
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sbb-btn--secondary {
+    background: #fff;
+    color: var(--sbb-btn-accent);
+}
+.sbb-btn--secondary:not(:disabled):not(.-disabled):hover {
+    background: var(--sbb-btn-accent-secondary-hover);
+    box-shadow: var(--sbb-btn-dlg-shadow-hover);
+}
+.sbb-btn--secondary:not(:disabled):not(.-disabled):active {
+    background: var(--sbb-btn-accent-secondary-active);
+}
+
+.sbb-btn--primary {
+    background: var(--sbb-btn-accent);
+    color: #fff;
+}
+.sbb-btn--primary:not(:disabled):not(.-disabled):hover {
+    background: var(--sbb-btn-accent-primary-hover);
+    box-shadow: var(--sbb-btn-dlg-shadow-hover);
+}
+.sbb-btn--primary:not(:disabled):not(.-disabled):active {
+    background: var(--sbb-btn-accent-primary-active);
+}
+
+/* Dialog disabled — Polarion's flat gray; hover never changes it. `opacity: 1` resets the base
+   `.sbb-btn:disabled` fade (which also matches a `.sbb-btn.sbb-btn--primary` element), so the button
+   is a solid gray rather than a semi-transparent teal. */
+.sbb-btn--primary:disabled,
+.sbb-btn--primary.-disabled,
+.sbb-btn--primary:disabled:hover,
+.sbb-btn--secondary:disabled,
+.sbb-btn--secondary.-disabled,
+.sbb-btn--secondary:disabled:hover {
+    opacity: 1;
+    background: var(--sbb-btn-dlg-disabled-bg);
+    border-color: var(--sbb-btn-dlg-disabled-fg);
+    color: var(--sbb-btn-dlg-disabled-fg);
+    box-shadow: none;
+    cursor: default;
+}
+
+/* ==================================== Link ==================================== */
+.sbb-btn--link {
+    box-sizing: border-box;
+    display: inline;
+    height: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--sbb-btn-accent);
+    font: inherit;
+    text-align: left;
+    text-shadow: none;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: none;
+}
+.sbb-btn--link:not(:disabled):not(.-disabled):hover {
+    color: var(--sbb-btn-link-hover);
+    text-decoration: underline;
+}
+.sbb-btn--link:disabled,
+.sbb-btn--link.-disabled {
+    opacity: 1;
+    color: var(--sbb-btn-dlg-disabled-fg);
+    text-decoration: none;
+    cursor: default;
+}

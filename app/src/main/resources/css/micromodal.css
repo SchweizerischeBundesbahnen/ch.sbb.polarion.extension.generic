@@ -167,31 +167,44 @@
   padding: 12px 20px 16px;
 }
 
-/* Teal outline (secondary) / filled (primary) buttons, matching the exporter dialogs. */
+/* Teal outline (secondary) / filled (primary) — the Polarion JSWizard dialog look, sourced from the
+   shared button tokens (see buttons.css / control-tokens.css) so admin dialogs match the platform
+   exactly. Fallbacks are literal because micromodal.css is loaded standalone in popups. */
 .modal__container.standard-dialog .modal__btn {
   background-color: #fff;
-  color: #007993;
-  border: 2px solid #007993;
-  border-radius: 4px;
+  color: var(--sbb-btn-accent);
+  border: 1px solid var(--sbb-btn-accent);
+  border-radius: var(--sbb-btn-radius);
   font-weight: 700;
   font-size: 14px;
-  padding: 6px 18px;
+  min-width: 80px;
+  padding: 7px 16px 10px;
+  box-shadow: var(--sbb-btn-dlg-shadow);
 }
 
 .modal__container.standard-dialog .modal__btn:hover,
 .modal__container.standard-dialog .modal__btn:focus {
-  background-color: #f0f8f9;
+  background-color: var(--sbb-btn-accent-secondary-hover);
+  box-shadow: var(--sbb-btn-dlg-shadow-hover);
   transform: none;
 }
 
+.modal__container.standard-dialog .modal__btn:active {
+  background-color: var(--sbb-btn-accent-secondary-active);
+}
+
 .modal__container.standard-dialog .modal__btn-primary {
-  background-color: #007993;
+  background-color: var(--sbb-btn-accent);
   color: #fff;
 }
 
 .modal__container.standard-dialog .modal__btn-primary:hover,
 .modal__container.standard-dialog .modal__btn-primary:focus {
-  background-color: #0a6a80;
+  background-color: var(--sbb-btn-accent-primary-hover);
+}
+
+.modal__container.standard-dialog .modal__btn-primary:active {
+  background-color: var(--sbb-btn-accent-primary-active);
 }
 
 

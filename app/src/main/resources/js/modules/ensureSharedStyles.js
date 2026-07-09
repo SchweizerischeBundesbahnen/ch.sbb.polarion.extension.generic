@@ -14,10 +14,14 @@ import { GENERIC_BUILD_TIMESTAMP } from './generic-build-info.js';
  */
 
 const STYLES = [
+    // control-tokens.css first: it defines the --sbb-* custom properties the other sheets consume,
+    // so any surface that injects these styles also gets the tokens (no per-file literal fallbacks).
+    ['generic-control-tokens', 'control-tokens.css'],
     ['generic-checkbox-styles', 'checkboxes.css'],
     ['generic-radios-styles', 'radios.css'],
     ['generic-inputs-styles', 'inputs.css'],
     ['generic-searchable-dropdown-styles', 'searchable-dropdown.css'],
+    ['generic-buttons-styles', 'buttons.css'],
 ];
 
 export default function ensureSharedStyles() {

@@ -10,25 +10,25 @@
 /* Trigger — the closed combobox (Polarion JSSelector-Combo) */
 .searchable-dropdown > input.sd-trigger {
     width: 100%;
-    height: var(--sbb-control-height, 23px);
+    height: var(--sbb-control-height);
     box-sizing: border-box;
     padding: 2px 2rem 2px .5rem;
-    border: 1px solid var(--sbb-control-border, #c9c9c9);
-    border-radius: var(--sbb-control-radius, 0);
-    background-color: var(--sbb-control-bg, #fff);
+    border: 1px solid var(--sbb-control-border);
+    border-radius: var(--sbb-control-radius);
+    background-color: var(--sbb-control-bg);
     cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: inherit;
-    font-size: var(--sbb-control-font-size, 13px);
-    font-weight: var(--sbb-control-font-weight, 600);
-    color: var(--sbb-control-text, #1a1a1a);
+    font-size: var(--sbb-control-font-size);
+    font-weight: var(--sbb-control-font-weight);
+    color: var(--sbb-control-text);
     transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 /* Soft elevation shadow on hover — same lift as the text inputs (inputs.css). */
 .searchable-dropdown:not(.disabled) > .sd-trigger:hover {
-    box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
+    box-shadow: var(--sbb-control-shadow-hover);
 }
 
 /* An editable (creatable) trigger is a real text field, not a click-to-open button. */
@@ -42,15 +42,15 @@
    shadow — an editable field stays focused after a pick, so a strong shadow would linger. Suppress
    the browser's default outline. */
 .searchable-dropdown > input.sd-trigger:not([readonly]):focus {
-    border-color: var(--sbb-control-border-focus, #1491eb);
-    box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
+    border-color: var(--sbb-control-border-focus);
+    box-shadow: var(--sbb-control-shadow-hover);
     outline: none;
 }
 
 /* Open state — Polarion JSSelector-ComboOpen (blue border + stronger shadow) */
 .searchable-dropdown.open > .sd-trigger {
-    border-color: var(--sbb-control-border-focus, #1491eb);
-    box-shadow: var(--sbb-control-shadow-active, 0 3px 6px 0 rgba(0, 0, 0, 0.3));
+    border-color: var(--sbb-control-border-focus);
+    box-shadow: var(--sbb-control-shadow-active);
     outline: none;
 }
 
@@ -81,12 +81,12 @@
    selections stay visible instead of being truncated into a single comma-joined line. */
 .searchable-dropdown > .sd-trigger-multi {
     width: 100%;
-    min-height: var(--sbb-control-height, 23px);
+    min-height: var(--sbb-control-height);
     box-sizing: border-box;
     padding: 1px 2rem 1px 3px;
-    border: 1px solid var(--sbb-control-border, #c9c9c9);
-    border-radius: var(--sbb-control-radius, 0);
-    background-color: var(--sbb-control-bg, #fff);
+    border: 1px solid var(--sbb-control-border);
+    border-radius: var(--sbb-control-radius);
+    background-color: var(--sbb-control-bg);
     cursor: pointer;
     display: flex;
     flex-wrap: wrap;
@@ -94,13 +94,13 @@
     /* Uniform spacing between chips (row and column). */
     gap: 4px;
     font-family: inherit;
-    font-size: var(--sbb-control-font-size, 13px);
-    font-weight: var(--sbb-control-font-weight, 600);
-    color: var(--sbb-control-text, #1a1a1a);
+    font-size: var(--sbb-control-font-size);
+    font-weight: var(--sbb-control-font-weight);
+    color: var(--sbb-control-text);
 }
 
 .searchable-dropdown > .sd-trigger-multi .sd-placeholder {
-    color: var(--sbb-control-placeholder, #7c7c7c);
+    color: var(--sbb-control-placeholder);
     padding-left: 3px;
 }
 
@@ -111,8 +111,8 @@
     max-width: 100%;
     box-sizing: border-box;
     padding: 0 3px 0 5px;
-    background: var(--sbb-chip-bg, #ebf7f8);
-    border: 1px solid var(--sbb-chip-border, #b6dfe3);
+    background: var(--sbb-chip-bg);
+    border: 1px solid var(--sbb-chip-border);
     border-radius: 0;
     font-size: 12px;
     font-weight: 600;
@@ -127,13 +127,13 @@
 
 .searchable-dropdown .sd-chip-remove {
     cursor: pointer;
-    color: var(--sbb-chip-remove, #5c8a90);
+    color: var(--sbb-chip-remove);
     font-weight: 700;
     line-height: 1;
 }
 
 .searchable-dropdown .sd-chip-remove:hover {
-    color: var(--sbb-control-text, #1a1a1a);
+    color: var(--sbb-control-text);
 }
 
 /* Arrow on the trigger — Font Awesome caret-down (inline SVG). */
@@ -145,7 +145,7 @@
     transform: translateY(-50%);
     width: 16px;
     height: 16px;
-    background: var(--sbb-combo-chevron, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTQuNCA2LjI3IEwxMS42IDYuMjcgTDggMTAuNDcgWiIgZmlsbD0iIzQ2NDY0NiIvPjwvc3ZnPg==")) center / contain no-repeat;
+    background: var(--sbb-combo-chevron) center / contain no-repeat;
     pointer-events: none;
 }
 
@@ -183,7 +183,7 @@
 }
 
 .searchable-dropdown .sd-clear:hover {
-    color: var(--sbb-control-text, #1a1a1a);
+    color: var(--sbb-control-text);
     background: #e6e6e6;
 }
 
@@ -210,9 +210,9 @@
     /* Popup width is driven by the longest option, but never narrower than the trigger + 35px */
     min-width: calc(100% + 35px);
     width: max-content;
-    background: var(--sbb-control-bg, #fff);
-    border: 1px solid var(--sbb-combo-popup-border, #ccccd4);
-    border-radius: var(--sbb-control-radius, 0);
+    background: var(--sbb-control-bg);
+    border: 1px solid var(--sbb-combo-popup-border);
+    border-radius: var(--sbb-control-radius);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -240,12 +240,12 @@
     min-width: 0;
     box-sizing: border-box;
     padding: 4px 6px;
-    border: 1px solid var(--sbb-control-border-focus, #1491eb);
-    border-radius: var(--sbb-control-radius, 0);
-    background-color: var(--sbb-control-bg, #fff);
+    border: 1px solid var(--sbb-control-border-focus);
+    border-radius: var(--sbb-control-radius);
+    background-color: var(--sbb-control-bg);
     font-family: inherit;
-    font-size: var(--sbb-control-font-size, 13px);
-    color: var(--sbb-control-text, #1a1a1a);
+    font-size: var(--sbb-control-font-size);
+    color: var(--sbb-control-text);
     outline: none;
 }
 
@@ -256,7 +256,7 @@
     width: 12px;
     height: 12px;
     cursor: pointer;
-    background: var(--sbb-combo-erase, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjI1NiIgZmlsbD0iIzAwNzk5MyIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDk0LjcyLDQwLjk2MDAwMDAwMDAwMDAxKSBzY2FsZSgwLjg0KSI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTM0Mi42IDE1MC42YzEyLjUtMTIuNSAxMi41LTMyLjggMC00NS4zcy0zMi44LTEyLjUtNDUuMyAwTDE5MiAyMTAuNyA4Ni42IDEwNS40Yy0xMi41LTEyLjUtMzIuOC0xMi41LTQ1LjMgMHMtMTIuNSAzMi44IDAgNDUuM0wxNDYuNyAyNTYgNDEuNCAzNjEuNGMtMTIuNSAxMi41LTEyLjUgMzIuOCAwIDQ1LjNzMzIuOCAxMi41IDQ1LjMgMEwxOTIgMzAxLjMgMjk3LjQgNDA2LjZjMTIuNSAxMi41IDMyLjggMTIuNSA0NS4zIDBzMTIuNS0zMi44IDAtNDUuM0wyMzcuMyAyNTYgMzQyLjYgMTUwLjZ6Ii8+PC9nPjwvc3ZnPg==")) center / contain no-repeat;
+    background: var(--sbb-combo-erase) center / contain no-repeat;
 }
 
 /* Scrollable items list */
@@ -270,8 +270,8 @@
 .sd-portal .sd-empty {
     padding: 6px 12px;
     text-align: center;
-    color: var(--sbb-control-placeholder, #7c7c7c);
-    font-size: var(--sbb-control-font-size, 13px);
+    color: var(--sbb-control-placeholder);
+    font-size: var(--sbb-control-font-size);
 }
 
 /* Option item */
@@ -279,9 +279,9 @@
     padding: 6px 12px;
     cursor: pointer;
     font-family: inherit;
-    font-size: var(--sbb-control-font-size, 13px);
-    font-weight: var(--sbb-control-font-weight, 600);
-    color: var(--sbb-control-text, #1a1a1a);
+    font-size: var(--sbb-control-font-size);
+    font-weight: var(--sbb-control-font-weight);
+    color: var(--sbb-control-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -290,7 +290,7 @@
 /* Highlight — exact Polarion .polarion-JComboBox-ItemOver colour.
    Only one option is highlighted at a time (follows mouse/keyboard), managed via the .active class. */
 .sd-portal .option.active {
-    background-color: var(--sbb-option-hover, #ebf7f8);
+    background-color: var(--sbb-option-hover);
 }
 
 /* Disabled option (<option disabled>): dimmed and non-interactive; keyboard nav skips it. */
@@ -349,14 +349,14 @@
        scopes to, so replicate the image styling here — only for in-list multi-select checkboxes). */
     -webkit-appearance: none;
     appearance: none;
-    width: var(--sbb-toggle-size, 15px);
-    height: var(--sbb-toggle-size, 15px);
-    background: var(--sbb-checkbox-unchecked, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZGZkZmQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNiOWI5YjkiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZGZkZmQiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==")) no-repeat center;
-    background-size: var(--sbb-toggle-size, 15px) var(--sbb-toggle-size, 15px);
+    width: var(--sbb-toggle-size);
+    height: var(--sbb-toggle-size);
+    background: var(--sbb-checkbox-unchecked) no-repeat center;
+    background-size: var(--sbb-toggle-size) var(--sbb-toggle-size);
 }
 
 .sd-portal .option.multiselect-option input[type="checkbox"]:checked {
-    background-image: var(--sbb-checkbox-checked, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZGZkZmQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNiOWI5YjkiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZGZkZmQiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik02LjY2IDguODlRNi45NSA3LjkxIDcuNDAgNi44N1E3Ljg1IDUuODIgOC40NiA0Ljg2UTkuMDcgMy45MCA5LjM3IDMuNTlROS42NiAzLjI5IDkuODcgMy4xMlExMC4wOCAyLjk0IDEwLjY3IDIuOTNRMTEuMjYgMi45MSAxMS41NiAyLjk1UTExLjc3IDIuOTcgMTEuOTEgMy4xMVExMi4wNiAzLjI1IDEyLjA4IDMuNDZRMTIuMTAgMy42MSAxMi4wNCAzLjcyUTExLjk4IDMuODIgMTEuNzcgNC4wMlExMC43NiA0LjkyIDkuNjYgNi44NFE4LjU1IDguNzUgNy45MCAxMC44MFE3LjY1IDExLjc0IDcuNTggMTEuOTBRNy41MiAxMi4wNiA3LjQwIDEyLjE4UTcuMjggMTIuMjkgNi44OSAxMi4yMFE2LjU2IDEyLjA5IDYuNDYgMTEuOThRNi4zNiAxMS44OCA2LjI5IDExLjc5UTYuMjIgMTEuNjggNS44NSAxMC45OFE1LjQxIDEwLjIyIDQuNTYgOS4xNlE0LjAxIDguNTUgMy44OSA4LjIwUTMuNzEgNy42OSA0LjA3IDcuNDFRNC40MyA3LjEyIDQuODAgNy4xOVE1LjIxIDcuMjcgNS43MiA3LjczUTYuMjQgOC4yMCA2LjY2IDguODlaIiBmaWxsPSIjNTg1ODU4Ii8+PC9zdmc+"));
+    background-image: var(--sbb-checkbox-checked);
 }
 
 .sd-portal .option.multiselect-option .option-label {

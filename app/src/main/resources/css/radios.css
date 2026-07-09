@@ -19,21 +19,21 @@
 .form-wrapper input[type="radio"] {
     -webkit-appearance: none;
     appearance: none;
-    width: var(--sbb-toggle-size, 15px);
-    height: var(--sbb-toggle-size, 15px);
+    width: var(--sbb-toggle-size);
+    height: var(--sbb-toggle-size);
     margin: 0 4px 0 0;
     vertical-align: middle;
     cursor: pointer;
     box-sizing: border-box;
-    border: 1px solid var(--sbb-radio-border, #c9c9c9);
+    border: 1px solid var(--sbb-radio-border);
     border-radius: 50%;
-    background-color: var(--sbb-control-bg, #fff);
+    background-color: var(--sbb-control-bg);
 }
 
 .modal__container input[type="radio"]:checked,
 .standard-admin-page input[type="radio"]:checked,
 .form-wrapper input[type="radio"]:checked {
-    background-image: radial-gradient(circle, var(--sbb-radio-dot, #595959) 0 34%, transparent 38%);
+    background-image: radial-gradient(circle, var(--sbb-radio-dot) 0 34%, transparent 38%);
 }
 
 /* Keep the radio vertically centered with its label text. */

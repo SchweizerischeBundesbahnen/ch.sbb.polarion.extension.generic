@@ -28,16 +28,7 @@
     display: inline-block;
     margin-left: 2em;
 }
-.toolbar-button:not([disabled]):hover {
-    box-shadow: 0 0 1px rgba(0,0,0,0.3);
-    border-color: #BEBEBE;
-}
-.toolbar-button:disabled {
-    opacity: 40%;
-}
-.toolbar-button:disabled:hover {
-    cursor: default;
-}
+/* .toolbar-button hover/disabled now come from the unified button system (buttons.css). */
 .note {
     color: #aaaaaa;
 }

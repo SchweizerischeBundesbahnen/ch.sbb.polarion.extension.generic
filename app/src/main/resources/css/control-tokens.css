@@ -53,15 +53,32 @@
     /* Combobox popup + options */
     --sbb-combo-chevron: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZD0iTTQuNCA2LjI3IEwxMS42IDYuMjcgTDggMTAuNDcgWiIgZmlsbD0iIzQ2NDY0NiIvPjwvc3ZnPg==");
     --sbb-combo-erase: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjI1NiIgZmlsbD0iIzAwNzk5MyIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDk0LjcyLDQwLjk2MDAwMDAwMDAwMDAxKSBzY2FsZSgwLjg0KSI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTM0Mi42IDE1MC42YzEyLjUtMTIuNSAxMi41LTMyLjggMC00NS4zcy0zMi44LTEyLjUtNDUuMyAwTDE5MiAyMTAuNyA4Ni42IDEwNS40Yy0xMi41LTEyLjUtMzIuOC0xMi41LTQ1LjMgMHMtMTIuNSAzMi44IDAgNDUuM0wxNDYuNyAyNTYgNDEuNCAzNjEuNGMtMTIuNSAxMi41LTEyLjUgMzIuOCAwIDQ1LjNzMzIuOCAxMi41IDQ1LjMgMEwxOTIgMzAxLjMgMjk3LjQgNDA2LjZjMTIuNSAxMi41IDMyLjggMTIuNSA0NS4zIDBzMTIuNS0zMi44IDAtNDUuM0wyMzcuMyAyNTYgMzQyLjYgMTUwLjZ6Ii8+PC9nPjwvc3ZnPg==");
-    --sbb-info-icon: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PGNpcmNsZSBjeD0iOCIgY3k9IjgiIHI9IjgiIGZpbGw9IiM1NWEwYjkiLz48Y2lyY2xlIGN4PSI4IiBjeT0iNC41IiByPSIxLjIiIGZpbGw9IiNmZmYiLz48cmVjdCB4PSI2Ljg1IiB5PSI2LjQiIHdpZHRoPSIyLjMiIGhlaWdodD0iNiIgcng9IjEuMTUiIGZpbGw9IiNmZmYiLz48L3N2Zz4=");
+    /* Info icon (admin hint boxes) — blue circled "i" (source: images/info.svg). Keep this base64 in
+       sync with that file. width/height forced to 16 so size-less background consumers render it at
+       16px; viewBox stays 0 0 48 48. */
+    --sbb-info-icon: url("data:image/svg+xml;base64,PCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KDTxzdmcgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiB2aWV3Qm94PSIwIDAgNDggNDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+Cg08ZyBpZD0iU1ZHUmVwb19iZ0NhcnJpZXIiIHN0cm9rZS13aWR0aD0iMCIvPgoNPGcgaWQ9IlNWR1JlcG9fdHJhY2VyQ2FycmllciIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cg08ZyBpZD0iU1ZHUmVwb19pY29uQ2FycmllciI+IDxyZWN0IHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4wMSIvPiA8cGF0aCBkPSJNMjQgNDRDMjkuNTIyOCA0NCAzNC41MjI4IDQxLjc2MTQgMzguMTQyMSAzOC4xNDIxQzQxLjc2MTQgMzQuNTIyOCA0NCAyOS41MjI4IDQ0IDI0QzQ0IDE4LjQ3NzIgNDEuNzYxNCAxMy40NzcyIDM4LjE0MjEgOS44NTc4NkMzNC41MjI4IDYuMjM4NTggMjkuNTIyOCA0IDI0IDRDMTguNDc3MiA0IDEzLjQ3NzIgNi4yMzg1OCA5Ljg1Nzg2IDkuODU3ODZDNi4yMzg1OCAxMy40NzcyIDQgMTguNDc3MiA0IDI0QzQgMjkuNTIyOCA2LjIzODU4IDM0LjUyMjggOS44NTc4NiAzOC4xNDIxQzEzLjQ3NzIgNDEuNzYxNCAxOC40NzcyIDQ0IDI0IDQ0WiIgZmlsbD0iIzJGODhGRiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4gPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0yNCAxMUMyNS4zODA3IDExIDI2LjUgMTIuMTE5MyAyNi41IDEzLjVDMjYuNSAxNC44ODA3IDI1LjM4MDcgMTYgMjQgMTZDMjIuNjE5MyAxNiAyMS41IDE0Ljg4MDcgMjEuNSAxMy41QzIxLjUgMTIuMTE5MyAyMi42MTkzIDExIDI0IDExWiIgZmlsbD0id2hpdGUiLz4gPHBhdGggZD0iTTI0LjUgMzRWMjBIMjMuNUgyMi41IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPiA8cGF0aCBkPSJNMjEgMzRIMjgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+IDwvZz4KDTwvc3ZnPg==");
+    /* Revert-to-revision arrow (revisions table Actions) — green undo icon (source: images/
+       revision-revert.svg). Keep this base64 in sync with that file. Consumed via common.css
+       .revert-to-revision-icon (background-size: contain). */
+    --sbb-revision-revert-icon: url("data:image/svg+xml;base64,PCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KDTxzdmcgZmlsbD0iIzAwMDAwMCIKDSAgICAgd2lkdGg9IjY0cHgiCg0gICAgIGhlaWdodD0iNjRweCIKDSAgICAgdmlld0JveD0iMCAwIDE0IDE0IgoNICAgICByb2xlPSJpbWciCg0gICAgIGZvY3VzYWJsZT0iZmFsc2UiCg0gICAgIGFyaWEtaGlkZGVuPSJ0cnVlIgoNICAgICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgoNCg0gIDxnIGlkPSJTVkdSZXBvX2JnQ2FycmllciIgc3Ryb2tlLXdpZHRoPSIwIi8+Cg0gIDxnIGlkPSJTVkdSZXBvX3RyYWNlckNhcnJpZXIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgoNCg0gIDxnIGlkPSJTVkdSZXBvX2ljb25DYXJyaWVyIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwIDE0KSBzY2FsZSgxIC0xKSI+Cg0gICAgPGcgZmlsbD0iZ3JlZW4iPgoNICAgICAgPHBhdGggZD0iTTEuMDAwMDAwMDYgNS4yODMzMzMzNWw0LjY2NjY2NjYyLTMuODk5OTk5OTZWOS4xODMzMzMzeiIvPgoNICAgICAgPHBhdGggZD0iTTguNjY2NjY2NjUgMy45NTAwMDAwM0g0LjY2NjY2NjY5djIuNjY2NjY2NjRoMy45OTk5OTk5NmMuOTMzMzMzMzIgMCAxLjY2NjY2NjY1LjczMzMzMzMzIDEuNjY2NjY2NjUgMS42NjY2NjY2NXMtLjczMzMzMzMzIDEuNjY2NjY2NjUtMS42NjY2NjY2NSAxLjY2NjY2NjY1aC0uOTk5OTk5OTl2Mi42NjY2NjY2NGguOTk5OTk5OTljMi4zOTk5OTk5OCAwIDQuMzMzMzMzMjktMS45MzMzMzMzMSA0LjMzMzMzMzI5LTQuMzMzMzMzMjkgMC0yLjM5OTk5OTk4LTEuOTMzMzMzMzEtNC4zMzMzMzMyOS00LjMzMzMzMzI5LTQuMzMzMzMzMjl6Ii8+Cg0gICAgPC9nPgoNICA8L2c+Cg0KDTwvc3ZnPg==");
+    /* Notification alert icons — rounded warning/alert triangles (source SVGs: images/
+       notification-warning.svg = caution, notification-error.svg = red-alert). Keep this base64 in
+       sync with those files. Consumed only via common.css .alert-*::before (background-size: contain),
+       so the non-square viewBox is fine. */
+    --sbb-warning-icon: url("data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjIuODggMTExLjU0Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6IzFhMWExYTt9LmNscy0ye2ZpbGw6I2ZmZWYxMTtmaWxsLXJ1bGU6ZXZlbm9kZDt9PC9zdHlsZT48L2RlZnM+PHRpdGxlPmNhdXRpb248L3RpdGxlPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTIuMzUsODQuNDIsNDUuMjgsMTAuMmwuMTctLjI3aDBBMjMsMjMsMCwwLDEsNTIuNSwyLjY5LDE3LDE3LDAsMCwxLDYxLjU3LDBhMTYuNywxNi43LDAsMCwxLDkuMTEsMi42OSwyMi43OSwyMi43OSwwLDAsMSw3LDcuMjZxLjE5LjMyLjM2LjYzbDQyLjIzLDczLjM0LjI0LjQ0aDBhMjIuNDgsMjIuNDgsMCwwLDEsMi4zNywxMC4xOSwxNy42MywxNy42MywwLDAsMS0yLjE3LDguMzUsMTUuOTQsMTUuOTQsMCwwLDEtNi45Myw2LjZjLS4xOS4xLS4zOS4xOC0uNTguMjZhMjEuMTksMjEuMTksMCwwLDEtOS4xMSwxLjc1djBIMTcuNjFjLS4yMiwwLS40NCwwLS42NSwwYTE4LjA3LDE4LjA3LDAsMCwxLTYuMi0xLjE1QTE2LjQyLDE2LjQyLDAsMCwxLDMsMTA0LjI0YTE3LjUzLDE3LjUzLDAsMCwxLTMtOS41NywyMywyMywwLDAsMSwxLjU3LTguNzQsNy42Niw3LjY2LDAsMCwxLC43Ny0xLjUxWiIvPjxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTksODguNzUsNTIuMTIsMTQuMTZjNS4yNC04LjI1LDEzLjU0LTguNDYsMTguODcsMGw0Mi40Myw3My42OWMzLjM5LDYuODEsMS43MSwxNi05LjMzLDE1Ljc3SDE3LjYxQzEwLjM1LDEwMy44LDUuNjcsOTcuNDMsOSw4OC43NVoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik01Ny41Nyw4Mi42OUE1LjQ4LDUuNDgsMCwwLDEsNjEsODEuMTFhNS42Niw1LjY2LDAsMCwxLDQuNDIsMS42Niw1LjUzLDUuNTMsMCwwLDEsMS42MiwzLjU0QTUuNiw1LjYsMCwwLDEsNjcsODcuNzJhNiw2LDAsMCwxLS40MiwxLjM0LDUuNTMsNS41MywwLDAsMS0yLjkyLDIuODQsNS43OSw1Ljc5LDAsMCwxLTQuNTctLjEsNS41MSw1LjUxLDAsMCwxLTIuODEtMi45NCw1LjMxLDUuMzEsMCwwLDEtLjM2LTEuMjcsNS45LDUuOSwwLDAsMS0uMDYtMS4zMmgwYTYuNDUsNi40NSwwLDAsMSwuNTctMiw0LjYsNC42LDAsMCwxLDEuMTQtMS41NlptOC4xNS0xMC4yNGMtLjE5LDQuNzktOC4zMSw0LjgtOC40OSwwLS44Mi04LjIxLTIuOTItMjcuNy0yLjg2LTM1LjQyLjA3LTIuMzgsMi0zLjc4LDQuNTYtNC4zMmExMS4xOSwxMS4xOSwwLDAsMSwyLjQ5LS4yNCwxMS43NywxMS43NywwLDAsMSwyLjUuMjVjMi42MS41NSw0LjY1LDIsNC42NSw0LjQ0di4yNEw2NS43Miw3Mi40NVoiLz48L3N2Zz4=");
+    --sbb-error-icon: url("data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjIuODkgMTExLjU1Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2I3MTYxNjt9LmNscy0ye2ZpbGw6I2UyMWIxYjtmaWxsLXJ1bGU6ZXZlbm9kZDt9LmNscy0ze2ZpbGw6I2ZmZjt9PC9zdHlsZT48L2RlZnM+PHRpdGxlPnJlZC1hbGVydDwvdGl0bGU+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMi4zNSw4NC40Myw0NS4yOSwxMC4ybC4xNy0uMjdoMGEyMi45MiwyMi45MiwwLDAsMSw3LTcuMjNBMTcsMTcsMCwwLDEsNjEuNTgsMGExNi43OCwxNi43OCwwLDAsMSw5LjExLDIuNjksMjIuNzksMjIuNzksMCwwLDEsNyw3LjI2Yy4xMy4yMS4yNS40Mi4zNi42NGw0Mi4yNCw3My4zNC4yMy40NGgwYTIyLjIyLDIyLjIyLDAsMCwxLDIuMzcsMTAuMTksMTcuNTksMTcuNTksMCwwLDEtMi4xNiw4LjM1LDE2LDE2LDAsMCwxLTYuOTQsNi42MWwtLjU4LjI2YTIxLjM0LDIxLjM0LDAsMCwxLTkuMTEsMS43NHYwSDE3LjYyYy0uMjMsMC0uNDQsMC0uNjYsMGExOC4wNywxOC4wNywwLDAsMS02LjItMS4xNUExNi40NiwxNi40NiwwLDAsMSwzLDEwNC4yNmExNy41OSwxNy41OSwwLDAsMS0zLTkuNTgsMjMsMjMsMCwwLDEsMS41Ny04Ljc0LDguMjQsOC4yNCwwLDAsMSwuNzctMS41MVoiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik05LDg4Ljc2bDQzLjE1LTc0LjZjNS4yMy04LjI1LDEzLjUzLTguNDYsMTguODcsMGw0Mi40NCw3My43YzMuMzgsNi44MSwxLjcsMTYtOS4zNCwxNS43N0gxNy42MmMtNy4yNy4xOC0xMi02LjE5LTguNjQtMTQuODdaIi8+PHBhdGggY2xhc3M9ImNscy0zIiBkPSJNNTcuNTcsODIuN2E1LjUxLDUuNTEsMCwwLDEsMy40OC0xLjU4LDUuNzUsNS43NSwwLDAsMSwyLjQuMzUsNS44Miw1LjgyLDAsMCwxLDIsMS4zMSw1LjUzLDUuNTMsMCwwLDEsMS42MiwzLjU1LDYuMDUsNi4wNSwwLDAsMS0uMDgsMS40LDUuNTQsNS41NCwwLDAsMS01LjY0LDQuNiw1LjY3LDUuNjcsMCwwLDEtMi4yNy0uNTIsNS41Niw1LjU2LDAsMCwxLTIuODItMi45NCw1LjY1LDUuNjUsMCwwLDEtLjM1LTEuMjcsNS44Myw1LjgzLDAsMCwxLS4wNi0xLjMxaDBhNi4xOSw2LjE5LDAsMCwxLC41Ny0yLDQuNTcsNC41NywwLDAsMSwxLjEzLTEuNTZabTguMTYtMTAuMjRjLS4yLDQuNzktOC4zMSw0LjgtOC41LDAtLjgyLTguMjEtMi45Mi0yOS4zOS0yLjg1LTM3LjEuMDctMi4zOCwyLTMuNzksNC41Ni00LjMzYTEyLjgzLDEyLjgzLDAsMCwxLDUsMGMyLjYxLjU2LDQuNjUsMiw0LjY1LDQuNDR2LjI0TDY1LjczLDcyLjQ2WiIvPjwvc3ZnPg==");
+    /* Table add / remove controls — clean inline-SVG replacing raster /polarion/ria/images/control/
+       tablePlus.png (green +) and tableMinus.png (magenta −). Use via the .sbb-icon-table-* classes. */
+    --sbb-table-plus-icon: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cmVjdCBmaWxsPSIjN2RhYjAwIiB4PSI2IiB5PSIyIiB3aWR0aD0iNCIgaGVpZ2h0PSIxMiIvPjxyZWN0IGZpbGw9IiM3ZGFiMDAiIHg9IjIiIHk9IjYiIHdpZHRoPSIxMiIgaGVpZ2h0PSI0Ii8+PC9zdmc+");
+    --sbb-table-minus-icon: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cmVjdCBmaWxsPSIjYWIwMDg1IiB4PSIyIiB5PSI2IiB3aWR0aD0iMTIiIGhlaWdodD0iNCIvPjwvc3ZnPg==");
     --sbb-combo-popup-border: #ccccd4;
     /* Light teal hover / selection tint — the base that --sbb-option-hover and --sbb-chip-bg
        derive from, and the token the React SPAs reference for dropdown-row hovers. */
     --sbb-hover-tint: #ebf7f8;
-    --sbb-option-hover: var(--sbb-hover-tint, #ebf7f8);
+    --sbb-option-hover: var(--sbb-hover-tint);
 
     /* Multi-select chips */
-    --sbb-chip-bg: var(--sbb-hover-tint, #ebf7f8);
+    --sbb-chip-bg: var(--sbb-hover-tint);
     --sbb-chip-border: #b6dfe3;
     --sbb-chip-remove: #5c8a90;
 
@@ -75,12 +92,55 @@
     --sbb-table-header-bg: #e8e8e3;
     --sbb-table-header-text: #495057;
     --sbb-table-border: #dddddd;
-    --sbb-table-row-hover: var(--sbb-hover-tint, #ebf7f8);
+    --sbb-table-row-hover: var(--sbb-hover-tint);
+
+    /* Buttons — the shared button look (see buttons.css). Values sampled live from Polarion 2606:
+       control = .polarion-generalToolbarButton, action = .polarion-ToolbarButton/.polarion-FormButton,
+       dialog = .polarion-JSWizardButton, link = .polarion-Hyperlink. Each is consumed with a literal
+       fallback in buttons.css, so that file stays self-contained for popups and the React SPAs. */
+    --sbb-btn-height: 28px;
+    --sbb-btn-radius: 2px;
+    --sbb-btn-control-bg: #f5f5f5;          /* control fill (action = transparent) */
+    --sbb-btn-control-text: #595959;        /* control + action label */
+    --sbb-btn-border: #dedede;              /* rest border */
+    --sbb-btn-hover-bg: #f7f7f7;            /* control + action hover fill */
+    --sbb-btn-hover-border: #cecece;        /* hover border */
+    --sbb-btn-hover-shadow: 0 0 2px #e0dede;/* hover lift */
+    --sbb-btn-disabled-opacity: 0.5;        /* control + action disabled */
+    --sbb-btn-accent: #007993;              /* primary fill · secondary/link text */
+    --sbb-btn-accent-primary-hover: #196269;   /* primary hover — darkens */
+    --sbb-btn-accent-primary-active: #16565c;
+    --sbb-btn-accent-secondary-hover: #d1fff2; /* secondary hover — mint fill */
+    --sbb-btn-accent-secondary-active: #b8f2e2;
+    --sbb-btn-link-hover: #005159;          /* link hover + underline */
+    --sbb-btn-dlg-disabled-bg: #dedee3;     /* dialog disabled fill */
+    --sbb-btn-dlg-disabled-fg: #9999a9;     /* dialog disabled text/border */
+    --sbb-btn-dlg-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --sbb-btn-dlg-shadow-hover: 0 3px 6px rgba(0, 0, 0, 0.3);
+    --sbb-btn-focus-ring: 0 0 0 2px rgba(0, 121, 147, 0.35);
 }
 
 /* Spinner utility: a CSS-background progress wheel (prefer this over an <img> so the markup stays
    semantic and the asset is swappable in one place). Size it via width/height on the element. */
 .sbb-spinner {
     display: inline-block;
-    background: var(--sbb-spinner, url(/polarion/ria/images/progressWheel48.svg)) center / contain no-repeat;
+    background: var(--sbb-spinner) center / contain no-repeat;
+}
+
+/* Table add / remove icons — CSS-background utility (16x16, self-contained) for the "+" / "−" row
+   controls. Use on a <span> in place of the old <img src=".../tablePlus.png">. Literal fallbacks so
+   they render where control-tokens.css is the only generic stylesheet linked. */
+.sbb-icon-table-plus,
+.sbb-icon-table-minus {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    background: center / contain no-repeat;
+}
+.sbb-icon-table-plus {
+    background-image: var(--sbb-table-plus-icon);
+}
+.sbb-icon-table-minus {
+    background-image: var(--sbb-table-minus-icon);
 }
