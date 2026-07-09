@@ -35,11 +35,11 @@ describe('inline-svg-tokens (issue #528 build step)', function () {
             expect(css).to.equal(resolved);
         });
 
-        it('only rewrites placeholders whose path ends in .svg (leaves prose/examples alone)', function () {
-            const input = '/* example: url(inline:<path>) */ --x: url(inline:images/a.svg);';
+        it('only rewrites url(inline:…svg) placeholders, not bare "inline:" prose in comments', function () {
+            const input = '/* the inline: prefix names the .svg */ --x: url(inline:images/a.svg);';
             const { css, count } = inlineSvgDataUris(input, read);
             expect(count).to.equal(1);
-            expect(css).to.contain('url(inline:<path>)'); // the comment example is untouched
+            expect(css).to.contain('the inline: prefix names the .svg'); // prose untouched
             expect(css).to.contain('data:image/svg+xml;base64,'); // the real token is inlined
         });
 
@@ -56,6 +56,18 @@ describe('inline-svg-tokens (issue #528 build step)', function () {
             const boom = () => { throw new Error('referenced SVG not found: images/missing.svg'); };
             expect(() => inlineSvgDataUris('--x: url(inline:images/missing.svg);', boom))
                 .to.throw(/referenced SVG not found/);
+        });
+
+        it('tolerates quotes and whitespace around the placeholder', function () {
+            const { css, count } = inlineSvgDataUris('--a: url("inline:images/a.svg"); --b: url( inline:images/b.svg );', read);
+            expect(count).to.equal(2);
+            expect(css).to.not.contain('inline:');
+        });
+
+        it('throws instead of shipping an unresolved placeholder (e.g. a non-.svg path)', function () {
+            // Not matched by the .svg-only replacer, so it would otherwise ship as a broken URL.
+            expect(() => inlineSvgDataUris('--x: url(inline:images/a.png);', read))
+                .to.throw(/unresolved inline: placeholder would ship/);
         });
     });
 

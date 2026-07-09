@@ -17,23 +17,33 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Matches only real icon placeholders (paths ending in .svg); this deliberately skips prose like the
-// `url(inline:<path>)` example in the file header comment.
-const PLACEHOLDER = /url\(inline:([^)]+\.svg)\)/g;
+// Matches real icon placeholders (paths ending in .svg), tolerating optional quotes and whitespace
+// inside url(...). This deliberately skips prose (the header comment mentions "inline:" but never
+// inside a url(...)).
+const PLACEHOLDER = /url\(\s*(['"]?)inline:([^'")]+\.svg)\1\s*\)/g;
+// Any inline: left inside a url(...) after replacement — e.g. a placeholder whose path does not end
+// in .svg, or one this regex still could not parse — must fail the build rather than ship a broken
+// URL that browsers try to fetch (the icon would silently disappear).
+const LEFTOVER = /url\(\s*['"]?inline:[^)]*\)/;
 
 /**
  * Replace every `url(inline:<path>.svg)` placeholder in `css` with a base64 data-URI.
  * @param {string} css       stylesheet text
  * @param {(relPath: string) => Buffer|Uint8Array} readSvg  resolves a placeholder path to raw SVG bytes
  * @returns {{ css: string, count: number }} rewritten CSS and how many placeholders were replaced
+ * @throws if any inline: placeholder remains inside a url(...) after replacement
  */
 export function inlineSvgDataUris(css, readSvg) {
     let count = 0;
-    const out = css.replace(PLACEHOLDER, (_match, rawPath) => {
+    const out = css.replace(PLACEHOLDER, (_match, _quote, rawPath) => {
         const b64 = Buffer.from(readSvg(rawPath.trim())).toString('base64');
         count++;
         return `url("data:image/svg+xml;base64,${b64}")`;
     });
+    const leftover = out.match(LEFTOVER);
+    if (leftover) {
+        throw new Error(`unresolved inline: placeholder would ship (not a *.svg path?): ${leftover[0]}`);
+    }
     return { css: out, count };
 }
 

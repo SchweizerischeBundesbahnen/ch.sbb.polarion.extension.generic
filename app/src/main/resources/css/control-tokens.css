@@ -107,10 +107,10 @@
     --sbb-table-border: #dddddd;
     --sbb-table-row-hover: var(--sbb-hover-tint);
 
-    /* Buttons — the shared button look (see buttons.css). Values sampled live from Polarion 2606:
-       control = .polarion-generalToolbarButton, action = .polarion-ToolbarButton/.polarion-FormButton,
-       dialog = .polarion-JSWizardButton, link = .polarion-Hyperlink. Each is consumed with a literal
-       fallback in buttons.css, so that file stays self-contained for popups and the React SPAs. */
+    /* Buttons — the shared button look (see buttons.css, which consumes these via var(--sbb-btn-*)).
+       Values sampled live from Polarion 2606: control = .polarion-generalToolbarButton,
+       action = .polarion-ToolbarButton/.polarion-FormButton, dialog = .polarion-JSWizardButton,
+       link = .polarion-Hyperlink. */
     --sbb-btn-height: 28px;
     --sbb-btn-radius: 2px;
     --sbb-btn-control-bg: #f5f5f5;          /* control fill (action = transparent) */
@@ -140,9 +140,9 @@
     background: var(--sbb-spinner) center / contain no-repeat;
 }
 
-/* Table add / remove icons — CSS-background utility (16x16, self-contained) for the "+" / "−" row
-   controls. Use on a <span> in place of the old <img src=".../tablePlus.png">. Literal fallbacks so
-   they render where control-tokens.css is the only generic stylesheet linked. */
+/* Table add / remove icons — CSS-background utility (16x16) for the "+" / "−" row controls. Use on a
+   <span> in place of the old <img src=".../tablePlus.png">. The icon comes from the --sbb-table-*-icon
+   token, so control-tokens.css must be loaded. */
 .sbb-icon-table-plus,
 .sbb-icon-table-minus {
     display: inline-block;
