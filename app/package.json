@@ -4,7 +4,7 @@
     "undici": "8.7.0",
     "serialize-javascript": "7.0.7",
     "glob": "13.0.6",
-    "js-yaml": "4.3.0",
+    "js-yaml": "5.2.1",
     "mocha": {
       "diff": "9.0.0"
     }
