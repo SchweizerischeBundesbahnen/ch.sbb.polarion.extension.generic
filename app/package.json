@@ -1,5 +1,13 @@
 {
-  "dependencies": {
+  "dependencies": {},
+  "overrides": {
+    "undici": "7.28.0",
+    "serialize-javascript": "7.0.5",
+    "glob": "12.0.0",
+    "js-yaml": "4.2.0",
+    "mocha": {
+      "diff": "8.0.4"
+    }
   },
   "devDependencies": {
     "chai": "6.2.2",
