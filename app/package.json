@@ -18,7 +18,8 @@
   },
   "name": "maven-js-project",
   "scripts": {
-    "test": "mocha src/test/js/**/*.js"
+    "test": "mocha src/test/js/**/*.js",
+    "build:css": "node scripts/inline-svg-tokens.mjs target/classes/css/control-tokens.css"
   },
   "type": "module",
   "version": "1.0.0",
