@@ -359,7 +359,7 @@ export default class ExtensionContext {
         const button = document.createElement("button");
         button.title = 'Revert data to this revision';
         button.className = 'revert-to-revision-button';
-        button.innerHTML = '<img src="/polarion/ria/images/actions/arrow_reopen.png" />';
+        button.innerHTML = '<span class="revert-to-revision-icon" role="img" aria-label="Revert to this revision"></span>';
         return button;
     }
 

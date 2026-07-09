@@ -83,9 +83,9 @@
 
 /* Shared hover (.polarion-ToolbarButton-Over): subtle lift + darker border + soft shadow.
    Guarded with :not(:disabled) so a disabled control/action never picks up the hover paint. */
-.sbb-btn:not(:disabled):not(.sbb-btn--primary):not(.sbb-btn--secondary):not(.sbb-btn--link):hover,
-.sbb-btn--control:not(:disabled):hover,
-.sbb-btn--action:not(:disabled):hover,
+.sbb-btn:not(:disabled):not(.-disabled):not(.sbb-btn--primary):not(.sbb-btn--secondary):not(.sbb-btn--link):hover,
+.sbb-btn--control:not(:disabled):not(.-disabled):hover,
+.sbb-btn--action:not(:disabled):not(.-disabled):hover,
 .toolbar-button:not([disabled]):not(:disabled):hover,
 .buttons-wrapper button:not([disabled]):not(:disabled):hover,
 .editor-buttons button:not([disabled]):not(:disabled):hover {
@@ -159,11 +159,11 @@
     background: #fff;
     color: var(--sbb-btn-accent, #007993);
 }
-.sbb-btn--secondary:not(:disabled):hover {
+.sbb-btn--secondary:not(:disabled):not(.-disabled):hover {
     background: var(--sbb-btn-accent-secondary-hover, #d1fff2);
     box-shadow: var(--sbb-btn-dlg-shadow-hover, 0 3px 6px rgba(0, 0, 0, 0.3));
 }
-.sbb-btn--secondary:not(:disabled):active {
+.sbb-btn--secondary:not(:disabled):not(.-disabled):active {
     background: var(--sbb-btn-accent-secondary-active, #b8f2e2);
 }
 
@@ -171,11 +171,11 @@
     background: var(--sbb-btn-accent, #007993);
     color: #fff;
 }
-.sbb-btn--primary:not(:disabled):hover {
+.sbb-btn--primary:not(:disabled):not(.-disabled):hover {
     background: var(--sbb-btn-accent-primary-hover, #196269);
     box-shadow: var(--sbb-btn-dlg-shadow-hover, 0 3px 6px rgba(0, 0, 0, 0.3));
 }
-.sbb-btn--primary:not(:disabled):active {
+.sbb-btn--primary:not(:disabled):not(.-disabled):active {
     background: var(--sbb-btn-accent-primary-active, #16565c);
 }
 
@@ -215,7 +215,7 @@
     cursor: pointer;
     box-shadow: none;
 }
-.sbb-btn--link:not(:disabled):hover {
+.sbb-btn--link:not(:disabled):not(.-disabled):hover {
     color: var(--sbb-btn-link-hover, #005159);
     text-decoration: underline;
 }
