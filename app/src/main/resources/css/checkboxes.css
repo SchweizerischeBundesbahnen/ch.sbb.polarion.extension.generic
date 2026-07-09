@@ -1,6 +1,6 @@
 /*
- * Neutral 2606 checkboxes — render with Polarion's own checkbox images
- * (/polarion/ria/images/checkbox/*) instead of the browser's native blue.
+ * Neutral 2606 checkboxes — render checkboxes as inline SVG (self-contained data URIs,
+ * matched to Polarion 2606) instead of the browser's native blue.
  *
  * Single source for every extension. SCOPED to our own UI wrappers
  * (.modal__container popups, .standard-admin-page admin pages, .form-wrapper
@@ -21,24 +21,22 @@
     margin: 0 4px 0 0;
     vertical-align: middle;
     cursor: pointer;
-    background: var(--sbb-checkbox-unchecked, url(/polarion/ria/images/checkbox/unchecked.png)) no-repeat center;
+    background: var(--sbb-checkbox-unchecked, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZGZkZmQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNiOWI5YjkiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZGZkZmQiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==")) no-repeat center;
     background-size: var(--sbb-toggle-size, 15px) var(--sbb-toggle-size, 15px);
 }
 
 .modal__container input[type="checkbox"]:checked,
 .standard-admin-page input[type="checkbox"]:checked,
 .form-wrapper input[type="checkbox"]:checked {
-    background-image: var(--sbb-checkbox-checked, url(/polarion/ria/images/checkbox/checked.png));
+    background-image: var(--sbb-checkbox-checked, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZGZkZmQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNiOWI5YjkiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZGZkZmQiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik02LjY2IDguODlRNi45NSA3LjkxIDcuNDAgNi44N1E3Ljg1IDUuODIgOC40NiA0Ljg2UTkuMDcgMy45MCA5LjM3IDMuNTlROS42NiAzLjI5IDkuODcgMy4xMlExMC4wOCAyLjk0IDEwLjY3IDIuOTNRMTEuMjYgMi45MSAxMS41NiAyLjk1UTExLjc3IDIuOTcgMTEuOTEgMy4xMVExMi4wNiAzLjI1IDEyLjA4IDMuNDZRMTIuMTAgMy42MSAxMi4wNCAzLjcyUTExLjk4IDMuODIgMTEuNzcgNC4wMlExMC43NiA0LjkyIDkuNjYgNi44NFE4LjU1IDguNzUgNy45MCAxMC44MFE3LjY1IDExLjc0IDcuNTggMTEuOTBRNy41MiAxMi4wNiA3LjQwIDEyLjE4UTcuMjggMTIuMjkgNi44OSAxMi4yMFE2LjU2IDEyLjA5IDYuNDYgMTEuOThRNi4zNiAxMS44OCA2LjI5IDExLjc5UTYuMjIgMTEuNjggNS44NSAxMC45OFE1LjQxIDEwLjIyIDQuNTYgOS4xNlE0LjAxIDguNTUgMy44OSA4LjIwUTMuNzEgNy42OSA0LjA3IDcuNDFRNC40MyA3LjEyIDQuODAgNy4xOVE1LjIxIDcuMjcgNS43MiA3LjczUTYuMjQgOC4yMCA2LjY2IDguODlaIiBmaWxsPSIjNTg1ODU4Ii8+PC9zdmc+"));
 }
 
-/* Polarion ships no indeterminate checkbox image; generic
-   provides one (the unchecked box with a dash baked in) as --sbb-checkbox-indeterminate. The fallback
-   URL is relative to this stylesheet so it resolves under the consumer's own /ui/generic/ mount even
-   when control-tokens.css is not loaded. */
+/* Indeterminate = unchecked box with a dash; drawn inline (data URI) so it needs no
+   external image and no relative URL. */
 .modal__container input[type="checkbox"]:indeterminate,
 .standard-admin-page input[type="checkbox"]:indeterminate,
 .form-wrapper input[type="checkbox"]:indeterminate {
-    background-image: var(--sbb-checkbox-indeterminate, url(../images/checkbox-indeterminate.png));
+    background-image: var(--sbb-checkbox-indeterminate, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZGZkZmQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNiOWI5YjkiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZGZkZmQiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik00IDcuNSBIMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzU4NTg1OCIgc3Ryb2tlLXdpZHRoPSIyLjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg=="));
 }
 
 /* Disabled: render with Polarion's greyed read-only images so the control visibly reads as
@@ -47,19 +45,19 @@
 .standard-admin-page input[type="checkbox"]:disabled,
 .form-wrapper input[type="checkbox"]:disabled {
     cursor: default;
-    background-image: var(--sbb-checkbox-unchecked-readonly, url(/polarion/ria/images/checkbox/unchecked_readonly.png));
+    background-image: var(--sbb-checkbox-unchecked-readonly, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZWZlZmUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmNGY0ZjQiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNkY2RjZGMiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZWZlZmUiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg=="));
 }
 
 .modal__container input[type="checkbox"]:disabled:checked,
 .standard-admin-page input[type="checkbox"]:disabled:checked,
 .form-wrapper input[type="checkbox"]:disabled:checked {
-    background-image: var(--sbb-checkbox-checked-readonly, url(/polarion/ria/images/checkbox/checked_readonly.png));
+    background-image: var(--sbb-checkbox-checked-readonly, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZWZlZmUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmNGY0ZjQiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNkY2RjZGMiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZWZlZmUiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik02LjY2IDguODlRNi45NSA3LjkxIDcuNDAgNi44N1E3Ljg1IDUuODIgOC40NiA0Ljg2UTkuMDcgMy45MCA5LjM3IDMuNTlROS42NiAzLjI5IDkuODcgMy4xMlExMC4wOCAyLjk0IDEwLjY3IDIuOTNRMTEuMjYgMi45MSAxMS41NiAyLjk1UTExLjc3IDIuOTcgMTEuOTEgMy4xMVExMi4wNiAzLjI1IDEyLjA4IDMuNDZRMTIuMTAgMy42MSAxMi4wNCAzLjcyUTExLjk4IDMuODIgMTEuNzcgNC4wMlExMC43NiA0LjkyIDkuNjYgNi44NFE4LjU1IDguNzUgNy45MCAxMC44MFE3LjY1IDExLjc0IDcuNTggMTEuOTBRNy41MiAxMi4wNiA3LjQwIDEyLjE4UTcuMjggMTIuMjkgNi44OSAxMi4yMFE2LjU2IDEyLjA5IDYuNDYgMTEuOThRNi4zNiAxMS44OCA2LjI5IDExLjc5UTYuMjIgMTEuNjggNS44NSAxMC45OFE1LjQxIDEwLjIyIDQuNTYgOS4xNlE0LjAxIDguNTUgMy44OSA4LjIwUTMuNzEgNy42OSA0LjA3IDcuNDFRNC40MyA3LjEyIDQuODAgNy4xOVE1LjIxIDcuMjcgNS43MiA3LjczUTYuMjQgOC4yMCA2LjY2IDguODlaIiBmaWxsPSIjYTZhNmE2Ii8+PC9zdmc+"));
 }
 
 .modal__container input[type="checkbox"]:disabled:indeterminate,
 .standard-admin-page input[type="checkbox"]:disabled:indeterminate,
 .form-wrapper input[type="checkbox"]:disabled:indeterminate {
-    background-image: var(--sbb-checkbox-indeterminate-readonly, url(../images/checkbox-indeterminate-readonly.png));
+    background-image: var(--sbb-checkbox-indeterminate-readonly, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZWZlZmUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmNGY0ZjQiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNkY2RjZGMiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZWZlZmUiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik00IDcuNSBIMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2E2YTZhNiIgc3Ryb2tlLXdpZHRoPSIyLjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg=="));
 }
 
 /* Keyboard focus: Polarion's focus-ring images via :focus-visible, so the ring shows on keyboard
@@ -69,21 +67,20 @@
 .standard-admin-page input[type="checkbox"]:focus-visible,
 .form-wrapper input[type="checkbox"]:focus-visible {
     outline: none;
-    background-image: var(--sbb-checkbox-unchecked-focus, url(/polarion/ria/images/checkbox/unchecked_focus.png));
+    background-image: var(--sbb-checkbox-unchecked-focus, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZGZkZmQiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNiOWI5YjkiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZGZkZmQiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg=="));
 }
 
 .modal__container input[type="checkbox"]:focus-visible:checked,
 .standard-admin-page input[type="checkbox"]:focus-visible:checked,
 .form-wrapper input[type="checkbox"]:focus-visible:checked {
-    background-image: var(--sbb-checkbox-checked-focus, url(/polarion/ria/images/checkbox/checked_focus.png));
+    background-image: var(--sbb-checkbox-checked-focus, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZGZkZmQiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNiOWI5YjkiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZGZkZmQiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik02LjY2IDguODlRNi45NSA3LjkxIDcuNDAgNi44N1E3Ljg1IDUuODIgOC40NiA0Ljg2UTkuMDcgMy45MCA5LjM3IDMuNTlROS42NiAzLjI5IDkuODcgMy4xMlExMC4wOCAyLjk0IDEwLjY3IDIuOTNRMTEuMjYgMi45MSAxMS41NiAyLjk1UTExLjc3IDIuOTcgMTEuOTEgMy4xMVExMi4wNiAzLjI1IDEyLjA4IDMuNDZRMTIuMTAgMy42MSAxMi4wNCAzLjcyUTExLjk4IDMuODIgMTEuNzcgNC4wMlExMC43NiA0LjkyIDkuNjYgNi44NFE4LjU1IDguNzUgNy45MCAxMC44MFE3LjY1IDExLjc0IDcuNTggMTEuOTBRNy41MiAxMi4wNiA3LjQwIDEyLjE4UTcuMjggMTIuMjkgNi44OSAxMi4yMFE2LjU2IDEyLjA5IDYuNDYgMTEuOThRNi4zNiAxMS44OCA2LjI5IDExLjc5UTYuMjIgMTEuNjggNS44NSAxMC45OFE1LjQxIDEwLjIyIDQuNTYgOS4xNlE0LjAxIDguNTUgMy44OSA4LjIwUTMuNzEgNy42OSA0LjA3IDcuNDFRNC40MyA3LjEyIDQuODAgNy4xOVE1LjIxIDcuMjcgNS43MiA3LjczUTYuMjQgOC4yMCA2LjY2IDguODlaIiBmaWxsPSIjNTg1ODU4Ii8+PC9zdmc+"));
 }
 
-/* Indeterminate + keyboard focus: the focused box with a dash (own rule so :focus-visible does not
-   override it with the plain focus image). */
+/* Indeterminate + keyboard focus: the focused (inverted-gradient) box with a dash. */
 .modal__container input[type="checkbox"]:focus-visible:indeterminate,
 .standard-admin-page input[type="checkbox"]:focus-visible:indeterminate,
 .form-wrapper input[type="checkbox"]:focus-visible:indeterminate {
-    background-image: var(--sbb-checkbox-indeterminate-focus, url(../images/checkbox-indeterminate-focus.png));
+    background-image: var(--sbb-checkbox-indeterminate-focus, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZGZkZmQiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNiOWI5YjkiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZGZkZmQiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik00IDcuNSBIMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzU4NTg1OCIgc3Ryb2tlLXdpZHRoPSIyLjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg=="));
 }
 
 /* Keep the checkbox vertically centered with its label text. */
