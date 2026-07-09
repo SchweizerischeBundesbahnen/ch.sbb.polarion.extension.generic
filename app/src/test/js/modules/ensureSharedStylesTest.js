@@ -10,6 +10,7 @@ describe('ensureSharedStyles', function () {
         'generic-radios-styles',
         'generic-inputs-styles',
         'generic-searchable-dropdown-styles',
+        'generic-buttons-styles',
     ];
     const SD_ID = 'generic-searchable-dropdown-styles';
 

@@ -4,6 +4,7 @@
 @import url("inputs.css");
 @import url("searchable-dropdown.css");
 @import url("tables.css");
+@import url("buttons.css");
 
 @font-face {
     font-family: "Selawik";
@@ -260,36 +261,8 @@ code-input {
     margin-top: 24px;
 }
 
-.toolbar-button {
-    /* inline-flex + align-items:center vertically centres the label; without it text-only
-       buttons and <label class="toolbar-button"> render their text high in the 28px box.
-       Icon buttons keep "icon left + text": the <img class="button-image"> is simply the
-       first flex item (its float is inert here), with padding-right for the gap. */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 3px 6px;
-    margin-right: 5px;
-    text-align: left;
-    vertical-align: middle;
-    white-space: nowrap;
-    background-color: var(--polarion-button-bg);
-    border: 1px solid #DEDEDE;
-    -moz-border-radius: 2px;
-    border-radius: 2px;
-    height: 28px;
-    color: #595959;
-    border-collapse: separate;
-    line-height: 16px;
-}
-
-.toolbar-button:hover {
-    cursor: pointer;
-}
-
+/* .toolbar-button now lives in the unified button system (buttons.css); its legacy selector is
+   aliased there. The icon <img class="button-image"> keeps its own layout rule. */
 .button-image {
     padding-right: 5px;
     float: left;

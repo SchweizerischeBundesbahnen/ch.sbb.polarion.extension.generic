@@ -18,6 +18,7 @@ const STYLES = [
     ['generic-radios-styles', 'radios.css'],
     ['generic-inputs-styles', 'inputs.css'],
     ['generic-searchable-dropdown-styles', 'searchable-dropdown.css'],
+    ['generic-buttons-styles', 'buttons.css'],
 ];
 
 export default function ensureSharedStyles() {
