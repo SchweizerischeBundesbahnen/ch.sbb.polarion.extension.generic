@@ -1,7 +1,7 @@
 {
   "dependencies": {},
   "overrides": {
-    "undici": "7.28.0",
+    "undici": "8.7.0",
     "serialize-javascript": "7.0.7",
     "glob": "13.0.6",
     "js-yaml": "4.3.0",
