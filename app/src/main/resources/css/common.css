@@ -209,17 +209,25 @@ code-input {
     padding-right: 1%;
 }
 
-.action-alerts .alert {
+/* Inline text alerts — coloured status text (no box). Two entry points, unified here so consumers
+   don't re-declare them: .action-alerts (admin action results) and .validation-alerts (form
+   validation in the exporter popups). Not bold. */
+.action-alerts .alert,
+.validation-alerts .alert {
     font-size: 12px;
-    font-weight: bold;
+}
+
+.action-alerts .alert {
     padding-left: 20px;
 }
 
-.action-alerts .alert-error {
+.action-alerts .alert-error,
+.validation-alerts .alert-error {
     color: red;
 }
 
-.action-alerts .alert-success {
+.action-alerts .alert-success,
+.validation-alerts .alert-success {
     color: green;
 }
 
