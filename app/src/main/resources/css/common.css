@@ -239,7 +239,11 @@ code-input {
 .notifications .alert-error::before {
     content: "";
     display: inline-block;
+    /* vertical-align:middle centers the box on the x-height, which leaves a taller icon sitting
+       ~0.1em below the optical center of the capital-height text; nudge it up to compensate. */
     vertical-align: middle;
+    position: relative;
+    top: -0.1em;
     width: 18px;
     height: 18px;
     margin-right: 6px;
