@@ -39,8 +39,8 @@
     background-image: var(--sbb-checkbox-indeterminate, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZGZkZmQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlYWVhZWEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNiOWI5YjkiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZGZkZmQiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik00IDcuNSBIMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzU4NTg1OCIgc3Ryb2tlLXdpZHRoPSIyLjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg=="));
 }
 
-/* Disabled: render with Polarion's greyed read-only images so the control visibly reads as
-   non-selectable (a plain unchecked box otherwise looks identical to an enabled one). */
+/* Disabled: the greyed read-only look (lighter border + grey glyph), drawn inline, so the control
+   visibly reads as non-selectable (a plain unchecked box otherwise looks identical to an enabled one). */
 .modal__container input[type="checkbox"]:disabled,
 .standard-admin-page input[type="checkbox"]:disabled,
 .form-wrapper input[type="checkbox"]:disabled {
@@ -60,9 +60,9 @@
     background-image: var(--sbb-checkbox-indeterminate-readonly, url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNSIgaGVpZ2h0PSIxNSIgdmlld0JveD0iMCAwIDE1IDE1Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZWZlZmUiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmNGY0ZjQiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiNkY2RjZGMiLz48cmVjdCB4PSIxLjUiIHk9IjEuNSIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZWZlZmUiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik00IDcuNSBIMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2E2YTZhNiIgc3Ryb2tlLXdpZHRoPSIyLjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg=="));
 }
 
-/* Keyboard focus: Polarion's focus-ring images via :focus-visible, so the ring shows on keyboard
-   navigation but not on a plain mouse click. The image itself is the focus indicator, so the
-   default outline is suppressed. */
+/* Keyboard focus (:focus-visible): the focus look — Polarion's inverted-gradient box, drawn inline —
+   shows on keyboard navigation but not on a plain mouse click. The box itself is the focus indicator,
+   so the default outline is suppressed. */
 .modal__container input[type="checkbox"]:focus-visible,
 .standard-admin-page input[type="checkbox"]:focus-visible,
 .form-wrapper input[type="checkbox"]:focus-visible {
