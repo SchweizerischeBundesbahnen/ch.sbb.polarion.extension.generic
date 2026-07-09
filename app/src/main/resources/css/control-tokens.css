@@ -16,7 +16,19 @@
  * that fails to load this file — e.g. a Vite dev server running outside Polarion,
  * where /polarion/* 404s — still renders the intended look.
  */
-:root {
+/* Tokens are declared on the shared UI scopes (not only :root) so that on a page where several
+   extensions load their OWN bundled generic at DIFFERENT versions (the Polarion document page), each
+   extension's controls read the tokens from the closest scoped ancestor — its own bundle's copy —
+   instead of whichever extension's :root declaration happened to load last. Custom properties
+   inherit downward, so a `.sbb-ui` (or existing .modal__container / .standard-admin-page /
+   .form-wrapper) wrapper shadows any foreign :root value for its subtree.
+   :root is kept for backward-compat during rollout (consumers not yet carrying a scope class); it
+   can be dropped once every consumer wraps its UI roots in .sbb-ui. See issue #515. */
+:root,
+.modal__container,
+.standard-admin-page,
+.form-wrapper,
+.sbb-ui {
     /* Typography (shared by every control) */
     --sbb-control-font-family: "Segoe UI", "Selawik", "Open Sans", Arial, sans-serif;
     --sbb-control-font-size: 13px;

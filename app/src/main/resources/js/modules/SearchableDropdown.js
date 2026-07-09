@@ -395,7 +395,12 @@ export default class SearchableDropdown {
         // panels, scrollable modals) and its width is driven in JS from the trigger, so it always
         // shows in full. Hidden until opened.
         this.portal = document.createElement('div');
-        this.portal.className = 'sd-portal';
+        // The portal lives under <body> (below), outside the trigger's scoped wrapper, so it would
+        // otherwise read --sbb-* tokens from :root — clobber-prone on a page where several extensions
+        // load their own generic at different versions (issue #515). `.sbb-ui` is a token scope, so
+        // tagging the portal with it keeps the popup on the same design tokens as the control that
+        // opened it, mirroring the trigger's own scoped wrapper.
+        this.portal.className = 'sd-portal sbb-ui';
         this.portal.style.display = 'none';
         this.portal.appendChild(this.optionsEl);
         document.body.appendChild(this.portal);

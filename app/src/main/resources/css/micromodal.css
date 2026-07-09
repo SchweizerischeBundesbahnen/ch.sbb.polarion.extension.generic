@@ -1,3 +1,10 @@
+/* Pull in the --sbb-* design tokens this sheet consumes. Self-declaring the dependency (as
+   common.css does) makes micromodal.css genuinely self-contained: a consumer can link it alone
+   and the dialog-button tokens still resolve — no reliance on the page separately loading
+   control-tokens.css, and no need for literal fallbacks. Identical @import URLs are de-duped by
+   the browser, so this costs nothing where control-tokens.css is already present. */
+@import url("control-tokens.css");
+
 /**************************\
   Basic Modal Styles — shared micromodal base for all extension popups.
   Single source in generic; each extension loads /<ext>/ui/generic/css/micromodal.css.
@@ -116,8 +123,9 @@
 }
 
 .modal__btn-primary {
-  /* Fallback to the literal accent: micromodal.css is loaded standalone in popups, where
-     common.css's :root tokens are not present. */
+  /* --polarion-accent is Polarion's own platform token, not one of our --sbb-* (which the @import
+     above guarantees). It may be absent outside the platform theme, so keep the literal #007993
+     fallback here. */
   background-color: var(--polarion-accent, #007993);
   color: #fff;
 }
@@ -169,7 +177,8 @@
 
 /* Teal outline (secondary) / filled (primary) — the Polarion JSWizard dialog look, sourced from the
    shared button tokens (see buttons.css / control-tokens.css) so admin dialogs match the platform
-   exactly. Fallbacks are literal because micromodal.css is loaded standalone in popups. */
+   exactly. No literal fallbacks: the --sbb-* tokens are guaranteed by the control-tokens.css @import
+   at the top of this file. */
 .modal__container.standard-dialog .modal__btn {
   background-color: #fff;
   color: var(--sbb-btn-accent);
