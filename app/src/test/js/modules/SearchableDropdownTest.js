@@ -306,6 +306,19 @@ describe('SearchableDropdown', function () {
         expect(document.querySelectorAll('.sd-portal').length).to.equal(0);
     });
 
+    it('scopes the body-level portal with .sbb-ui so its tokens match the trigger (issue #530)', function () {
+        // The popup is appended to <body>, outside the trigger's scoped wrapper; without .sbb-ui it
+        // would inherit --sbb-* from :root and could render with a foreign extension's tokens on a
+        // shared multi-version page. .sbb-ui keeps it on the same design tokens as the control.
+        const dropdown = new SearchableDropdown({
+            selectContainer: document.getElementById('build-container'),
+            rememberSelection: false
+        });
+        const portal = document.querySelector('.sd-portal');
+        expect(portal.classList.contains('sbb-ui'), '.sd-portal must carry .sbb-ui').to.be.true;
+        dropdown.destroy();
+    });
+
     describe('constructor validation', function () {
         it('throws when neither element nor selectContainer is given', function () {
             expect(() => new SearchableDropdown({})).to.throw('element or selectContainer is required');

@@ -490,13 +490,27 @@ wrapper class on your surface.
 
 #### Design tokens & reuse in React SPAs (`control-tokens.css`)
 
-The 2606 control look is defined once as CSS custom properties in `css/control-tokens.css`
-(`:root { --sbb-* }`: border / focus colors, control height, radius, the soft hover/active
-elevation shadows, checkbox images, radio dot, combobox chevron, popup border, option hover tint,
-chips, and typography). `common.css` `@import`s it, and the class-based stylesheets above consume it
-via `var(--sbb-*, <literal fallback>)` — so restyling every native control across the ecosystem is a
-one-file edit, and each fallback equals the previous literal so the stylesheets still render if the
-token file is ever missing.
+The 2606 control look is defined once as CSS custom properties in `css/control-tokens.css` (border /
+focus colors, control height, radius, the soft hover/active elevation shadows, checkbox images, radio
+dot, combobox chevron, popup border, option hover tint, chips, typography, and the button tokens).
+`common.css` `@import`s it, and the class-based stylesheets above consume it via `var(--sbb-*)` — so
+restyling every native control across the ecosystem is a one-file edit.
+
+The tokens are declared on the shared UI scopes (`:root, .modal__container, .standard-admin-page,
+.form-wrapper, .sbb-ui`), not only `:root`, so that on a page where several extensions load their own
+bundled generic at **different versions** each extension's controls read the tokens from the closest
+scoped ancestor — its own bundle's copy — rather than whichever `:root` loaded last (issue #515). A
+consumer's UI root must therefore carry one of those wrapper classes (`.sbb-ui` for the React SPAs).
+
+**Icon tokens are generated from `.svg` files at build time (issue #528).** The 17 icon tokens
+(checkbox states, combobox chevron / erase, info, revert, warning / error triangles, table +/−) live
+only as `.svg` files under `images/` — the single source of truth. In the source stylesheet each is a
+placeholder, `--sbb-x: url(inline:images/x.svg)`; the Maven build (`npm run build:css` →
+`scripts/inline-svg-tokens.mjs`, wired into `frontend-maven-plugin` at `process-classes`) rewrites the
+copy in `target/classes`, replacing each placeholder with the base64 of that `.svg`. The **shipped**
+stylesheet is thus fully self-contained — no runtime icon requests (required for the React SPAs, which
+link it directly and must render even when `/polarion/*` 404s). **To change an icon, edit its `.svg`
+and rebuild — never hand-edit a base64 blob.**
 
 This is also the **reuse path for extensions whose UI is not built from our class-based CSS** — the
 React SPAs (Vite / Next), which render their own markup (custom components, native `<select>`,
