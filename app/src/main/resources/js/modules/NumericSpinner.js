@@ -13,13 +13,18 @@ function step(input, dir) {
     if (input.disabled || input.readOnly) {
         return;
     }
+    // stepUp()/stepDown() are no-ops once the value is clamped at min/max — only notify listeners
+    // when the value actually changed, so boundary clicks don't fire phantom input/change events.
+    const before = input.value;
     if (dir > 0) {
         input.stepUp();
     } else {
         input.stepDown();
     }
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
+    if (input.value !== before) {
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
     input.focus();
 }
 
