@@ -665,6 +665,67 @@ extension's sub-topics re-labels the breadcrumb). It hides the real breadcrumb w
 stylesheet rule (surviving GWT re-renders) and keeps a `MutationObserver` connected, so it is safe to
 inject early. `install(...)` returns an `{ sync, update, destroy }` handle.
 
+#### Checkboxes (inline-SVG control tokens)
+
+Native `<input type="checkbox">` is restyled to match Polarion 2606's own checkbox look — border,
+gradient fill, and a heavy check mark (traced from Arial Unicode's U+2714, tuned to Polarion's
+raster) — across all nine states: **unchecked / checked / indeterminate**, each in **normal /
+keyboard-focus / read-only** variants. Focus uses Polarion's inverted-gradient box; read-only uses
+the greyed border and glyph.
+
+The visuals live in two files:
+
+- **`css/control-tokens.css`** — nine `--sbb-checkbox-*` custom properties (e.g.
+  `--sbb-checkbox-checked`, `--sbb-checkbox-indeterminate-focus`).
+- **`css/checkboxes.css`** — the rules, scoped to our own wrappers (`.modal__container`,
+  `.standard-admin-page`, `.form-wrapper`) so injecting it into a Polarion page never restyles
+  Polarion's own checkboxes. It also repeats the token values as fallbacks, because the side panel
+  loads `checkboxes.css` without `control-tokens.css`.
+
+**Why the images are inlined as base64 `data:` URIs (not linked `.svg`/`.png` files).**
+A relative `url()` inside a CSS *custom property* resolves against the stylesheet that **uses** the
+variable, not the one that **declares** it. So when a consumer references `var(--sbb-checkbox-…)`
+from its own bundled CSS (a Vite/Next SPA served from `…/assets/…`), a relative image path resolves
+against that bundle and **404s**; an absolute `/polarion/<ext>/…` path avoids the 404 but hard-codes
+the per-consumer mount. A `data:` URI is self-contained — no URL resolution happens — so the same
+token renders identically in generic's own CSS, in an injected side panel, and in any SPA bundle.
+(Polarion pages set no CSP that blocks `data:` in CSS backgrounds.)
+
+The human-readable SVG sources are kept under **`images/checkbox/*.svg`**; the base64 in the two CSS
+files is generated from them. To change the look, edit the SVG and re-encode it
+(`base64 < images/checkbox/checked.svg`) into the matching token in **both** files.
+
+**Injected / admin / popup context** — link `checkboxes.css` (or `common.css`, which `@import`s it)
+and use a native checkbox inside one of the scoped wrappers; `:indeterminate`, `:disabled` and
+`:focus-visible` are handled automatically:
+
+```html
+<link rel="stylesheet" href="/polarion/<ext>/ui/generic/css/checkboxes.css">
+<div class="form-wrapper"><label><input type="checkbox"> Include unreferenced</label></div>
+```
+
+**React / SPA** — link `control-tokens.css` once, then style the checkbox from the tokens, scoped to
+your own root (e.g. `.app`) so Polarion's own checkboxes are untouched:
+
+```css
+.app input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none;
+  width: var(--sbb-toggle-size, 15px); height: var(--sbb-toggle-size, 15px);
+  background: var(--sbb-checkbox-unchecked) no-repeat center / contain;
+}
+.app input[type="checkbox"]:checked            { background-image: var(--sbb-checkbox-checked); }
+.app input[type="checkbox"]:indeterminate      { background-image: var(--sbb-checkbox-indeterminate); }
+.app input[type="checkbox"]:disabled           { background-image: var(--sbb-checkbox-unchecked-readonly); }
+.app input[type="checkbox"]:disabled:checked   { background-image: var(--sbb-checkbox-checked-readonly); }
+.app input[type="checkbox"]:focus-visible      { outline: none; background-image: var(--sbb-checkbox-unchecked-focus); }
+.app input[type="checkbox"]:focus-visible:checked { background-image: var(--sbb-checkbox-checked-focus); }
+```
+
+Because these are inline data URIs, no relative or absolute `url()` path is ever needed — consumers
+can drop the old per-mount work-arounds for the indeterminate image. The **indeterminate** state has
+no HTML attribute, so set it from JS (e.g. a React ref):
+`ref={(el) => { if (el) el.indeterminate = someButNotAll; }}`.
+
 #### Deprecated components
 
 The following are kept only for backward compatibility and should not be used in new code:
