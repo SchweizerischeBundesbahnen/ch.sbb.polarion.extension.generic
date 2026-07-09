@@ -55,6 +55,15 @@ export default class ConfigurationsPane {
         this.newConfigurationInput = document.getElementById(componentIds.newConfigurationInputId);
         this.editConfigurationInput = document.getElementById(componentIds.editConfigurationInputId);
 
+        // Disable Save / Update while the configuration name is empty or whitespace-only, so an
+        // unnamed config can't be submitted (the backend rejects it with a "save error").
+        if (this.newConfigurationInput) {
+            this.newConfigurationInput.addEventListener('input', () => this.refreshSaveEnabled());
+        }
+        if (this.editConfigurationInput) {
+            this.editConfigurationInput.addEventListener('input', () => this.refreshUpdateEnabled());
+        }
+
         this.setConfigurationContentCallback = setConfigurationContentCallback;
         this.setContentAreaEnabledCallback = setContentAreaEnabledCallback;
         this.preDeleteCallback = preDeleteCallback;
@@ -130,6 +139,7 @@ export default class ConfigurationsPane {
         this.editConfigurationPane.style.display = "block";
         this.setContentAreaEnabled(false);
         this.newConfigurationCallback();
+        this.refreshSaveEnabled();
     }
 
     editConfiguration() {
@@ -143,6 +153,7 @@ export default class ConfigurationsPane {
         this.editConfigurationInput.value = this.getSelectedConfiguration();
         this.editConfigurationPane.style.display = "block";
         this.setContentAreaEnabled(false);
+        this.refreshUpdateEnabled();
     }
 
     cancelEditConfiguration() {
@@ -150,6 +161,14 @@ export default class ConfigurationsPane {
         this.configurationsPane.style.display = "block";
         this.setContentAreaEnabled(true);
         this.configSelectElement.dispatchEvent(new Event('change'));
+    }
+
+    refreshSaveEnabled() {
+        this.ctx.disableIf('configurations-button-save', !this.newConfigurationInput || !this.newConfigurationInput.value.trim());
+    }
+
+    refreshUpdateEnabled() {
+        this.ctx.disableIf('configurations-button-update', !this.editConfigurationInput || !this.editConfigurationInput.value.trim());
     }
 
     saveConfiguration() {

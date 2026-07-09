@@ -80,3 +80,84 @@
     outline: none;
     box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
 }
+
+/*
+ * Number input with a custom 2606 spinner. The browser's ::-webkit-inner-spin-button can't be
+ * restyled to match our look, so it is hidden and replaced by two stacked caret buttons (the SAME
+ * triangle as the combobox chevron — up = flipped, down = as-is). Structure is added by
+ * js/modules/NumericSpinner.js (vanilla) or a consumer's React component; both use these classes.
+ * Self-contained (base input look + 2606 focus) so it works regardless of the surrounding scope.
+ */
+/* Block so the wrapped input keeps the width it had before (e.g. a width:100% field stays full-width);
+   the spinner is overlaid absolutely, so it never changes the field's box. A consumer that wants a
+   narrow number field sets a width on .sbb-number itself. */
+.sbb-number {
+    position: relative;
+    display: block;
+}
+.sbb-number > input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    height: var(--sbb-control-height, 23px);
+    padding: 2px 22px 2px 8px;
+    border: 1px solid var(--sbb-control-border, #c9c9c9);
+    border-radius: var(--sbb-control-radius, 2px);
+    font: var(--sbb-control-font-weight, 600) var(--sbb-control-font-size, 13px) 'Segoe UI', 'Selawik', 'Open Sans', Arial, sans-serif;
+    background: #fff;
+    transition: box-shadow .15s ease, border-color .15s ease;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+.sbb-number > input[type="number"]::-webkit-outer-spin-button,
+.sbb-number > input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.sbb-number > input[type="number"]:not(:disabled):hover {
+    box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
+}
+.sbb-number > input[type="number"]:focus {
+    outline: none;
+    border-color: var(--sbb-control-border-focus, #1491eb);
+    box-shadow: var(--sbb-control-shadow-hover, 0 2px 6px 0 rgba(0, 0, 0, 0.2));
+}
+.sbb-number .sbb-number-spin {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    width: 18px;
+    display: flex;
+    flex-direction: column;
+}
+.sbb-number .sbb-number-spin button {
+    flex: 1 1 50%;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #464646;
+    border-radius: 0 1px 1px 0;
+}
+.sbb-number .sbb-number-spin button svg {
+    width: 8px;
+    height: 5px;
+    display: block;
+}
+.sbb-number .sbb-number-spin button:hover {
+    background: var(--sbb-hover-tint, #ebf7f8);
+    color: #1a1a1a;
+}
+.sbb-number .sbb-number-spin button:active {
+    background: #dceef0;
+}
+.sbb-number > input:disabled ~ .sbb-number-spin button {
+    cursor: default;
+    color: #c9c9c9;
+    background: transparent;
+}

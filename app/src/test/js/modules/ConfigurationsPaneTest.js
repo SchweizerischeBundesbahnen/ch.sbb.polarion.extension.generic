@@ -39,6 +39,7 @@ describe('ConfigurationsPane', function () {
             callAsync: sinon.stub(),
             setCookie: sinon.spy(),
             getCookie: sinon.stub().returns(null),
+            disableIf: sinon.spy(),
             extension: 'testExtension',
             setting: 'testSetting',
             scope: 'testScope',
@@ -103,5 +104,37 @@ describe('ConfigurationsPane', function () {
         expect(before).to.be.greaterThan(0);
         configPane.configurationsSelect.destroy();
         expect(document.querySelectorAll('.sd-portal').length).to.equal(before - 1);
+    });
+
+    it('should disable Save while the new-configuration name is empty', function () {
+        configPane.newConfiguration();
+        expect(ctxMock.disableIf.lastCall.args).to.deep.equal(['configurations-button-save', true]);
+    });
+
+    it('should enable Save once a non-blank name is typed', function () {
+        const input = document.getElementById('new-configuration-input');
+        input.value = 'my-config';
+        input.dispatchEvent(new global.Event('input'));
+        expect(ctxMock.disableIf.lastCall.args).to.deep.equal(['configurations-button-save', false]);
+    });
+
+    it('should keep Save disabled for a whitespace-only name', function () {
+        const input = document.getElementById('new-configuration-input');
+        input.value = '   ';
+        input.dispatchEvent(new global.Event('input'));
+        expect(ctxMock.disableIf.lastCall.args).to.deep.equal(['configurations-button-save', true]);
+    });
+
+    it('should enable Update when editing a configuration with a name', function () {
+        configPane.getSelectedConfiguration = sinon.stub().returns('existing-config');
+        configPane.editConfiguration();
+        expect(ctxMock.disableIf.lastCall.args).to.deep.equal(['configurations-button-update', false]);
+    });
+
+    it('should disable Update when the edit name is cleared to whitespace', function () {
+        const input = document.getElementById('edit-configuration-input');
+        input.value = '   ';
+        input.dispatchEvent(new global.Event('input'));
+        expect(ctxMock.disableIf.lastCall.args).to.deep.equal(['configurations-button-update', true]);
     });
 });

@@ -361,6 +361,13 @@ pre[class*=language-] {
     text-align: right;
 }
 
+/* Centre the Date (3rd) and Actions (last, the revert-to-revision icon) columns — their headers are
+   already centred, so the cells should match. */
+#revisions-table td:nth-child(3),
+#revisions-table td:last-child {
+    text-align: center;
+}
+
 #revisions-table .empty-message {
     padding: 5px;
 }
