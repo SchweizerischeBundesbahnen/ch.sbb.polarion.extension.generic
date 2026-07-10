@@ -8,19 +8,24 @@
             <stop offset="0" stop-color="#e4f1ff"/>
             <stop offset="1" stop-color="#d3e4f8"/>
         </linearGradient>
+        <mask id="slr-m">
+            <rect x="0" y="0" width="16" height="16" fill="#fff"/>
+            <polygon points="0.5 4.3 6.9 8 0.5 11.7" fill="#000" stroke="#000" stroke-width="2.4" stroke-linejoin="round"/>
+        </mask>
     </defs>
-    <rect fill="#5c7a9c" x="4" y="1" width="11.5" height="14.5"/>
-    <rect fill="url(#slr-bg)" x="5" y="2" width="9.5" height="12.5"/>
-    <g fill="#95b3d5">
-        <rect x="10" y="3" width="4" height="1"/>
-        <rect x="10" y="5" width="4" height="1"/>
-        <rect x="10" y="7" width="4" height="1"/>
-        <rect x="10" y="9" width="4" height="1"/>
-        <rect x="10" y="11" width="4" height="1"/>
-        <rect x="10" y="13" width="4" height="1"/>
+    <g mask="url(#slr-m)">
+        <rect fill="#5c7a9c" x="4" y="1" width="11.5" height="14.5"/>
+        <rect fill="url(#slr-bg)" x="5" y="2" width="9.5" height="12.5"/>
+        <g fill="#95b3d5">
+            <rect x="10" y="3" width="4" height="1"/>
+            <rect x="10" y="5" width="4" height="1"/>
+            <rect x="10" y="7" width="4" height="1"/>
+            <rect x="10" y="9" width="4" height="1"/>
+            <rect x="10" y="11" width="4" height="1"/>
+            <rect x="10" y="13" width="4" height="1"/>
+        </g>
+        <polygon fill="#5c7a9c" points="8 7 8 3 7 3 6 3 6 4 7 4 7 7 7 8 9 8 9 7 8 7"/>
+        <polygon fill="#5c7a9c" points="8 9 8 11 7 11 7 10 6 10 6 12 8 12 8 14 9 14 9 9 8 9"/>
     </g>
-    <polygon fill="#5c7a9c" points="8 7 8 3 7 3 6 3 6 4 7 4 7 7 7 8 9 8 9 7 8 7"/>
-    <polygon fill="#5c7a9c" points="8 9 8 11 7 11 7 10 6 10 6 12 8 12 8 14 9 14 9 9 8 9"/>
-    <polygon points="0.5 4.3 6.9 8 0.5 11.7" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linejoin="round"/>
     <polygon points="0.5 4.3 6.9 8 0.5 11.7" fill="url(#slr-g)" stroke="#ae5a00" stroke-width="1" stroke-linejoin="round"/>
 </svg>
