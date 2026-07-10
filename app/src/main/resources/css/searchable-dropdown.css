@@ -36,12 +36,13 @@
     cursor: text;
 }
 
-/* An editable trigger can be focused while the popup is closed (e.g. free text that matches no
-   suggestion), so it needs its own focus styling — the .open rule below wouldn't apply. Blue border
-   plus the same soft elevation the text inputs use on focus (inputs.css), not the heavier open-state
-   shadow — an editable field stays focused after a pick, so a strong shadow would linger. Suppress
-   the browser's default outline. */
-.searchable-dropdown > input.sd-trigger:not([readonly]):focus {
+/* A trigger can be focused while the popup is closed — an editable one via free text that matches no
+   suggestion, and a readonly (non-editable) one because it keeps focus after a pick — so it needs its
+   own focus styling; the .open rule below wouldn't apply. Applies to BOTH: without it a readonly
+   trigger fell through to the browser's default focus outline, which showed as a stray dark ring
+   after selecting. Blue border + the soft text-input elevation (inputs.css), not the heavier
+   open-state shadow, which would linger while focus stays after the pick. */
+.searchable-dropdown > input.sd-trigger:focus {
     border-color: var(--sbb-control-border-focus);
     box-shadow: var(--sbb-control-shadow-hover);
     outline: none;

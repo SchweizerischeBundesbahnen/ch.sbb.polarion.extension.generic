@@ -510,6 +510,28 @@ describe('SearchableDropdown', function () {
         });
     });
 
+    describe('focus handling on selection (variant 2 — no lingering focus ring)', function () {
+        it('blurs the trigger after a mouse pick that closes the popup (single-select)', function () {
+            const dropdown = new SearchableDropdown({ element: document.getElementById('single'), searchable: false, rememberSelection: false });
+            dropdown._open();
+            expect(document.activeElement, 'trigger focused on open (no search box)').to.equal(dropdown.trigger);
+            mousedown(dropdown.itemsEl.children[0]); // pick option A with the mouse
+            expect(dropdown.isOpen).to.be.false;
+            expect(document.activeElement, 'trigger blurred → no lingering focus ring').to.not.equal(dropdown.trigger);
+            dropdown.destroy();
+        });
+
+        it('keeps focus on the trigger after a keyboard pick (Enter)', function () {
+            const dropdown = new SearchableDropdown({ element: document.getElementById('single'), searchable: false, rememberSelection: false });
+            dropdown._open();
+            keydown(dropdown.trigger, 'ArrowDown'); // highlight option B
+            keydown(dropdown.trigger, 'Enter');     // select via keyboard
+            expect(dropdown.isOpen).to.be.false;
+            expect(document.activeElement, 'focus kept for continued keyboard nav').to.equal(dropdown.trigger);
+            dropdown.destroy();
+        });
+    });
+
     describe('keyboard navigation', function () {
         it('opens a closed popup on ArrowDown/Enter/Space from the trigger', function () {
             const dropdown = new SearchableDropdown({ element: document.getElementById('single'), searchable: false, rememberSelection: false });
