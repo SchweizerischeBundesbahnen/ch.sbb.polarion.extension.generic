@@ -397,9 +397,9 @@ export default class SearchableDropdown {
         this.portal = document.createElement('div');
         // The portal lives under <body> (below), outside the trigger's scoped wrapper, so it would
         // otherwise read --sbb-* tokens from :root — clobber-prone on a page where several extensions
-        // load their own generic at different versions (issue #515). `.sbb-ui` is a token scope, so
-        // tagging the portal with it keeps the popup on the same design tokens as the control that
-        // opened it, mirroring the trigger's own scoped wrapper.
+        // load their own generic at different versions. `.sbb-ui` is a token scope, so tagging the
+        // portal with it keeps the popup on the same design tokens as the control that opened it,
+        // mirroring the trigger's own scoped wrapper.
         this.portal.className = 'sd-portal sbb-ui';
         this.portal.style.display = 'none';
         this.portal.appendChild(this.optionsEl);
@@ -658,7 +658,19 @@ export default class SearchableDropdown {
                 // selectItem() may re-render the list (multi-select), detaching this option, after
                 // which portal.contains(e.target) would be false and wrongly close the popup.
                 e.stopPropagation();
+                // Capture what holds focus BEFORE the pick hides the popup — the trigger for a plain
+                // select, or the search input (inside the portal) for a searchable one.
+                const heldFocus = document.activeElement;
                 this.selectItem(item);
+                // A mouse pick should leave the combo at rest — no lingering focus ring on the trigger
+                // and no focus stranded in the now-hidden popup. Blur whatever inside this dropdown held
+                // focus, but only when the pick closed the popup (single-select); a multi-select stays
+                // open for more picks. Keyboard selection (Enter) goes through a different handler and
+                // intentionally keeps focus on the trigger for continued nav.
+                if (!this.isOpen && heldFocus
+                        && (heldFocus === this.trigger || this.portal.contains(heldFocus))) {
+                    heldFocus.blur();
+                }
             });
 
             this.itemsEl.appendChild(option);

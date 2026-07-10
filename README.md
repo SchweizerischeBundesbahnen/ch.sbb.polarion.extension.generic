@@ -499,10 +499,10 @@ restyling every native control across the ecosystem is a one-file edit.
 The tokens are declared on the shared UI scopes (`:root, .modal__container, .standard-admin-page,
 .form-wrapper, .sbb-ui`), not only `:root`, so that on a page where several extensions load their own
 bundled generic at **different versions** each extension's controls read the tokens from the closest
-scoped ancestor — its own bundle's copy — rather than whichever `:root` loaded last (issue #515). A
-consumer's UI root must therefore carry one of those wrapper classes (`.sbb-ui` for the React SPAs).
+scoped ancestor — its own bundle's copy — rather than whichever `:root` loaded last. A consumer's UI
+root must therefore carry one of those wrapper classes (`.sbb-ui` for the React SPAs).
 
-**Icon tokens are generated from `.svg` files at build time (issue #528).** The 17 icon tokens
+**Icon tokens are generated from `.svg` files at build time.** The 17 icon tokens
 (checkbox states, combobox chevron / erase, info, revert, warning / error triangles, table +/−) live
 only as `.svg` files under `images/` — the single source of truth. In the source stylesheet each is a
 placeholder, `--sbb-x: url(inline:images/x.svg)`; the Maven build (`npm run build:css` →
@@ -646,9 +646,9 @@ breadcrumb shape:
 
 Polarion renders that breadcrumb in the shell window, but an extension topic runs in a frame, so the
 topic page injects this **classic** script into the shell (it needs `document.currentScript` to read
-its config, so it is deliberately *not* an ES module). It is the single shared implementation of what
-used to be a copy-pasted `<ext>-breadcrumb-bridge.js` per extension. It **never** activates on
-Polarion's own Administration pages (`#/administration/…`), which render their breadcrumb correctly.
+its config, so it is deliberately *not* an ES module). It is the single shared breadcrumb-bridge
+implementation for every extension. It **never** activates on Polarion's own Administration pages
+(`#/administration/…`), which render their breadcrumb correctly.
 
 Inject it into the shell and configure it via `data-*` attributes (auto-install), or — once loaded —
 call `install()` directly so a sub-topic can re-label without re-loading the module:

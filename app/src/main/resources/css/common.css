@@ -49,10 +49,10 @@
  * override a token downstream if a page needs a different shade.
  */
 :root {
-    --polarion-accent: #007993;          /* links / accent (was #197FA2) */
-    --polarion-heading-text: #000028;    /* admin / section heading text (was #004d73) */
-    --polarion-heading-bg: #F3F3F0;      /* section-header bar + h1 underline (was #EBF0F5) */
-    --polarion-table-header-bg: #E8E8E3; /* repo-browser header fill (was #75A8E2) */
+    --polarion-accent: #007993;          /* links / accent */
+    --polarion-heading-text: #000028;    /* admin / section heading text */
+    --polarion-heading-bg: #F3F3F0;      /* section-header bar + h1 underline */
+    --polarion-table-header-bg: #E8E8E3; /* repo-browser header fill */
     --polarion-table-border: #B3B3BE;    /* repo-browser header/column separator */
     --polarion-table-cell-border: #DDDDDD; /* data-cell column separator */
     --polarion-table-row-alt: #F3F3F0;   /* zebra odd-row (repo-browser #F3F3F0/white) */

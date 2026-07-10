@@ -14,7 +14,7 @@
  *
  * Icon tokens (checkbox, chevron, info, alert triangles, table +/−, …) name their .svg under images/
  * via an inline-placeholder value ("inline:" + the path) — the .svg files are the single source of
- * truth (issue #528). At build time `npm run build:css` (scripts/inline-svg-tokens.mjs, wired into
+ * truth. At build time `npm run build:css` (scripts/inline-svg-tokens.mjs, wired into
  * frontend-maven-plugin) rewrites the copy in target/classes, replacing each placeholder with the
  * base64 of that .svg, so the SHIPPED stylesheet is fully self-contained — no runtime icon requests
  * (the React SPAs link it directly and must render even when /polarion/* 404s). Edit the .svg, never
@@ -27,7 +27,7 @@
    inherit downward, so a `.sbb-ui` (or existing .modal__container / .standard-admin-page /
    .form-wrapper) wrapper shadows any foreign :root value for its subtree.
    :root is kept for backward-compat during rollout (consumers not yet carrying a scope class); it
-   can be dropped once every consumer wraps its UI roots in .sbb-ui. See issue #515. */
+   can be dropped once every consumer wraps its UI roots in .sbb-ui. */
 :root,
 .modal__container,
 .standard-admin-page,

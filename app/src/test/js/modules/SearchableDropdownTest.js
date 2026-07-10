@@ -2,6 +2,7 @@ import SearchableDropdown from '../../../main/resources/js/modules/SearchableDro
 import { expect } from 'chai';
 import { JSDOM } from 'jsdom';
 import sinon from 'sinon';
+import { readFileSync } from 'node:fs';
 
 // MutationObserver callbacks fire as microtasks — let them run.
 const flush = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -306,7 +307,7 @@ describe('SearchableDropdown', function () {
         expect(document.querySelectorAll('.sd-portal').length).to.equal(0);
     });
 
-    it('scopes the body-level portal with .sbb-ui so its tokens match the trigger (issue #530)', function () {
+    it('scopes the body-level portal with .sbb-ui so its tokens match the trigger', function () {
         // The popup is appended to <body>, outside the trigger's scoped wrapper; without .sbb-ui it
         // would inherit --sbb-* from :root and could render with a foreign extension's tokens on a
         // shared multi-version page. .sbb-ui keeps it on the same design tokens as the control.
@@ -507,6 +508,49 @@ describe('SearchableDropdown', function () {
             dropdown._open();
             expect(dropdown.isOpen).to.be.false;
             dropdown.destroy();
+        });
+    });
+
+    describe('focus handling on selection (no lingering focus ring)', function () {
+        it('blurs the trigger after a mouse pick that closes the popup (single-select)', function () {
+            const dropdown = new SearchableDropdown({ element: document.getElementById('single'), searchable: false, rememberSelection: false });
+            dropdown._open();
+            expect(document.activeElement, 'trigger focused on open (no search box)').to.equal(dropdown.trigger);
+            mousedown(dropdown.itemsEl.children[0]); // pick option A with the mouse
+            expect(dropdown.isOpen).to.be.false;
+            expect(document.activeElement, 'trigger blurred → no lingering focus ring').to.not.equal(dropdown.trigger);
+            dropdown.destroy();
+        });
+
+        it('keeps focus on the trigger after a keyboard pick (Enter)', function () {
+            const dropdown = new SearchableDropdown({ element: document.getElementById('single'), searchable: false, rememberSelection: false });
+            dropdown._open();
+            keydown(dropdown.trigger, 'ArrowDown'); // highlight option B
+            keydown(dropdown.trigger, 'Enter');     // select via keyboard
+            expect(dropdown.isOpen).to.be.false;
+            expect(document.activeElement, 'focus kept for continued keyboard nav').to.equal(dropdown.trigger);
+            dropdown.destroy();
+        });
+
+        it('does not strand focus in the hidden popup on a mouse pick (searchable single-select)', function () {
+            // A searchable dropdown focuses the popup search input on open, not the trigger, so the blur
+            // must target whatever holds focus — here the search input inside the portal — not just the
+            // trigger, or focus would be stranded in the now-hidden popup.
+            const dropdown = new SearchableDropdown({ element: document.getElementById('single'), rememberSelection: false });
+            dropdown._open();
+            expect(document.activeElement, 'searchable → focus on the popup search box').to.equal(dropdown.searchInput);
+            mousedown(dropdown.itemsEl.children[0]);
+            expect(dropdown.isOpen).to.be.false;
+            expect(document.activeElement, 'focus not left inside the hidden popup').to.not.equal(dropdown.searchInput);
+            dropdown.destroy();
+        });
+
+        // jsdom does not apply stylesheet :focus rules to getComputedStyle, so the CSS side of the fix
+        // (no browser default outline on a focused readonly trigger) is guarded at the source instead.
+        it('the trigger focus rule covers readonly triggers too (searchable-dropdown.css)', function () {
+            const css = readFileSync(new URL('../../../main/resources/css/searchable-dropdown.css', import.meta.url), 'utf8');
+            expect(css, 'a .sd-trigger:focus rule must exist').to.match(/\.sd-trigger:focus\s*\{/);
+            expect(css, 'the focus rule must not exclude readonly triggers').to.not.match(/sd-trigger:not\(\[readonly\]\):focus/);
         });
     });
 
