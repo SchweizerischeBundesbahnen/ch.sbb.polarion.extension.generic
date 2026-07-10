@@ -1,5 +1,13 @@
 # Changelog
 
+## [15.3.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.3.1...v15.3.2) (2026-07-10)
+
+
+### Bug Fixes
+
+* unify color input styling with shared control system ([#544](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/544)) ([089c4b0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/089c4b0756b07b8e1641faa7fd428f8915f3b6e6)), closes [#543](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/543)
+* update button icon alignment for consistency ([#541](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/541)) ([ead967b](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/ead967be3ebebed3931766076828029c4692164a)), closes [#540](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/540)
+
 ## [15.3.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.3.0...v15.3.1) (2026-07-10)
 
 
