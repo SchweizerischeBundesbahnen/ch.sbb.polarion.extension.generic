@@ -1,5 +1,3 @@
-<%! String bundleTimestamp = ch.sbb.polarion.extension.generic.util.VersionUtils.getVersion().getBundleBuildTimestampDigitsOnly(); %>
-
 <p>There can be multiple named <span class="configuration-label">configuration</span>s. Please, choose one you would like to modify in dropdown below.
     <span id="default-cannot-be-deleted-note">Be aware that "Default" <span class="configuration-label">configuration</span> on global scope can't be deleted or renamed.</span></p>
 <div class="input-group common-configuration-panel">
@@ -8,10 +6,10 @@
         <select id="configurations-select"></select>
         <div class="action-buttons">
             <button id="configurations-button-edit" class="toolbar-button" onclick="Configurations.editConfiguration()">
-                <img class="button-image" src="/polarion/ria/images/actions/edit.gif?bundle=<%= bundleTimestamp %>">Rename
+                <span class="button-image sbb-icon-edit" role="img" aria-label="Rename"></span>Rename
             </button>
             <button id="configurations-button-delete" class="toolbar-button" onclick="Configurations.deleteConfiguration()">
-                <img class="button-image" src="/polarion/ria/images/actions/delete.gif?bundle=<%= bundleTimestamp %>">Delete
+                <span class="button-image sbb-icon-delete" role="img" aria-label="Delete"></span>Delete
             </button>
             <button id="configurations-button-create" class="new-configuration toolbar-button" style="display: inline-flex" onclick="Configurations.newConfiguration()">
                 <span class="sbb-icon-table-plus" role="img" aria-label="Add" style="margin-right:5px"></span>Add new
@@ -30,13 +28,13 @@
         <input type="text" id="edit-configuration-input" class="edit-configuration" maxlength="40" />
         <div class="action-buttons">
             <button id="configurations-button-cancel-edit" class="toolbar-button" onclick="Configurations.cancelEditConfiguration()">
-                <img class="button-image" src="/polarion/ria/images/actions/cancel.gif?bundle=<%= bundleTimestamp %>">Cancel
+                <span class="button-image sbb-icon-cancel" role="img" aria-label="Cancel"></span>Cancel
             </button>
             <button id="configurations-button-save" class="new-configuration toolbar-button" onclick="Configurations.saveConfiguration()">
-                <img class="button-image" src="/polarion/ria/images/actions/save.gif?bundle=<%= bundleTimestamp %>">Save
+                <span class="button-image sbb-icon-save" role="img" aria-label="Save"></span>Save
             </button>
             <button id="configurations-button-update" class="edit-configuration toolbar-button" onclick="Configurations.updateConfiguration()">
-                <img class="button-image" src="/polarion/ria/images/actions/save.gif?bundle=<%= bundleTimestamp %>">Update
+                <span class="button-image sbb-icon-save" role="img" aria-label="Update"></span>Update
             </button>
         </div>
         <div id="configuration-clashes-error" class="configuration-error" style="display: none">There is already a <span class="configuration-label">configuration</span> with such name in this scope</div>

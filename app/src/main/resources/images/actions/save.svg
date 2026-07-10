@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+<defs><linearGradient id="sav-g" x1="8" y1="14" x2="8" y2="2" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#85a7c6"/><stop offset="1" stop-color="#add5f9"/></linearGradient></defs>
+<polygon fill="#6c8497" points="15 1 1 1 1 12.25 3.75 15 15 15"/>
+<polygon fill="url(#sav-g)" points="14 2 2 2 2 11.84 4.16 14 14 14"/>
+<rect fill="#8298a9" x="3" y="2" width="10" height="6"/>
+<rect fill="#fbfae8" x="4" y="2" width="8" height="5"/>
+<rect fill="#d2ceaa" x="5" y="3" width="6" height="1"/>
+<rect fill="#d2ceaa" x="5" y="5" width="6" height="1"/>
+<rect fill="#e7ebef" x="6" y="10" width="6" height="4"/>
+<rect fill="#8298a9" x="7" y="11" width="2" height="2"/>
+<rect fill="#b6bcc2" x="5" y="10" width="1" height="4"/>
+<rect fill="#b6bcc2" x="12" y="10" width="1" height="4"/>
+<rect fill="#b6bcc2" x="6" y="9" width="6" height="1"/>
+</svg>
