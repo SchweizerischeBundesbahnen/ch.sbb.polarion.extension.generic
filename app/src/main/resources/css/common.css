@@ -291,7 +291,9 @@ code-input {
 }
 
 /* .toolbar-button now lives in the unified button system (buttons.css); its legacy selector is
-   aliased there. The icon <img class="button-image"> keeps its own layout rule. */
+   aliased there. .button-image is the button's leading icon (a background-image <span> carrying a
+   .sbb-icon-* class); padding-right gives the icon-to-label gap. float is a no-op inside the flex
+   toolbar-button but is kept for any downstream <img class="button-image"> still laid out inline. */
 .button-image {
     padding-right: 5px;
     float: left;

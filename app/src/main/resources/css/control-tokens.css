@@ -84,6 +84,17 @@
        tablePlus.png (green +) and tableMinus.png (magenta −). Use via the .sbb-icon-table-* classes. */
     --sbb-table-plus-icon: url(inline:images/control/table_plus.svg);
     --sbb-table-minus-icon: url(inline:images/control/table_minus.svg);
+    /* Action-button icons — self-made replacements for the last raster GIFs that buttons.jsp /
+       configurations.jsp pulled from Polarion's runtime (/polarion/ria/images/actions/*.gif). Sources
+       under images/actions/. Use via the .sbb-icon-* classes below. --sbb-revert-icon is the Save-form
+       "Default" (load default values) button — distinct from --sbb-revision-revert-icon (revisions
+       table row action). */
+    --sbb-save-icon: url(inline:images/actions/save.svg);
+    --sbb-cancel-icon: url(inline:images/actions/cancel.svg);
+    --sbb-revert-icon: url(inline:images/actions/revert.svg);
+    --sbb-select-revision-icon: url(inline:images/actions/select_revision.svg);
+    --sbb-edit-icon: url(inline:images/actions/edit.svg);
+    --sbb-delete-icon: url(inline:images/actions/delete.svg);
     --sbb-combo-popup-border: #ccccd4;
     /* Light teal hover / selection tint — the base that --sbb-option-hover and --sbb-chip-bg
        derive from, and the token the React SPAs reference for dropdown-row hovers. */
@@ -156,4 +167,38 @@
 }
 .sbb-icon-table-minus {
     background-image: var(--sbb-table-minus-icon);
+}
+
+/* Action-button icons (16x16) — CSS-background utilities replacing the legacy
+   <img class="button-image" src=".../actions/*.gif"> in buttons.jsp / configurations.jsp. Put on a
+   <span> that also carries .button-image, so the button keeps its original icon spacing while the
+   glyph comes from a self-contained token (control-tokens.css must be loaded). */
+.sbb-icon-save,
+.sbb-icon-cancel,
+.sbb-icon-revert,
+.sbb-icon-select-revision,
+.sbb-icon-edit,
+.sbb-icon-delete {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background: center / contain no-repeat;
+}
+.sbb-icon-save {
+    background-image: var(--sbb-save-icon);
+}
+.sbb-icon-cancel {
+    background-image: var(--sbb-cancel-icon);
+}
+.sbb-icon-revert {
+    background-image: var(--sbb-revert-icon);
+}
+.sbb-icon-select-revision {
+    background-image: var(--sbb-select-revision-icon);
+}
+.sbb-icon-edit {
+    background-image: var(--sbb-edit-icon);
+}
+.sbb-icon-delete {
+    background-image: var(--sbb-delete-icon);
 }

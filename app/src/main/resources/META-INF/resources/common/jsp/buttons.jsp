@@ -1,8 +1,4 @@
-<%@ page import="ch.sbb.polarion.extension.generic.rest.model.Version" %>
-<%@ page import="ch.sbb.polarion.extension.generic.util.ExtensionInfo" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
-
-<%! Version version = ExtensionInfo.getInstance().getVersion();%>
 
 <div class="actions-pane hide-on-edit-configuration">
     <div id="revisions-expand-container">
@@ -24,17 +20,17 @@
 
     <div class="action-buttons inline-flex">
         <button id="save-toolbar-button" class="toolbar-button" type="submit" onclick="${param.saveFunction}">
-            <img class="button-image" alt="Save" title="Save data" src="/polarion/ria/images/actions/save.gif?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">Save
+            <span class="button-image sbb-icon-save" role="img" aria-label="Save" title="Save data"></span>Save
         </button>
         <button id="cancel-toolbar-button" class="toolbar-button" type="submit" onclick="${param.cancelFunction}">
-            <img class="button-image" alt="Cancel" title="Cancel editing and revert to last persisted state"
-                 src="/polarion/ria/images/actions/cancel.gif?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">Cancel
+            <span class="button-image sbb-icon-cancel" role="img" aria-label="Cancel"
+                  title="Cancel editing and revert to last persisted state"></span>Cancel
         </button>
         <button id="default-toolbar-button" class="toolbar-button" type="submit" onclick="${param.defaultFunction}">
-            <img class="button-image" alt="Default" title="Load default values" src="/polarion/ria/images/actions/revert.gif?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">Default
+            <span class="button-image sbb-icon-revert" role="img" aria-label="Default" title="Load default values"></span>Default
         </button>
         <button id="revisions-toolbar-button" class="toolbar-button" type="submit" onclick="SbbCommon.toggleRevisions()">
-            <img class="button-image" alt="Revisions" title="Toggle list of revisions" src="/polarion/ria/images/actions/select_revision.gif?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">Revisions
+            <span class="button-image sbb-icon-select-revision" role="img" aria-label="Revisions" title="Toggle list of revisions"></span>Revisions
         </button>
     </div>
     <div class="action-alerts inline-flex">
