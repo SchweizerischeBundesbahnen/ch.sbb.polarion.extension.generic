@@ -91,6 +91,7 @@ describe('ExtensionContext', function () {
 // Real-DOM coverage of the DOM/alert/cookie/revisions helpers (no querySelector stub).
 describe('ExtensionContext — DOM-backed helpers', function () {
     let dom, window, document, ctx, requests, clock;
+    const NATIVE_URL = global.URL; // Node's native URL; the downloadBlob test swaps in the JSDOM one
 
     beforeEach(function () {
         clock = sinon.useFakeTimers(); // control showActionAlert's 5s auto-hide so no real timer leaks
@@ -130,6 +131,7 @@ describe('ExtensionContext — DOM-backed helpers', function () {
         delete global.codeInput;
         delete global.Prism;
         delete global.$;
+        global.URL = NATIVE_URL; // restore Node's native URL (downloadBlob test points it at the JSDOM one)
     });
 
     it('reads/writes input, checkbox, selector and toggles visibility', function () {
