@@ -658,14 +658,18 @@ export default class SearchableDropdown {
                 // selectItem() may re-render the list (multi-select), detaching this option, after
                 // which portal.contains(e.target) would be false and wrongly close the popup.
                 e.stopPropagation();
+                // Capture what holds focus BEFORE the pick hides the popup — the trigger for a plain
+                // select, or the search input (inside the portal) for a searchable one.
+                const heldFocus = document.activeElement;
                 this.selectItem(item);
-                // A mouse pick should leave the combo at rest — the trigger's mousedown-preventDefault
-                // keeps focus on it, which (for a non-searchable trigger) would otherwise linger as a
-                // focus ring after the popup closes. Only blur when the pick actually closed the popup
-                // (single-select); a multi-select stays open for more picks. Keyboard selection (Enter)
-                // goes through a different handler and intentionally keeps focus for continued nav.
-                if (!this.isOpen) {
-                    this.trigger.blur();
+                // A mouse pick should leave the combo at rest — no lingering focus ring on the trigger
+                // and no focus stranded in the now-hidden popup. Blur whatever inside this dropdown held
+                // focus, but only when the pick closed the popup (single-select); a multi-select stays
+                // open for more picks. Keyboard selection (Enter) goes through a different handler and
+                // intentionally keeps focus on the trigger for continued nav.
+                if (!this.isOpen && heldFocus
+                        && (heldFocus === this.trigger || this.portal.contains(heldFocus))) {
+                    heldFocus.blur();
                 }
             });
 

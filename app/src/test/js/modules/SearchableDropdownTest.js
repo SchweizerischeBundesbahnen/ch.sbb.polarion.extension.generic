@@ -532,6 +532,19 @@ describe('SearchableDropdown', function () {
             dropdown.destroy();
         });
 
+        it('does not strand focus in the hidden popup on a mouse pick (searchable single-select)', function () {
+            // A searchable dropdown focuses the popup search input on open, not the trigger, so the blur
+            // must target whatever holds focus — here the search input inside the portal — not just the
+            // trigger, or focus would be stranded in the now-hidden popup.
+            const dropdown = new SearchableDropdown({ element: document.getElementById('single'), rememberSelection: false });
+            dropdown._open();
+            expect(document.activeElement, 'searchable → focus on the popup search box').to.equal(dropdown.searchInput);
+            mousedown(dropdown.itemsEl.children[0]);
+            expect(dropdown.isOpen).to.be.false;
+            expect(document.activeElement, 'focus not left inside the hidden popup').to.not.equal(dropdown.searchInput);
+            dropdown.destroy();
+        });
+
         // jsdom does not apply stylesheet :focus rules to getComputedStyle, so the CSS side of the fix
         // (no browser default outline on a focused readonly trigger) is guarded at the source instead.
         it('the trigger focus rule covers readonly triggers too (searchable-dropdown.css)', function () {
