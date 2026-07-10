@@ -292,11 +292,13 @@ code-input {
 
 /* .toolbar-button now lives in the unified button system (buttons.css); its legacy selector is
    aliased there. .button-image is the button's leading icon (a background-image <span> carrying a
-   .sbb-icon-* class); padding-right gives the icon-to-label gap. float is a no-op inside the flex
-   toolbar-button but is kept for any downstream <img class="button-image"> still laid out inline. */
+   .sbb-icon-* class); padding-right gives the icon-to-label gap. vertical-align: middle centres the
+   icon against the label in a non-flex (inline-block) button and is a no-op inside the flex
+   toolbar-button (align-items handles it there) — do NOT float it, a float would top-align the icon
+   in the inline-block case ("icon rides up"). */
 .button-image {
     padding-right: 5px;
-    float: left;
+    vertical-align: middle;
 }
 
 :not(pre) > code[class*=language-],
