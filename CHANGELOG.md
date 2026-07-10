@@ -1,5 +1,16 @@
 # Changelog
 
+## [15.3.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.3.0...v15.3.1) (2026-07-10)
+
+
+### Bug Fixes
+
+* enhance checkbox styles for indeterminate and disabled states ([#511](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/511)) ([adcae0a](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/adcae0a158e745eacb6fd6b121e96e5a297be5b6)), closes [#510](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/510)
+* prevent lingering focus ring on dropdown trigger after selection ([#533](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/533)) ([cb72313](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/cb7231384941bd767fa3588b0a5d0d93cd7619af))
+* replace checkbox images with inline SVG data URIs ([#514](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/514)) ([5edb517](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/5edb5170f0527fb073288848da46f11a3d96cea6)), closes [#513](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/513)
+* replace remaining raster gif button icons with token driven SVGs ([#538](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/538)) ([1561875](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/1561875afe4d36644d71f54fe0c0857d3ef46bb1)), closes [#529](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/529)
+* unify button styles into a shared token-driven system ([#521](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/521)) ([f9eda7e](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/f9eda7e37704203e23a35e817872ceea81354ae8)), closes [#520](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/520)
+
 ## [15.3.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.2.1...v15.3.0) (2026-07-07)
 
 
