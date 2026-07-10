@@ -1,14 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-<defs><linearGradient id="cnl-g" x1="5" y1="2" x2="5" y2="14" gradientUnits="userSpaceOnUse">
-<stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#c5deec"/></linearGradient></defs>
-<polygon fill="#7496b0" points="0 1 0 15 10 15 10 6 5 1 0 1"/>
-<polygon fill="url(#cnl-g)" points="5 6 5 2 1 2 1 14 9 14 9 6 5 6"/>
-<polygon fill="#fff" points="6 3 6 5 8 5 6 3"/>
-<g fill="#bcd7ef">
-<rect x="2" y="4" width="2" height="1"/><rect x="2" y="6" width="3" height="1"/>
-<rect x="2" y="8" width="6" height="1"/><rect x="2" y="10" width="5" height="1"/>
-<rect x="2" y="12" width="5" height="1"/>
-</g>
-<polygon points="11.23 10.06 9.5 11.79 7.77 10.06 7.06 10.77 8.79 12.5 7.06 14.23 7.77 14.94 9.5 13.21 11.23 14.94 11.94 14.23 10.21 12.5 11.94 10.77 11.23 10.06" fill="#d48e8e" stroke="#d48e8e" stroke-width="0.85" stroke-linejoin="round"/>
-<polygon points="11.23 10.06 9.5 11.79 7.77 10.06 7.06 10.77 8.79 12.5 7.06 14.23 7.77 14.94 9.5 13.21 11.23 14.94 11.94 14.23 10.21 12.5 11.94 10.77 11.23 10.06" fill="#a63131"/>
+    <defs>
+        <linearGradient id="cnl-g" x1="5" y1="2" x2="5" y2="14" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#fff"/>
+            <stop offset="1" stop-color="#c5deec"/>
+        </linearGradient>
+    </defs>
+    <polygon fill="#7496b0" points="0 1 0 15 10 15 10 6 5 1 0 1"/>
+    <polygon fill="url(#cnl-g)" points="5 6 5 2 1 2 1 14 9 14 9 6 5 6"/>
+    <polygon fill="#fff" points="6 3 6 5 8 5 6 3"/>
+    <g fill="#bcd7ef">
+        <rect x="2" y="4" width="2" height="1"/>
+        <rect x="2" y="6" width="3" height="1"/>
+        <rect x="2" y="8" width="6" height="1"/>
+        <rect x="2" y="10" width="5" height="1"/>
+        <rect x="2" y="12" width="5" height="1"/>
+    </g>
+    <polygon points="11.23 10.06 9.5 11.79 7.77 10.06 7.06 10.77 8.79 12.5 7.06 14.23 7.77 14.94 9.5 13.21 11.23 14.94 11.94 14.23 10.21 12.5 11.94 10.77 11.23 10.06" fill="#d48e8e" stroke="#d48e8e" stroke-width="0.85"
+             stroke-linejoin="round"/>
+    <polygon points="11.23 10.06 9.5 11.79 7.77 10.06 7.06 10.77 8.79 12.5 7.06 14.23 7.77 14.94 9.5 13.21 11.23 14.94 11.94 14.23 10.21 12.5 11.94 10.77 11.23 10.06" fill="#a63131"/>
 </svg>

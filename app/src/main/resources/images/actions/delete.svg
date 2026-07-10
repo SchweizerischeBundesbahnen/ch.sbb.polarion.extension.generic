@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-<path fill="#788791" d="M2 5 H14 V14.7 Q14 16 12.7 16 H3.3 Q2 16 2 14.7 Z"/>
-<path fill="#e8f8fe" d="M3 5 H13 V14.1 Q13 15 12 15 H4 Q3 15 3 14.1 Z"/>
-<rect fill="#788791" x="4" y="6" width="2" height="8"/>
-<rect fill="#788791" x="7" y="6" width="2" height="8"/>
-<rect fill="#788791" x="10" y="6" width="2" height="8"/>
-<path fill="#788791" fill-rule="evenodd" d="M11.8 2.5 V0 H4.2 V2.5 H1 V5 H15 V2.5 Z M6 1 H10 V2.5 H6 Z"/>
+    <path fill="#788791" d="M2 5 H14 V14.7 Q14 16 12.7 16 H3.3 Q2 16 2 14.7 Z"/>
+    <path fill="#e8f8fe" d="M3 5 H13 V14.1 Q13 15 12 15 H4 Q3 15 3 14.1 Z"/>
+    <rect fill="#788791" x="4" y="6" width="2" height="8"/>
+    <rect fill="#788791" x="7" y="6" width="2" height="8"/>
+    <rect fill="#788791" x="10" y="6" width="2" height="8"/>
+    <path fill="#788791" fill-rule="evenodd" d="M11.8 2.5 V0 H4.2 V2.5 H1 V5 H15 V2.5 Z M6 1 H10 V2.5 H6 Z"/>
 </svg>

@@ -1,21 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-<defs><linearGradient id="edt-g" x1="5" y1="2" x2="5" y2="14" gradientUnits="userSpaceOnUse">
-<stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#c5deec"/></linearGradient></defs>
-<polygon fill="#7496b0" points="0 1 0 15 10 15 10 6 5 1 0 1"/>
-<polygon fill="url(#edt-g)" points="5 6 5 2 1 2 1 14 9 14 9 6 5 6"/>
-<polygon fill="#fff" points="6 3 6 5 8 5 6 3"/>
-<g fill="#bcd7ef">
-<rect x="2" y="4" width="2" height="1"/><rect x="2" y="6" width="3" height="1"/>
-<rect x="2" y="8" width="5" height="1"/><rect x="2" y="10" width="5" height="1"/>
-<rect x="2" y="12" width="5" height="1"/>
-</g>
-<g transform="translate(0.2,-0.35)">
-<polygon fill="#000200" points="6.16 13 7.05 13 6.16 12.12 6.16 13"/>
-<polygon fill="#846d51" points="13.94 6.64 7.93 12.65 8.28 13 14.29 6.99 13.23 5.93 13.94 6.64"/>
-<rect fill="#846d51" x="5.09" y="7.8" width="8.5" height="0.5" transform="translate(-2.96 8.97) rotate(-45)"/>
-<polygon fill="#fbcaaa" points="6.51 11.23 6.16 10.88 6.16 12.12 7.05 13 8.28 13 7.93 12.65 6.51 11.23"/>
-<polygon fill="#d89090" points="12.88 4.16 12.17 4.87 12.53 5.22 13.23 5.93 14.29 6.99 14.65 6.64 15 6.28 12.88 4.16"/>
-<path fill="#dba762" d="M12.53,5.22l-6.01,6.01.7.7c1.99-2.02,3.97-4.04,5.96-6.06l-.65-.65Z"/>
-<path fill="#d69f5f" d="M13.17,5.87c-1.99,2.02-3.97,4.04-5.96,6.06l.72.72,6.01-6.01-.71-.71-.06-.06Z"/>
-</g>
+    <defs>
+        <linearGradient id="edt-g" x1="5" y1="2" x2="5" y2="14" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#fff"/>
+            <stop offset="1" stop-color="#c5deec"/>
+        </linearGradient>
+    </defs>
+    <polygon fill="#7496b0" points="0 1 0 15 10 15 10 6 5 1 0 1"/>
+    <polygon fill="url(#edt-g)" points="5 6 5 2 1 2 1 14 9 14 9 6 5 6"/>
+    <polygon fill="#fff" points="6 3 6 5 8 5 6 3"/>
+    <g fill="#bcd7ef">
+        <rect x="2" y="4" width="2" height="1"/>
+        <rect x="2" y="6" width="3" height="1"/>
+        <rect x="2" y="8" width="5" height="1"/>
+        <rect x="2" y="10" width="5" height="1"/>
+        <rect x="2" y="12" width="5" height="1"/>
+    </g>
+    <g transform="translate(0.2,-0.35)">
+        <polygon fill="#000200" points="6.16 13 7.05 13 6.16 12.12 6.16 13"/>
+        <polygon fill="#846d51" points="13.94 6.64 7.93 12.65 8.28 13 14.29 6.99 13.23 5.93 13.94 6.64"/>
+        <rect fill="#846d51" x="5.09" y="7.8" width="8.5" height="0.5" transform="translate(-2.96 8.97) rotate(-45)"/>
+        <polygon fill="#fbcaaa" points="6.51 11.23 6.16 10.88 6.16 12.12 7.05 13 8.28 13 7.93 12.65 6.51 11.23"/>
+        <polygon fill="#d89090" points="12.88 4.16 12.17 4.87 12.53 5.22 13.23 5.93 14.29 6.99 14.65 6.64 15 6.28 12.88 4.16"/>
+        <path fill="#dba762" d="M12.53,5.22l-6.01,6.01.7.7c1.99-2.02,3.97-4.04,5.96-6.06l-.65-.65Z"/>
+        <path fill="#d69f5f" d="M13.17,5.87c-1.99,2.02-3.97,4.04-5.96,6.06l.72.72,6.01-6.01-.71-.71-.06-.06Z"/>
+    </g>
 </svg>
