@@ -125,6 +125,11 @@ describe('ExtensionContext — DOM-backed helpers', function () {
         delete global.alert;
         delete global.confirm;
         delete global.XMLHttpRequest;
+        // Browser libs some tests stub ad hoc — cleared here so a mid-test assertion failure
+        // can't leak them into later tests.
+        delete global.codeInput;
+        delete global.Prism;
+        delete global.$;
     });
 
     it('reads/writes input, checkbox, selector and toggles visibility', function () {
@@ -228,8 +233,6 @@ describe('ExtensionContext — DOM-backed helpers', function () {
         new ExtensionContext({ initCodeInput: true, propertiesHighlighting: true });
         expect(global.codeInput.registerTemplate.calledOnce).to.be.true;
         expect(global.Prism.languages.properties).to.exist;
-        delete global.codeInput;
-        delete global.Prism;
     });
 
     it('getJQueryElement and querySelector delegate to the root-scoped selectors', function () {
