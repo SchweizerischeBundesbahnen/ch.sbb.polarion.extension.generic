@@ -82,6 +82,56 @@
 }
 
 /*
+ * Native colour picker — brought into the shared control look (same border / radius / height /
+ * focus ring / hover lift as the text inputs above) plus an edge-to-edge swatch, so every
+ * extension's colour field matches the other controls in every context (admin page, popup,
+ * side panel) instead of the raw browser swatch. Width is left to the consumer (layout).
+ */
+.modal__container input[type="color"],
+.standard-admin-page input[type="color"],
+.form-wrapper input[type="color"] {
+    box-sizing: border-box;
+    width: 130px;
+    height: var(--sbb-control-height);
+    /* Right padding = 16px chevron + a 5px gap on each side of it, so the colour fill (which fills the
+       content box) stops the same 5px before the chevron as the chevron sits before the right edge —
+       symmetric spacing around the chevron. */
+    padding: 2px 26px 2px 2px;
+    border: 1px solid var(--sbb-control-border);
+    border-radius: var(--sbb-control-radius);
+    /* Combobox chevron on the right (the same --sbb-combo-chevron token as our selects / dropdowns),
+       painted on the control's white background; the colour swatch fills the content box up to it. */
+    background: var(--sbb-control-bg) var(--sbb-combo-chevron) no-repeat calc(100% - 5px) center;
+    background-size: 16px 16px;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.modal__container input[type="color"]:not(:disabled):hover,
+.standard-admin-page input[type="color"]:not(:disabled):hover,
+.form-wrapper input[type="color"]:not(:disabled):hover {
+    box-shadow: var(--sbb-control-shadow-hover);
+}
+.modal__container input[type="color"]:focus,
+.standard-admin-page input[type="color"]:focus,
+.form-wrapper input[type="color"]:focus {
+    outline: none;
+    border-color: var(--sbb-control-border-focus);
+    box-shadow: var(--sbb-control-shadow-hover);
+}
+/* Drop the browser's default swatch inset + border so the colour fills the field cleanly. */
+.modal__container input[type="color"]::-webkit-color-swatch-wrapper,
+.standard-admin-page input[type="color"]::-webkit-color-swatch-wrapper,
+.form-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+.modal__container input[type="color"]::-webkit-color-swatch,
+.standard-admin-page input[type="color"]::-webkit-color-swatch,
+.form-wrapper input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 1px;
+}
+
+/*
  * Number input with a custom 2606 spinner. The browser's ::-webkit-inner-spin-button can't be
  * restyled to match our look, so it is hidden and replaced by two stacked caret buttons (the SAME
  * triangle as the combobox chevron — up = flipped, down = as-is). Structure is added by
