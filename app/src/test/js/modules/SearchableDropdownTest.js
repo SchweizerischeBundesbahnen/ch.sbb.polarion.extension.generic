@@ -464,6 +464,18 @@ describe('SearchableDropdown', function () {
             expect(label.htmlFor).to.equal('my-build_sd-trigger');
             dropdown.destroy();
         });
+
+        it('id returns undefined in build mode when the container is absent (defensive fallback)', function () {
+            const container = document.createElement('div');
+            container.id = 'my-build';
+            document.body.appendChild(container);
+            const dropdown = new SearchableDropdown({ selectContainer: container, rememberSelection: false });
+            expect(dropdown.id).to.equal('my-build');
+            dropdown.container = null; // simulate a missing container
+            expect(dropdown.id).to.equal(undefined);
+            dropdown.container = container; // restore so destroy() can clean up
+            dropdown.destroy();
+        });
     });
 
     describe('open/close via pointer + outside click', function () {
