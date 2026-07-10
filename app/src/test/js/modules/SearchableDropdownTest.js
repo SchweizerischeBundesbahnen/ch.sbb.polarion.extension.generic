@@ -2,6 +2,7 @@ import SearchableDropdown from '../../../main/resources/js/modules/SearchableDro
 import { expect } from 'chai';
 import { JSDOM } from 'jsdom';
 import sinon from 'sinon';
+import { readFileSync } from 'node:fs';
 
 // MutationObserver callbacks fire as microtasks — let them run.
 const flush = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -529,6 +530,14 @@ describe('SearchableDropdown', function () {
             expect(dropdown.isOpen).to.be.false;
             expect(document.activeElement, 'focus kept for continued keyboard nav').to.equal(dropdown.trigger);
             dropdown.destroy();
+        });
+
+        // jsdom does not apply stylesheet :focus rules to getComputedStyle, so the CSS side of the fix
+        // (no browser default outline on a focused readonly trigger) is guarded at the source instead.
+        it('the trigger focus rule covers readonly triggers too (searchable-dropdown.css)', function () {
+            const css = readFileSync(new URL('../../../main/resources/css/searchable-dropdown.css', import.meta.url), 'utf8');
+            expect(css, 'a .sd-trigger:focus rule must exist').to.match(/\.sd-trigger:focus\s*\{/);
+            expect(css, 'the focus rule must not exclude readonly triggers').to.not.match(/sd-trigger:not\(\[readonly\]\):focus/);
         });
     });
 
