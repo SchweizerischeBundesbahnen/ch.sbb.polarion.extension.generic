@@ -306,7 +306,7 @@ describe('SearchableDropdown', function () {
         expect(document.querySelectorAll('.sd-portal').length).to.equal(0);
     });
 
-    it('scopes the body-level portal with .sbb-ui so its tokens match the trigger (issue #530)', function () {
+    it('scopes the body-level portal with .sbb-ui so its tokens match the trigger', function () {
         // The popup is appended to <body>, outside the trigger's scoped wrapper; without .sbb-ui it
         // would inherit --sbb-* from :root and could render with a foreign extension's tokens on a
         // shared multi-version page. .sbb-ui keeps it on the same design tokens as the control.
@@ -510,7 +510,7 @@ describe('SearchableDropdown', function () {
         });
     });
 
-    describe('focus handling on selection (variant 2 — no lingering focus ring)', function () {
+    describe('focus handling on selection (no lingering focus ring)', function () {
         it('blurs the trigger after a mouse pick that closes the popup (single-select)', function () {
             const dropdown = new SearchableDropdown({ element: document.getElementById('single'), searchable: false, rememberSelection: false });
             dropdown._open();

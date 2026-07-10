@@ -1,6 +1,6 @@
-// Build step for issue #528: bake the control-icon SVGs into control-tokens.css as self-contained
-// base64 data-URIs, so the .svg files under images/ are the single source of truth and no base64 is
-// hand-maintained in the CSS.
+// Build step: bake the control-icon SVGs into control-tokens.css as self-contained base64 data-URIs,
+// so the .svg files under images/ are the single source of truth and no base64 is hand-maintained in
+// the CSS.
 //
 // The source control-tokens.css declares each icon token with an `url(inline:<path>.svg)` placeholder;
 // this script (run from app/ via `npm run build:css`, wired into frontend-maven-plugin at

@@ -109,7 +109,7 @@
                         </configuration>
                     </execution>
 
-                    <!-- Inline the control-icon SVGs into the built control-tokens.css (issue #528):
+                    <!-- Inline the control-icon SVGs into the built control-tokens.css:
                          replace each url(inline:images/x.svg) placeholder with the base64 of the .svg,
                          so the shipped stylesheet is self-contained and the .svg files stay the single
                          source of truth. Bound to process-classes so it runs AFTER process-resources

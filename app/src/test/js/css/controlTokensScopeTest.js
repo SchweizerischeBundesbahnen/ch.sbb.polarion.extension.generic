@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 // mocha runs with cwd = app.
 const css = readFileSync('src/main/resources/css/control-tokens.css', 'utf8');
 
-describe('control-tokens.css token scoping (issue #515 / #530)', function () {
+describe('control-tokens.css token scoping', function () {
 
     it('declares the --sbb-* tokens on the shared UI scopes, not only :root', function () {
         // The token block must open on every scope wrapper so that on a page where several extensions

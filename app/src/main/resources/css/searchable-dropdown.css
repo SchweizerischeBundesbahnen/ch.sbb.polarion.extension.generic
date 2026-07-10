@@ -36,12 +36,11 @@
     cursor: text;
 }
 
-/* A trigger can be focused while the popup is closed — an editable one via free text that matches no
-   suggestion, and a readonly (non-editable) one because it keeps focus after a pick — so it needs its
-   own focus styling; the .open rule below wouldn't apply. Applies to BOTH: without it a readonly
-   trigger fell through to the browser's default focus outline, which showed as a stray dark ring
-   after selecting. Blue border + the soft text-input elevation (inputs.css), not the heavier
-   open-state shadow, which would linger while focus stays after the pick. */
+/* A focused trigger — editable or readonly (non-editable) — can have the popup closed (an editable
+   one via free text matching no suggestion; a readonly one keeps focus after a pick), so it needs its
+   own focus styling that the .open rule wouldn't cover. Applies to both so a focused trigger shows our
+   blue focus border and the soft text-input elevation (inputs.css) — not the heavier open-state shadow
+   (which would linger while focus stays after the pick) and not the browser's default outline. */
 .searchable-dropdown > input.sd-trigger:focus {
     border-color: var(--sbb-control-border-focus);
     box-shadow: var(--sbb-control-shadow-hover);
@@ -368,9 +367,8 @@
 /* preserveOptionClasses: options inherit the source <option>'s class.
    .parent = a config inherited from a broader (e.g. global) scope. The name is
    shown in normal text and a small italic "global" marker is appended on the
-   right — matching Polarion's original config selector (was configurations.css
-   .parent::after). The trigger is an <input>, which can't render ::after, so the
-   selected value there shows just the config name. */
+   right — matching Polarion's config selector. The trigger is an <input>, which
+   can't render ::after, so the selected value there shows just the config name. */
 .sd-portal .option.parent {
     display: flex;
     align-items: baseline;

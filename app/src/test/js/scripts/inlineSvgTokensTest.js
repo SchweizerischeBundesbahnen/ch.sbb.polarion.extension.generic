@@ -7,7 +7,7 @@ import { inlineSvgDataUris } from '../../../../scripts/inline-svg-tokens.mjs';
 const CSS_PATH = 'src/main/resources/css/control-tokens.css';
 const RES_DIR = 'src/main/resources';
 
-describe('inline-svg-tokens (issue #528 build step)', function () {
+describe('inline-svg-tokens (build step)', function () {
 
     describe('inlineSvgDataUris', function () {
         const fakeSvg = Buffer.from('<svg>#fff</svg>');
