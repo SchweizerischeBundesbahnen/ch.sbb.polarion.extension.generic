@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.3.3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.3.2...v15.3.3) (2026-07-13)
+
+
+### Bug Fixes
+
+* extract alert styles into injectable alerts.css ([#550](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/550)) ([0599ada](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/0599adac1705f85b9c28d9efd8e9dbf82e4c8ca6)), closes [#549](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/549)
+
 ## [15.3.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.3.1...v15.3.2) (2026-07-10)
 
 
