@@ -3,6 +3,7 @@ package ch.sbb.polarion.extension.generic.rest.filter;
 import ch.sbb.polarion.extension.generic.auth.AuthValidator;
 import ch.sbb.polarion.extension.generic.auth.ValidatorFactory;
 import ch.sbb.polarion.extension.generic.auth.ValidatorType;
+import ch.sbb.polarion.extension.generic.test_extensions.PlatformContextMockExtension;
 import com.polarion.core.config.Configuration;
 import com.polarion.core.config.IConfiguration;
 import com.polarion.platform.security.AuthenticationFailedException;
@@ -28,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, PlatformContextMockExtension.class})
 class AuthenticationFilterTest {
 
     @Mock
@@ -126,7 +127,7 @@ class AuthenticationFilterTest {
         try (MockedStatic<ValidatorFactory> validatorFactoryMockedStatic = mockStatic(ValidatorFactory.class)) {
             when(ValidatorFactory.getValidator(ValidatorType.XSRF_TOKEN)).thenReturn(xsrfValidator);
 
-            AuthenticationFilter filter = xsrfTestFilter();
+            AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
             filter.filter(requestContext);
             verify(requestContext, times(1)).setProperty(eq("user_subject"), any(Subject.class));
         }
@@ -147,7 +148,7 @@ class AuthenticationFilterTest {
                     .getUserPrincipal()
                     .getName()).thenReturn("user");
 
-            AuthenticationFilter filter = xsrfTestFilter();
+            AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
 
             assertThatThrownBy(() -> filter.filter(requestContext))
                     .isInstanceOf(NotAuthorizedException.class)
@@ -169,7 +170,7 @@ class AuthenticationFilterTest {
                     .getUserPrincipal()
                     .getName()).thenReturn("user");
 
-            AuthenticationFilter filter = xsrfTestFilter();
+            AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
 
             assertThatThrownBy(() -> filter.filter(requestContext))
                     .isInstanceOf(NotAuthorizedException.class)
@@ -191,25 +192,11 @@ class AuthenticationFilterTest {
                     .getUserPrincipal()
                     .getName()).thenReturn("different_user");
 
-            AuthenticationFilter filter = xsrfTestFilter();
+            AuthenticationFilter filter = new AuthenticationFilter(securityService, httpServletRequest);
 
             assertThatThrownBy(() -> filter.filter(requestContext))
                     .isInstanceOf(NotAuthorizedException.class)
                     .hasMessageContaining("Invalid XSRF token");
         }
-    }
-
-    /**
-     * Builds a filter whose session-id lookup is stubbed, so the real
-     * {@link com.polarion.platform.session.PolarionSingleSignOn} (which requires an initialized
-     * platform) is never loaded during unit tests.
-     */
-    private AuthenticationFilter xsrfTestFilter() {
-        return new AuthenticationFilter(securityService, httpServletRequest) {
-            @Override
-            protected String getSessionId(HttpServletRequest request) {
-                return "session";
-            }
-        };
     }
 }
