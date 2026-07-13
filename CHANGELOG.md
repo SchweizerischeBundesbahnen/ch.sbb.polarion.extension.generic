@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.4.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.4.0...v15.4.1) (2026-07-13)
+
+
+### Bug Fixes
+
+* align XSRF token validation with Polarion 2606 layout([#559](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/559)) ([d3e885c](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d3e885c60b0e667a0b0cb052327bb6cc19ffa4ab)), closes [#558](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/558)
+
 ## [15.4.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.3.3...v15.4.0) (2026-07-13)
 
 
