@@ -40,11 +40,14 @@ public class XsrfTokenValidator extends AbstractAuthValidator {
             return false;
         }
 
+        // Polarion 2606 token layout (see com.polarion.alm.server.xsrf.XsrfTokenServiceImpl):
+        // <salt>$<expiration>$<userId>$<sessionId> - parts[0] (random salt) is ignored.
         String[] parts = token.split("\\$");
-        if (parts.length >= 2) {
-            Instant tokenTimestamp = parseTokenTimestamp(parts[0]);
-            String tokenUser = parts[1];
-            return isTokenValid(userId, tokenUser, tokenTimestamp);
+        if (parts.length >= 4) {
+            Instant tokenTimestamp = parseTokenTimestamp(parts[1]);
+            String tokenUser = parts[2];
+            String tokenSessionId = parts[3];
+            return isTokenValid(userId, tokenUser, tokenTimestamp, tokenSessionId);
         }
 
         return false;
@@ -59,8 +62,11 @@ public class XsrfTokenValidator extends AbstractAuthValidator {
         }
     }
 
-    private boolean isTokenValid(@NotNull String userId, @NotNull String tokenUser, @NotNull Instant tokenTimestamp) {
-        return Objects.equals(userId, tokenUser) && !tokenTimestamp.isBefore(Instant.now());
+    private boolean isTokenValid(@NotNull String userId, @NotNull String tokenUser, @NotNull Instant tokenTimestamp, @NotNull String tokenSessionId) {
+        return Objects.equals(userId, tokenUser)
+                && !tokenTimestamp.isBefore(Instant.now())
+                && !tokenSessionId.isBlank()
+                && Objects.equals(sessionId, tokenSessionId);
     }
 
     private Instant parseTokenTimestamp(@NotNull String timestampPart) {

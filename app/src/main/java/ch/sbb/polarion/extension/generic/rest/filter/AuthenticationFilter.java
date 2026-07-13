@@ -6,6 +6,7 @@ import ch.sbb.polarion.extension.generic.auth.ValidatorType;
 import com.polarion.platform.core.PlatformContext;
 import com.polarion.platform.security.AuthenticationFailedException;
 import com.polarion.platform.security.ISecurityService;
+import com.polarion.platform.session.PolarionSingleSignOn;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -91,9 +92,20 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     private @NotNull AuthValidator createXsrfTokenValidator(@NotNull String xsrfToken) {
         String userId = httpServletRequest.getUserPrincipal().getName();
+        String sessionId = getSessionId(httpServletRequest);
         return ValidatorFactory.getValidator(ValidatorType.XSRF_TOKEN)
                 .userId(userId)
+                .sessionId(sessionId)
                 .secret(xsrfToken)
                 .securityService(securityService);
+    }
+
+    /**
+     * Resolves the current Polarion single-sign-on session id. Extracted as an overridable seam so
+     * that {@link com.polarion.platform.session.PolarionSingleSignOn} (which requires a fully
+     * initialized platform) does not need to be loaded in unit tests.
+     */
+    protected @NotNull String getSessionId(@NotNull HttpServletRequest request) {
+        return PolarionSingleSignOn.getSsoId(request);
     }
 }

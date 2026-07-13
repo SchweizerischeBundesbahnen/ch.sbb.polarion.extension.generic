@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractAuthValidator implements AuthValidator {
     protected String userId;
+    protected String sessionId;
     protected String secret;
 
     protected ISecurityService securityService;
@@ -12,6 +13,12 @@ public abstract class AbstractAuthValidator implements AuthValidator {
     @Override
     public @NotNull AuthValidator userId(@NotNull String userId) {
         this.userId = userId;
+        return this;
+    }
+
+    @Override
+    public @NotNull AuthValidator sessionId(@NotNull String sessionId) {
+        this.sessionId = sessionId;
         return this;
     }
 
