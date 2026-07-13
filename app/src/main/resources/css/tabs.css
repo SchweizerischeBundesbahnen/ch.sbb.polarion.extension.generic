@@ -6,11 +6,14 @@
  * Two activation mechanisms are supported so consumers don't all need JS:
  *   1. JS-driven — add class="active" to the active <li class="tab">. Use this for a DYNAMIC tab
  *      count (the active state is not tied to a fixed selector).
- *   2. Pure-CSS radio-driven — put the tab <input type="radio">s (and NO other inputs) BEFORE .tabs
- *      inside a .tabbed wrapper; the Nth checked radio activates the Nth .tab and reveals the Nth
- *      .tab-content. The :nth-of-type selectors count every sibling <input>, so the tab radios must
- *      be the only inputs there — if a wrapper needs other inputs, use the JS-driven variant. Limited
- *      to the tab count spelled out in the :nth-of-type lists below (currently 4).
+ *   2. Pure-CSS radio-driven — inside a .tabbed wrapper, put the tab <input type="radio">s (and NO
+ *      other inputs) BEFORE .tabs, and keep the <div class="tab-content"> panels as the ONLY <div>s
+ *      at that level. The Nth checked radio activates the Nth .tab and reveals the Nth .tab-content.
+ *      Both mappings use :nth-of-type, which counts every sibling of the same tag (all <input>s / all
+ *      <div>s), NOT just the tab controls — so a stray input before .tabs, or a stray div before or
+ *      between the panels, shifts the indices and breaks the pairing. Keep those out (extra inputs
+ *      AFTER .tabs are fine, e.g. hidden fields), or use the JS-driven variant. Limited to the tab
+ *      count spelled out in the :nth-of-type lists below (currently 4).
  *
  * Markup:
  *   <div class="tabbed">                     (only needed for the radio-driven variant)
