@@ -12,6 +12,7 @@ public interface AuthValidator {
     @NotNull Subject validate() throws AuthenticationFailedException;
 
     @NotNull AuthValidator userId(@NotNull String userId);
+    @NotNull AuthValidator sessionId(@NotNull String sessionId);
     @NotNull AuthValidator secret(@NotNull String secret);
 
     @NotNull AuthValidator securityService(@NotNull ISecurityService securityService);

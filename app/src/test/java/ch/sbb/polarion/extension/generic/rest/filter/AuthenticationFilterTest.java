@@ -3,6 +3,7 @@ package ch.sbb.polarion.extension.generic.rest.filter;
 import ch.sbb.polarion.extension.generic.auth.AuthValidator;
 import ch.sbb.polarion.extension.generic.auth.ValidatorFactory;
 import ch.sbb.polarion.extension.generic.auth.ValidatorType;
+import ch.sbb.polarion.extension.generic.test_extensions.PlatformContextMockExtension;
 import com.polarion.core.config.Configuration;
 import com.polarion.core.config.IConfiguration;
 import com.polarion.platform.security.AuthenticationFailedException;
@@ -28,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, PlatformContextMockExtension.class})
 class AuthenticationFilterTest {
 
     @Mock
@@ -119,6 +120,7 @@ class AuthenticationFilterTest {
         AuthValidator xsrfValidator = mock(AuthValidator.class);
         when(xsrfValidator.validate()).thenReturn(new Subject());
         when(xsrfValidator.userId(anyString())).thenReturn(xsrfValidator);
+        when(xsrfValidator.sessionId(anyString())).thenReturn(xsrfValidator);
         when(xsrfValidator.secret(anyString())).thenReturn(xsrfValidator);
         when(xsrfValidator.securityService(securityService)).thenReturn(xsrfValidator);
         doCallRealMethod().when(xsrfValidator).updateRequestContext(any(), any());

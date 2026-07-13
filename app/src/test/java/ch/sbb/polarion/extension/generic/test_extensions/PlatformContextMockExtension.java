@@ -3,6 +3,8 @@ package ch.sbb.polarion.extension.generic.test_extensions;
 import com.polarion.alm.projects.IProjectService;
 import com.polarion.alm.tracker.ITestManagementService;
 import com.polarion.alm.tracker.ITrackerService;
+import com.polarion.core.config.Configuration;
+import com.polarion.core.config.IConfiguration;
 import com.polarion.platform.IPlatformService;
 import com.polarion.platform.core.IPlatform;
 import com.polarion.platform.core.PlatformContext;
@@ -12,6 +14,7 @@ import com.polarion.platform.security.ISecurityService;
 import com.polarion.platform.security.accesstoken.IUserAccessTokenService;
 import com.polarion.platform.security.auth.UserAuthenticationProvider;
 import com.polarion.platform.service.repository.IRepositoryService;
+import com.polarion.platform.session.PolarionSingleSignOn;
 import com.polarion.portal.internal.server.navigation.TestManagementServiceAccessor;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -70,6 +73,29 @@ public class PlatformContextMockExtension implements BeforeEachCallback, AfterEa
         testManagementServiceAccessorMockedConstruction = mockConstruction(TestManagementServiceAccessor.class, (testManagementServiceAccessor, mockedContructionContext) -> {
             lenient().when(testManagementServiceAccessor.getTestingService()).thenReturn(testManagementService);
         });
+
+        initSingleSignOn();
+    }
+
+    /**
+     * Ensures {@link PolarionSingleSignOn} is initialized so that code resolving the current session id
+     * (e.g. XSRF token authentication via {@code PolarionSingleSignOn.getSsoId(request)}) works without
+     * a running platform. On a mock request {@code getSsoId} simply returns {@code ""}.
+     * <p>
+     * The class's static initializer builds a {@code HostHeaderValidator} that reads
+     * {@code Configuration.getInstance().tomcat()...}, so a {@link Configuration} must be available
+     * while the class is initialized; a deep-stub one is provided for that moment only. The class is
+     * loaded (not mocked with {@code mockStatic}) on purpose: one of its methods references
+     * {@code org.apache.catalina.connector.Request}, which is absent from the unit-test classpath and
+     * would make Byte Buddy instrumentation fail.
+     */
+    private void initSingleSignOn() {
+        try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class)) {
+            configurationMockedStatic.when(Configuration::getInstance).thenReturn(mock(IConfiguration.class, Answers.RETURNS_DEEP_STUBS));
+            Class.forName(PolarionSingleSignOn.class.getName(), true, PolarionSingleSignOn.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Unable to initialize " + PolarionSingleSignOn.class.getName(), e);
+        }
     }
 
     @Override
