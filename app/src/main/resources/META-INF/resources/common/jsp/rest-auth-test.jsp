@@ -55,7 +55,15 @@
                 }
             }).then(function (response) {
                 return response.text().then(function (body) {
-                    showResult("HTTP " + response.status + " " + response.statusText + "\n\n" + body, response.ok);
+                    let formattedBody = body;
+                    try {
+                        formattedBody = JSON.stringify(JSON.parse(body), null, 2);
+                    } catch (ignored) {
+                        // Response is not JSON; show it as-is.
+                    }
+                    const statusText = response.statusText && response.statusText !== String(response.status)
+                        ? " " + response.statusText : "";
+                    showResult("HTTP " + response.status + statusText + "\n\n" + formattedBody, response.ok);
                 });
             }).catch(function (e) {
                 showResult("Request failed: " + e, false);
