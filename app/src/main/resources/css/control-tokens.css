@@ -20,15 +20,15 @@
  * (the React SPAs link it directly and must render even when /polarion/* 404s). Edit the .svg, never
  * a base64 blob; the source here shows only placeholders.
  */
-/* Tokens are declared on the shared UI scopes (not only :root) so that on a page where several
-   extensions load their OWN bundled generic at DIFFERENT versions (the Polarion document page), each
-   extension's controls read the tokens from the closest scoped ancestor — its own bundle's copy —
-   instead of whichever extension's :root declaration happened to load last. Custom properties
-   inherit downward, so a `.sbb-ui` (or existing .modal__container / .standard-admin-page /
-   .form-wrapper) wrapper shadows any foreign :root value for its subtree.
-   :root is kept for backward-compat during rollout (consumers not yet carrying a scope class); it
-   can be dropped once every consumer wraps its UI roots in .sbb-ui. */
-:root,
+/* Tokens are declared on the shared UI scopes (NOT :root) so that on a page where several extensions
+   load their OWN bundled generic at DIFFERENT versions (the Polarion document page), each extension's
+   controls read the tokens from the closest scoped ancestor — its own bundle's copy — instead of
+   whichever extension's declaration happened to load last. Custom properties inherit downward, so a
+   `.sbb-ui` (or .modal__container / .standard-admin-page / .form-wrapper) wrapper shadows any foreign
+   value for its subtree.
+   :root was dropped in #535 once every consumer surface carried a scope wrapper — do NOT reintroduce
+   it: a :root declaration is global and re-enables cross-version clobbering for any control that
+   sits outside a wrapper. New consumers must tag their UI root with one of the scope classes. */
 .modal__container,
 .standard-admin-page,
 .form-wrapper,
