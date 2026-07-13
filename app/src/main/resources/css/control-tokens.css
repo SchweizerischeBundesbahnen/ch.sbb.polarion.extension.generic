@@ -95,6 +95,7 @@
     --sbb-select-revision-icon: url(inline:images/actions/select_revision.svg);
     --sbb-edit-icon: url(inline:images/actions/edit.svg);
     --sbb-delete-icon: url(inline:images/actions/delete.svg);
+    --sbb-reload-icon: url(inline:images/actions/refresh.svg);
     --sbb-combo-popup-border: #ccccd4;
     /* Light teal hover / selection tint — the base that --sbb-option-hover and --sbb-chip-bg
        derive from, and the token the React SPAs reference for dropdown-row hovers. */
@@ -178,7 +179,8 @@
 .sbb-icon-revert,
 .sbb-icon-select-revision,
 .sbb-icon-edit,
-.sbb-icon-delete {
+.sbb-icon-delete,
+.sbb-icon-reload {
     display: inline-block;
     width: 16px;
     height: 16px;
@@ -202,4 +204,7 @@
 }
 .sbb-icon-delete {
     background-image: var(--sbb-delete-icon);
+}
+.sbb-icon-reload {
+    background-image: var(--sbb-reload-icon);
 }
