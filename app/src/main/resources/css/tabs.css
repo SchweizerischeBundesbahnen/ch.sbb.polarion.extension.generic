@@ -1,0 +1,136 @@
+/*
+ * Shared tabs — one tab-bar look for every extension. The active tab connects to the panel/content
+ * below (white fill, teal-accent label, and a white bottom edge that cuts the .tabs border). All
+ * colours come from control-tokens.css.
+ *
+ * Two activation mechanisms are supported so consumers don't all need JS:
+ *   1. JS-driven — add class="active" to the active <li class="tab">. Use this for a DYNAMIC tab
+ *      count (the active state is not tied to a fixed selector).
+ *   2. Pure-CSS radio-driven — inside a .tabbed wrapper, put the tab <input type="radio">s (and NO
+ *      other inputs) BEFORE .tabs, and keep the <div class="tab-content"> panels as the ONLY <div>s
+ *      at that level. The Nth checked radio activates the Nth .tab and reveals the Nth .tab-content.
+ *      Both mappings use :nth-of-type, which counts every sibling of the same tag (all <input>s / all
+ *      <div>s), NOT just the tab controls — so a stray input before .tabs, or a stray div before or
+ *      between the panels, shifts the indices and breaks the pairing. Keep those out (extra inputs
+ *      AFTER .tabs are fine, e.g. hidden fields), or use the JS-driven variant. Limited to the tab
+ *      count spelled out in the :nth-of-type lists below (currently 4).
+ *
+ * Markup:
+ *   <div class="tabbed">                     (only needed for the radio-driven variant)
+ *     <input type="radio" name="…" checked>  (one per tab, radio-driven only)
+ *     …
+ *     <ul class="tabs">
+ *       <li class="tab"><label for="…">Tab 1</label></li>   (radio-driven: label[for])
+ *       <li class="tab active"><label>Tab 1</label></li>     (JS-driven: .active on the <li>)
+ *       …
+ *     </ul>
+ *     <div class="tab-content">…</div>       (radio-driven only, one per tab)
+ *     …
+ *   </div>
+ */
+
+.tabbed {
+    position: relative;
+}
+
+/* Both variants keep a real radio as the selection driver but hide it visually with the sr-only
+   pattern (NOT display:none) so keyboard users can still focus it and switch tabs with arrow keys.
+   Radio-driven: the radios sit before .tabs inside .tabbed. JS-driven: one radio inside each .tab. */
+.tabbed [type="radio"],
+.tab [type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--sbb-control-border);
+}
+
+.tab > label {
+    position: relative;
+    display: block;
+    padding: 8px 14px;
+    border: 1px solid var(--sbb-control-border);
+    border-bottom: none;
+    background: var(--sbb-btn-control-bg);
+    color: var(--sbb-control-placeholder);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+/* Overlap adjacent tabs by 1px so their side borders collapse into a single divider line. */
+.tab:not(:first-child) > label {
+    margin-left: -1px;
+}
+
+.tab:hover > label {
+    color: var(--sbb-control-text);
+}
+
+/* Active tab — white fill (= the panel colour, so the tab merges into the content below), a teal top
+   accent marking it active, and a white bottom edge that (with the -1px overlap) cuts the .tabs
+   baseline so the active tab reads as one surface with the panel. Applied by BOTH mechanisms
+   (JS .active + radio :nth-of-type). */
+.tab.active > label,
+.tabbed [type="radio"]:nth-of-type(1):checked ~ .tabs .tab:nth-of-type(1) > label,
+.tabbed [type="radio"]:nth-of-type(2):checked ~ .tabs .tab:nth-of-type(2) > label,
+.tabbed [type="radio"]:nth-of-type(3):checked ~ .tabs .tab:nth-of-type(3) > label,
+.tabbed [type="radio"]:nth-of-type(4):checked ~ .tabs .tab:nth-of-type(4) > label {
+    margin-bottom: -1px;
+    border: 1px solid var(--sbb-control-border);
+    border-top: 2px solid var(--sbb-accent); /* brand accent marks the active tab */
+    border-bottom: 1px solid var(--sbb-control-bg);
+    padding-top: 7px;
+    background: var(--sbb-control-bg);
+    color: var(--sbb-control-text);
+    z-index: 1; /* paint the active tab's edges over its neighbours' overlapping borders */
+}
+
+/* Disabled tab (radio-driven). pointer-events:none so it takes no hover effects (no shadow-lift, no
+   text darkening) and is not clickable. */
+.tabbed [type="radio"]:nth-of-type(1):disabled ~ .tabs .tab:nth-of-type(1) > label,
+.tabbed [type="radio"]:nth-of-type(2):disabled ~ .tabs .tab:nth-of-type(2) > label,
+.tabbed [type="radio"]:nth-of-type(3):disabled ~ .tabs .tab:nth-of-type(3) > label,
+.tabbed [type="radio"]:nth-of-type(4):disabled ~ .tabs .tab:nth-of-type(4) > label {
+    color: var(--sbb-btn-dlg-disabled-fg);
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Keyboard focus ring. JS-driven: the focusable radio is inside the tab. Radio-driven: the focused
+   radio is a sibling before .tabs, so mirror the ring onto its tab via the nth-of-type map. */
+.tab:has([type="radio"]:focus-visible) > label,
+.tabbed [type="radio"]:nth-of-type(1):focus-visible ~ .tabs .tab:nth-of-type(1) > label,
+.tabbed [type="radio"]:nth-of-type(2):focus-visible ~ .tabs .tab:nth-of-type(2) > label,
+.tabbed [type="radio"]:nth-of-type(3):focus-visible ~ .tabs .tab:nth-of-type(3) > label,
+.tabbed [type="radio"]:nth-of-type(4):focus-visible ~ .tabs .tab:nth-of-type(4) > label {
+    box-shadow: var(--sbb-btn-focus-ring);
+}
+
+/* Tab panels (radio-driven) — hidden until their radio is checked. */
+.tab-content {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.tabbed [type="radio"]:nth-of-type(1):checked ~ .tab-content:nth-of-type(1),
+.tabbed [type="radio"]:nth-of-type(2):checked ~ .tab-content:nth-of-type(2),
+.tabbed [type="radio"]:nth-of-type(3):checked ~ .tab-content:nth-of-type(3),
+.tabbed [type="radio"]:nth-of-type(4):checked ~ .tab-content:nth-of-type(4) {
+    display: block;
+    opacity: 1;
+}

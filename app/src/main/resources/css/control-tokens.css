@@ -95,6 +95,7 @@
     --sbb-select-revision-icon: url(inline:images/actions/select_revision.svg);
     --sbb-edit-icon: url(inline:images/actions/edit.svg);
     --sbb-delete-icon: url(inline:images/actions/delete.svg);
+    --sbb-reload-icon: url(inline:images/actions/refresh.svg);
     --sbb-combo-popup-border: #ccccd4;
     /* Light teal hover / selection tint — the base that --sbb-option-hover and --sbb-chip-bg
        derive from, and the token the React SPAs reference for dropdown-row hovers. */
@@ -131,7 +132,10 @@
     --sbb-btn-hover-border: #cecece;        /* hover border */
     --sbb-btn-hover-shadow: 0 0 2px #e0dede;/* hover lift */
     --sbb-btn-disabled-opacity: 0.5;        /* control + action disabled */
-    --sbb-btn-accent: #007993;              /* primary fill · secondary/link text */
+    /* Brand accent — the Polarion 2606 teal. Single source; button / link / progress / tab accents
+       (and --polarion-accent) all derive from it, so a re-brand is a one-line edit. */
+    --sbb-accent: #007993;
+    --sbb-btn-accent: var(--sbb-accent);    /* primary fill · secondary/link text */
     --sbb-btn-accent-primary-hover: #196269;   /* primary hover — darkens */
     --sbb-btn-accent-primary-active: #16565c;
     --sbb-btn-accent-secondary-hover: #d1fff2; /* secondary hover — mint fill */
@@ -178,7 +182,8 @@
 .sbb-icon-revert,
 .sbb-icon-select-revision,
 .sbb-icon-edit,
-.sbb-icon-delete {
+.sbb-icon-delete,
+.sbb-icon-reload {
     display: inline-block;
     width: 16px;
     height: 16px;
@@ -202,4 +207,7 @@
 }
 .sbb-icon-delete {
     background-image: var(--sbb-delete-icon);
+}
+.sbb-icon-reload {
+    background-image: var(--sbb-reload-icon);
 }

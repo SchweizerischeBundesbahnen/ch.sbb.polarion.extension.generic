@@ -123,10 +123,8 @@
 }
 
 .modal__btn-primary {
-  /* --polarion-accent is Polarion's own platform token, not one of our --sbb-* (which the @import
-     above guarantees). It may be absent outside the platform theme, so keep the literal #007993
-     fallback here. */
-  background-color: var(--polarion-accent, #007993);
+  /* Brand accent from control-tokens.css (the @import above guarantees it), so no literal fallback. */
+  background-color: var(--sbb-accent);
   color: #fff;
 }
 
