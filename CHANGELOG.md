@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.4.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.3.3...v15.4.0) (2026-07-13)
+
+
+### Features
+
+* add shared tabs component with styling and icons ([#554](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/554)) ([f72eead](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/f72eead8a779934c6a44ad09ecbaf1537d4d6c9f)), closes [#536](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/536)
+
 ## [15.3.3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.3.2...v15.3.3) (2026-07-13)
 
 
