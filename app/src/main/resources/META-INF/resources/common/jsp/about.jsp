@@ -33,6 +33,7 @@
 <head>
     <title></title>
     <link rel="stylesheet" href="../ui/generic/css/common.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
+    <link rel="stylesheet" href="../ui/generic/css/buttons.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
     <link rel="stylesheet" href="../ui/generic/css/about.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
     <link rel="stylesheet" href="../ui/generic/css/github-markdown-light.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
 </head>
@@ -67,6 +68,67 @@
             %>
             </tbody>
         </table>
+
+        <h3>REST API authentication test</h3>
+
+        <p>
+            Sends <code>GET <%= "/polarion/" + context.getExtensionContext() + "/rest/api/version" %></code>
+            with the current session's <code>X-Polarion-REST-Token</code> header, obtained via
+            <code>top.getRestApiToken()</code>. Use it to verify that in-session REST authentication works.
+            The token requires <code>com.siemens.polarion.rest.security.restApiToken.enabled=true</code> in
+            <code>polarion.properties</code>.
+        </p>
+
+        <button type="button" id="rest-auth-test-button" class="sbb-btn sbb-btn--action">Test REST authentication</button>
+        <pre id="rest-auth-test-output" class="rest-auth-test-output" style="display: none;"></pre>
+
+        <script>
+            (function () {
+                var restApiUrl = "<%= "/polarion/" + context.getExtensionContext() + "/rest/api/version" %>";
+                var button = document.getElementById("rest-auth-test-button");
+                var output = document.getElementById("rest-auth-test-output");
+
+                function showResult(text, success) {
+                    output.style.display = "block";
+                    output.textContent = text;
+                    output.classList.remove("success", "failure");
+                    output.classList.add(success ? "success" : "failure");
+                }
+
+                button.addEventListener("click", function () {
+                    var token;
+                    try {
+                        token = top.getRestApiToken();
+                    } catch (e) {
+                        showResult("Unable to obtain a token via top.getRestApiToken(): " + e, false);
+                        return;
+                    }
+                    if (!token) {
+                        showResult("top.getRestApiToken() returned no token. Make sure the REST API token is enabled and you are logged in.", false);
+                        return;
+                    }
+
+                    button.disabled = true;
+                    showResult("Calling " + restApiUrl + " …", true);
+
+                    fetch(restApiUrl, {
+                        method: "GET",
+                        headers: {
+                            "Accept": "application/json",
+                            "X-Polarion-REST-Token": token
+                        }
+                    }).then(function (response) {
+                        return response.text().then(function (body) {
+                            showResult("HTTP " + response.status + " " + response.statusText + "\n\n" + body, response.ok);
+                        });
+                    }).catch(function (e) {
+                        showResult("Request failed: " + e, false);
+                    }).finally(function () {
+                        button.disabled = false;
+                    });
+                });
+            })();
+        </script>
 
         <h3>Extension configuration properties</h3>
 

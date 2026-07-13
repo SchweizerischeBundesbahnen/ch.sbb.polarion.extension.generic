@@ -58,3 +58,26 @@
     white-space: pre-wrap;
     padding: 6px 10px;
 }
+
+.about-page-text .rest-auth-test-output {
+    margin-top: 10px;
+    padding: 8px 10px;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 18px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-radius: 3px;
+    border: 1px solid #DFE1E6;
+    background-color: #F4F5F7;
+}
+
+.about-page-text .rest-auth-test-output.success {
+    border-color: #B7DFB9;
+    background-color: #EBF7EC;
+}
+
+.about-page-text .rest-auth-test-output.failure {
+    border-color: #F1B0B7;
+    background-color: #FCEBEC;
+}
