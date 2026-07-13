@@ -6,9 +6,11 @@
  * Two activation mechanisms are supported so consumers don't all need JS:
  *   1. JS-driven — add class="active" to the active <li class="tab">. Use this for a DYNAMIC tab
  *      count (the active state is not tied to a fixed selector).
- *   2. Pure-CSS radio-driven — put hidden <input type="radio"> siblings BEFORE .tabs inside a
- *      .tabbed wrapper; the Nth checked radio activates the Nth .tab and reveals the Nth .tab-content.
- *      This is limited to the tab count spelled out in the :nth-of-type lists below (currently 4).
+ *   2. Pure-CSS radio-driven — put the tab <input type="radio">s (and NO other inputs) BEFORE .tabs
+ *      inside a .tabbed wrapper; the Nth checked radio activates the Nth .tab and reveals the Nth
+ *      .tab-content. The :nth-of-type selectors count every sibling <input>, so the tab radios must
+ *      be the only inputs there — if a wrapper needs other inputs, use the JS-driven variant. Limited
+ *      to the tab count spelled out in the :nth-of-type lists below (currently 4).
  *
  * Markup:
  *   <div class="tabbed">                     (only needed for the radio-driven variant)
@@ -28,13 +30,10 @@
     position: relative;
 }
 
-/* Radio-driven variant hides its inputs — selection is expressed through the labels. */
-.tabbed [type="radio"] {
-    display: none;
-}
-
-/* JS-driven variant keeps a real (focusable) radio inside each tab as the selection driver, but
-   visually hidden (sr-only) so only the label shows. */
+/* Both variants keep a real radio as the selection driver but hide it visually with the sr-only
+   pattern (NOT display:none) so keyboard users can still focus it and switch tabs with arrow keys.
+   Radio-driven: the radios sit before .tabs inside .tabbed. JS-driven: one radio inside each .tab. */
+.tabbed [type="radio"],
 .tab [type="radio"] {
     position: absolute;
     width: 1px;
@@ -89,7 +88,7 @@
 .tabbed [type="radio"]:nth-of-type(4):checked ~ .tabs .tab:nth-of-type(4) > label {
     margin-bottom: -1px;
     border: 1px solid var(--sbb-control-border);
-    border-top: 2px solid var(--polarion-heading-text); /* dark accent, matching the page header */
+    border-top: 2px solid var(--sbb-accent); /* brand accent marks the active tab */
     border-bottom: 1px solid var(--sbb-control-bg);
     padding-top: 7px;
     background: var(--sbb-control-bg);
@@ -108,8 +107,13 @@
     pointer-events: none;
 }
 
-/* Keyboard focus ring — JS-driven tabs keep a real focusable radio inside the tab. */
-.tab:has([type="radio"]:focus-visible) > label {
+/* Keyboard focus ring. JS-driven: the focusable radio is inside the tab. Radio-driven: the focused
+   radio is a sibling before .tabs, so mirror the ring onto its tab via the nth-of-type map. */
+.tab:has([type="radio"]:focus-visible) > label,
+.tabbed [type="radio"]:nth-of-type(1):focus-visible ~ .tabs .tab:nth-of-type(1) > label,
+.tabbed [type="radio"]:nth-of-type(2):focus-visible ~ .tabs .tab:nth-of-type(2) > label,
+.tabbed [type="radio"]:nth-of-type(3):focus-visible ~ .tabs .tab:nth-of-type(3) > label,
+.tabbed [type="radio"]:nth-of-type(4):focus-visible ~ .tabs .tab:nth-of-type(4) > label {
     box-shadow: var(--sbb-btn-focus-ring);
 }
 

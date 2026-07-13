@@ -51,7 +51,7 @@
  * override a token downstream if a page needs a different shade.
  */
 :root {
-    --polarion-accent: #007993;          /* links / accent */
+    --polarion-accent: var(--sbb-accent); /* links / accent — derives from the brand accent token */
     --polarion-heading-text: #000028;    /* admin / section heading text */
     --polarion-heading-bg: #F3F3F0;      /* section-header bar + h1 underline */
     --polarion-table-header-bg: #E8E8E3; /* repo-browser header fill */
