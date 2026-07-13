@@ -6,14 +6,14 @@
  * Two activation mechanisms are supported so consumers don't all need JS:
  *   1. JS-driven — add class="active" to the active <li class="tab">. Use this for a DYNAMIC tab
  *      count (the active state is not tied to a fixed selector).
- *   2. Pure-CSS radio-driven — inside a .tabbed wrapper the tab <input type="radio">s come first,
- *      then .tabs, then the <div class="tab-content"> panels; the Nth checked radio activates the Nth
- *      .tab and reveals the Nth .tab-content. The mappings use :nth-child(N of <selector>), which
- *      counts ONLY the matching elements (the radios / the .tab items / the .tab-content panels), so
- *      unrelated siblings — a hidden field, a toolbar or a description <div> — do NOT shift the
- *      indices. Only the order matters: radios → .tabs → panels. Limited to the tab count spelled out
- *      in the lists below (currently 4). (:nth-child(of S) needs the same modern engine as the :has()
- *      rules in this file.)
+ *   2. Pure-CSS radio-driven — inside a .tabbed wrapper, put the tab <input type="radio">s (and NO
+ *      other inputs) BEFORE .tabs, and keep the <div class="tab-content"> panels as the ONLY <div>s
+ *      at that level. The Nth checked radio activates the Nth .tab and reveals the Nth .tab-content.
+ *      Both mappings use :nth-of-type, which counts every sibling of the same tag (all <input>s / all
+ *      <div>s), NOT just the tab controls — so a stray input before .tabs, or a stray div before or
+ *      between the panels, shifts the indices and breaks the pairing. Keep those out (extra inputs
+ *      AFTER .tabs are fine, e.g. hidden fields), or use the JS-driven variant. Limited to the tab
+ *      count spelled out in the :nth-of-type lists below (currently 4).
  *
  * Markup:
  *   <div class="tabbed">                     (only needed for the radio-driven variant)
@@ -85,10 +85,10 @@
    baseline so the active tab reads as one surface with the panel. Applied by BOTH mechanisms
    (JS .active + radio :nth-of-type). */
 .tab.active > label,
-.tabbed [type="radio"]:nth-child(1 of [type="radio"]):checked ~ .tabs .tab:nth-child(1 of .tab) > label,
-.tabbed [type="radio"]:nth-child(2 of [type="radio"]):checked ~ .tabs .tab:nth-child(2 of .tab) > label,
-.tabbed [type="radio"]:nth-child(3 of [type="radio"]):checked ~ .tabs .tab:nth-child(3 of .tab) > label,
-.tabbed [type="radio"]:nth-child(4 of [type="radio"]):checked ~ .tabs .tab:nth-child(4 of .tab) > label {
+.tabbed [type="radio"]:nth-of-type(1):checked ~ .tabs .tab:nth-of-type(1) > label,
+.tabbed [type="radio"]:nth-of-type(2):checked ~ .tabs .tab:nth-of-type(2) > label,
+.tabbed [type="radio"]:nth-of-type(3):checked ~ .tabs .tab:nth-of-type(3) > label,
+.tabbed [type="radio"]:nth-of-type(4):checked ~ .tabs .tab:nth-of-type(4) > label {
     margin-bottom: -1px;
     border: 1px solid var(--sbb-control-border);
     border-top: 2px solid var(--sbb-accent); /* brand accent marks the active tab */
@@ -101,10 +101,10 @@
 
 /* Disabled tab (radio-driven). pointer-events:none so it takes no hover effects (no shadow-lift, no
    text darkening) and is not clickable. */
-.tabbed [type="radio"]:nth-child(1 of [type="radio"]):disabled ~ .tabs .tab:nth-child(1 of .tab) > label,
-.tabbed [type="radio"]:nth-child(2 of [type="radio"]):disabled ~ .tabs .tab:nth-child(2 of .tab) > label,
-.tabbed [type="radio"]:nth-child(3 of [type="radio"]):disabled ~ .tabs .tab:nth-child(3 of .tab) > label,
-.tabbed [type="radio"]:nth-child(4 of [type="radio"]):disabled ~ .tabs .tab:nth-child(4 of .tab) > label {
+.tabbed [type="radio"]:nth-of-type(1):disabled ~ .tabs .tab:nth-of-type(1) > label,
+.tabbed [type="radio"]:nth-of-type(2):disabled ~ .tabs .tab:nth-of-type(2) > label,
+.tabbed [type="radio"]:nth-of-type(3):disabled ~ .tabs .tab:nth-of-type(3) > label,
+.tabbed [type="radio"]:nth-of-type(4):disabled ~ .tabs .tab:nth-of-type(4) > label {
     color: var(--sbb-btn-dlg-disabled-fg);
     cursor: default;
     pointer-events: none;
@@ -113,10 +113,10 @@
 /* Keyboard focus ring. JS-driven: the focusable radio is inside the tab. Radio-driven: the focused
    radio is a sibling before .tabs, so mirror the ring onto its tab via the nth-of-type map. */
 .tab:has([type="radio"]:focus-visible) > label,
-.tabbed [type="radio"]:nth-child(1 of [type="radio"]):focus-visible ~ .tabs .tab:nth-child(1 of .tab) > label,
-.tabbed [type="radio"]:nth-child(2 of [type="radio"]):focus-visible ~ .tabs .tab:nth-child(2 of .tab) > label,
-.tabbed [type="radio"]:nth-child(3 of [type="radio"]):focus-visible ~ .tabs .tab:nth-child(3 of .tab) > label,
-.tabbed [type="radio"]:nth-child(4 of [type="radio"]):focus-visible ~ .tabs .tab:nth-child(4 of .tab) > label {
+.tabbed [type="radio"]:nth-of-type(1):focus-visible ~ .tabs .tab:nth-of-type(1) > label,
+.tabbed [type="radio"]:nth-of-type(2):focus-visible ~ .tabs .tab:nth-of-type(2) > label,
+.tabbed [type="radio"]:nth-of-type(3):focus-visible ~ .tabs .tab:nth-of-type(3) > label,
+.tabbed [type="radio"]:nth-of-type(4):focus-visible ~ .tabs .tab:nth-of-type(4) > label {
     box-shadow: var(--sbb-btn-focus-ring);
 }
 
@@ -127,10 +127,10 @@
     transition: opacity 0.4s;
 }
 
-.tabbed [type="radio"]:nth-child(1 of [type="radio"]):checked ~ .tab-content:nth-child(1 of .tab-content),
-.tabbed [type="radio"]:nth-child(2 of [type="radio"]):checked ~ .tab-content:nth-child(2 of .tab-content),
-.tabbed [type="radio"]:nth-child(3 of [type="radio"]):checked ~ .tab-content:nth-child(3 of .tab-content),
-.tabbed [type="radio"]:nth-child(4 of [type="radio"]):checked ~ .tab-content:nth-child(4 of .tab-content) {
+.tabbed [type="radio"]:nth-of-type(1):checked ~ .tab-content:nth-of-type(1),
+.tabbed [type="radio"]:nth-of-type(2):checked ~ .tab-content:nth-of-type(2),
+.tabbed [type="radio"]:nth-of-type(3):checked ~ .tab-content:nth-of-type(3),
+.tabbed [type="radio"]:nth-of-type(4):checked ~ .tab-content:nth-of-type(4) {
     display: block;
     opacity: 1;
 }
