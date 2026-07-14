@@ -3,8 +3,9 @@
 <%! String bundleTimestamp = ch.sbb.polarion.extension.generic.util.VersionUtils.getVersion().getBundleBuildTimestampDigitsOnly(); %>
 
 <%-- sbb-ui makes this fragment self-contained: its .alert boxes read --sbb-* tokens (control-tokens.css)
-     even if a page ever includes it outside a .standard-admin-page / other scope wrapper. Post-#535 the
-     tokens are no longer on :root, so an unscoped include would render the alerts unstyled. --%>
+     even if a page ever includes it outside a .standard-admin-page / other scope wrapper. The tokens
+     are declared only on the scope wrappers (not :root), so an unscoped include would render the
+     alerts unstyled. --%>
 <div class="notifications sbb-ui">
     <div id="newer-version-warning" class="alert alert-warning" style="display: none">
         <span>A newer plugin version installed since the data below was persisted which can lead to unexpected behaviour.
