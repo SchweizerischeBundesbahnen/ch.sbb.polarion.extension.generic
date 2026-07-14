@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.4.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.4.1...v15.4.2) (2026-07-14)
+
+
+### Bug Fixes
+
+* ensure admin action buttons and alerts render with correct tokens ([#565](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/565)) ([0474131](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/0474131a3ca323f8a57d2849814f429850582f29)), closes [#564](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/564)
+
 ## [15.4.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.4.0...v15.4.1) (2026-07-13)
 
 
