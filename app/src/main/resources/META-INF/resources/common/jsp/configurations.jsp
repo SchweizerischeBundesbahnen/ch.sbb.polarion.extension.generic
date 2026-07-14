@@ -1,6 +1,10 @@
 <p>There can be multiple named <span class="configuration-label">configuration</span>s. Please, choose one you would like to modify in dropdown below.
     <span id="default-cannot-be-deleted-note">Be aware that "Default" <span class="configuration-label">configuration</span> on global scope can't be deleted or renamed.</span></p>
-<div class="input-group common-configuration-panel">
+<%-- sbb-ui makes this panel self-contained: its .toolbar-button controls and .sbb-icon-* glyphs read
+     --sbb-* tokens (control-tokens.css) even if a page ever includes this fragment outside a
+     .standard-admin-page / other scope wrapper. The tokens are declared only on the scope wrappers
+     (not :root), so an unscoped include would render the buttons and their icons unstyled. --%>
+<div class="input-group common-configuration-panel sbb-ui">
     <div id="configurations-pane">
         <label id="configurations-label"><span class="configuration-label-capitalized">Configuration</span>:</label>
         <select id="configurations-select"></select>

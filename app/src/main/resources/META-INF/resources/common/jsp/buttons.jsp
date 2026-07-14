@@ -1,6 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 
-<div class="actions-pane hide-on-edit-configuration">
+<%-- sbb-ui carries the --sbb-* design tokens (control-tokens.css) for this fragment. Admin pages
+     include buttons.jsp AFTER the .standard-admin-page wrapper closes, so this action pane is a
+     body-level sibling — without a scope class its buttons (and their .sbb-icon-* glyphs) would read
+     unresolved var(--sbb-*) now that the tokens are declared only on the scope wrappers (not :root),
+     rendering unstyled and icon-less. --%>
+<div class="actions-pane hide-on-edit-configuration sbb-ui">
     <div id="revisions-expand-container">
         <table id="revisions-table">
             <thead>
