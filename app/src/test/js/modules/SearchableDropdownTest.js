@@ -891,6 +891,49 @@ describe('SearchableDropdown', function () {
             expect(dropdown.getSelectedText()).to.deep.equal(['A', 'C']);
             dropdown.destroy();
         });
+
+        it('renders the option icon inside a selected chip', function () {
+            const dropdown = new SearchableDropdown({
+                selectContainer: document.getElementById('build-container'),
+                multiselect: true,
+                rememberSelection: false
+            });
+            dropdown.addOption('a', 'A', '/i/a.svg');
+            dropdown.selectValue('a');
+            const icon = dropdown.trigger.querySelector('.sd-chip img.sd-chip-icon');
+            expect(icon).to.exist;
+            expect(icon.getAttribute('src')).to.equal('/i/a.svg');
+            dropdown.destroy();
+        });
+
+        it('applies the icon-bg tile on a chip icon', function () {
+            const dropdown = new SearchableDropdown({
+                selectContainer: document.getElementById('build-container'),
+                multiselect: true,
+                rememberSelection: false
+            });
+            dropdown.addOption('a', 'A', '/i/a.svg', '#1a3a5c');
+            dropdown.selectValue('a');
+            const icon = dropdown.trigger.querySelector('.sd-chip img.sd-chip-icon');
+            expect(icon.classList.contains('has-icon-bg')).to.be.true;
+            expect(icon.style.backgroundColor).to.not.equal('');
+            dropdown.destroy();
+        });
+
+        it('renders no chip icon when the option has no icon', function () {
+            const dropdown = new SearchableDropdown({
+                selectContainer: document.getElementById('build-container'),
+                multiselect: true,
+                rememberSelection: false
+            });
+            dropdown.addOption('a', 'A');
+            dropdown.selectValue('a');
+            const chip = dropdown.trigger.querySelector('.sd-chip');
+            expect(chip).to.exist;
+            expect(chip.querySelector('img.sd-chip-icon')).to.be.null;
+            expect(chip.querySelector('.sd-chip-label').textContent).to.equal('A');
+            dropdown.destroy();
+        });
     });
 
     describe('clearable button mousedown', function () {

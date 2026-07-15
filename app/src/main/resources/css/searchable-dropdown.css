@@ -83,7 +83,7 @@
     width: 100%;
     min-height: var(--sbb-control-height);
     box-sizing: border-box;
-    padding: 1px 2rem 1px 3px;
+    padding: 4px 2rem 4px 4px;
     border: 1px solid var(--sbb-control-border);
     border-radius: var(--sbb-control-radius);
     background-color: var(--sbb-control-bg);
@@ -117,6 +117,15 @@
     font-size: 12px;
     font-weight: 600;
     line-height: 17px;
+}
+
+/* Per-option icon inside a multi-select chip. Smaller than the popup/trigger icon (16px) to
+   fit the compact chip line-height. */
+.searchable-dropdown .sd-chip-icon {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    object-fit: contain;
 }
 
 .searchable-dropdown .sd-chip-label {
@@ -319,6 +328,7 @@
    radius that turn the icon's own background into a neat little tile — matching the entity/project
    icon tiles the React pickers use. */
 .searchable-dropdown .sd-trigger-icon.has-icon-bg,
+.searchable-dropdown .sd-chip-icon.has-icon-bg,
 .sd-portal .option .option-icon.has-icon-bg {
     padding: 2px;
     border-radius: 2px;
