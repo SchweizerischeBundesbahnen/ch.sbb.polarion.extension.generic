@@ -1,5 +1,18 @@
 # Changelog
 
+## [15.5.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.4.2...v15.5.0) (2026-07-15)
+
+
+### Features
+
+* add icons to chips of selected options in multiselection dropdown ([#572](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/572)) ([bd5ce0e](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/bd5ce0ee3bda6943f2e148aa81a819fbbe00d1b1))
+* add shared StylePackageWeights admin component ([#569](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/569)) ([a329f08](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/a329f08751f175e388491cc7c7e3f25602057f0d))
+
+
+### Bug Fixes
+
+* defer form extension registration until Guice platform is ready ([#573](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/573)) ([3788c84](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/3788c8489fa44e03922bf1f78cb099c77363b05b)), closes [#571](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/571)
+
 ## [15.4.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.4.1...v15.4.2) (2026-07-14)
 
 
