@@ -121,13 +121,20 @@ public abstract class GenericBundleActivator implements BundleActivator {
      */
     private boolean awaitGuicePlatform() throws InterruptedException {
         long deadline = System.currentTimeMillis() + getPlatformWaitTimeoutMs();
-        while (!isGuicePlatformReady()) {
+        while (true) {
+            // Honour cancellation up front: if the injector is already ready the loop would
+            // otherwise never sleep, so an interrupt set by stop() would go unobserved.
+            if (Thread.interrupted()) {
+                throw new InterruptedException();
+            }
+            if (isGuicePlatformReady()) {
+                return true;
+            }
             if (System.currentTimeMillis() >= deadline) {
                 return false;
             }
             Thread.sleep(getPlatformPollIntervalMs());
         }
-        return true;
     }
 
     /**

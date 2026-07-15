@@ -106,6 +106,20 @@ class GenericBundleActivatorTest {
     }
 
     @Test
+    void cancelsRegistrationWhenAlreadyInterruptedAndPlatformReady() {
+        try (MockedStatic<FormExtensionsRegistry> extensionsRegistryStatic = mockStatic(FormExtensionsRegistry.class)) {
+            TestBundleActivator activator = new TestBundleActivator(Map.of());
+            activator.readyAfterPolls = 0; // platform ready immediately -> no sleep would occur
+
+            Thread.currentThread().interrupt(); // interrupt set before the first readiness check
+            activator.registerExtensionsWhenReady(Map.of("only", mock(IFormExtension.class)));
+
+            assertTrue(Thread.interrupted(), "interrupt flag should have been restored"); // also clears it
+            extensionsRegistryStatic.verify(FormExtensionsRegistry::getInstance, never()); // registration aborted
+        }
+    }
+
+    @Test
     void stopInterruptsPendingRegistrar() throws InterruptedException {
         RealSeamsActivator activator = new RealSeamsActivator();
         CountDownLatch started = new CountDownLatch(1);
