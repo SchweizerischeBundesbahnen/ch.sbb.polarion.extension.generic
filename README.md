@@ -210,6 +210,30 @@ Bundle-Name: PDF Exporter Extension for Polarion ALM
 Bundle-Activator: ch.sbb.polarion.extension.pdf_exporter.ExtensionBundleActivator
 ```
 
+  Subclass `GenericBundleActivator` and return your form extensions from `getExtensions()`:
+
+  ```java
+  public class ExtensionBundleActivator extends GenericBundleActivator {
+      @Override
+      protected Map<String, IFormExtension> getExtensions() {
+          return Map.of(MyFormExtension.ID, new MyFormExtension());
+      }
+  }
+  ```
+
+  > **Deferred registration (why it is not done inline in `start()`).**
+  > Polarion's `FormExtensionsRegistry` is a lazily-initialized singleton: on its first
+  > `getInstance()` it injects Polarion's own Guice-bound form extensions (`velocity_form`, `oslc`,
+  > `execute-test`, `linkedResources`, workflow-signatures widget, `gitlab`, …). If that first touch
+  > happens during OSGi bundle activation — before Polarion has built its global Guice injector —
+  > `GuicePlatform.tryInjectMembers` injects nothing, the singleton is created **empty of all core
+  > contributions**, and every Polarion-provided form extension is lost for the whole server
+  > lifetime (typical symptom: *"Form extension 'velocity_form' was not found"* on a document/work
+  > item form). To avoid poisoning the registry, `GenericBundleActivator` registers its extensions on
+  > a daemon thread that first waits for the global Guice injector to become available; Polarion then
+  > loads its core extensions first and our extensions are added on top. This is transparent to
+  > subclasses — just implement `getExtensions()`.
+
 * `Export-Package` — if the extension exports packages for use by other bundles:
 
 ```properties

@@ -11,6 +11,7 @@ import org.osgi.framework.BundleContext;
 
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -26,6 +27,7 @@ class GenericBundleActivatorTest {
             extensionsRegistryStatic.when(FormExtensionsRegistry::getInstance).thenReturn(registry);
 
             BundleContext bundleContext = mock(BundleContext.class);
+
             new SimplestTestBundleActivator().start(bundleContext); // Force call onStart() in GenericBundleActivator
             verify(registry, times(0)).registerExtension(anyString(), any());
 
@@ -39,10 +41,27 @@ class GenericBundleActivatorTest {
         }
     }
 
+    @Test
+    void registrationWaitsUntilGuicePlatformReady() {
+        try (MockedStatic<FormExtensionsRegistry> extensionsRegistryStatic = mockStatic(FormExtensionsRegistry.class)) {
+            extensionsRegistryStatic.when(FormExtensionsRegistry::getInstance).thenReturn(registry);
+
+            // Reports "not ready" for the first two polls, then ready.
+            TestBundleActivator activator = new TestBundleActivator(Map.of("only", mock(IFormExtension.class)));
+            activator.readyAfterPolls = 2;
+
+            activator.registerExtensionsWhenReady(Map.of("only", mock(IFormExtension.class)));
+
+            assertEquals(3, activator.readinessPolls); // polled until ready (2 misses + 1 hit)
+            verify(registry, times(1)).registerExtension(eq("only"), any());
+        }
+    }
 
     private static class TestBundleActivator extends GenericBundleActivator {
 
-        Map<String, IFormExtension> extensions;
+        final Map<String, IFormExtension> extensions;
+        int readyAfterPolls = 0;
+        int readinessPolls = 0;
 
         public TestBundleActivator(Map<String, IFormExtension> extensions) {
             this.extensions = extensions;
@@ -57,6 +76,16 @@ class GenericBundleActivatorTest {
         public void onStart(BundleContext context) {
             context.getProperty("test_property");
         }
+
+        @Override
+        protected boolean isGuicePlatformReady() {
+            return readinessPolls++ >= readyAfterPolls;
+        }
+
+        @Override
+        protected void runAsync(Runnable task) {
+            task.run(); // run synchronously in tests
+        }
     }
 
     private static class SimplestTestBundleActivator extends GenericBundleActivator {
@@ -64,6 +93,16 @@ class GenericBundleActivatorTest {
         @Override
         protected Map<String, IFormExtension> getExtensions() {
             return Map.of();
+        }
+
+        @Override
+        protected boolean isGuicePlatformReady() {
+            return true;
+        }
+
+        @Override
+        protected void runAsync(Runnable task) {
+            task.run(); // run synchronously in tests
         }
     }
 }
