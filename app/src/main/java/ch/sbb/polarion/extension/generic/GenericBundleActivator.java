@@ -30,6 +30,9 @@ public abstract class GenericBundleActivator implements BundleActivator {
     /** How often to poll for the global Guice injector while waiting. */
     private static final long PLATFORM_POLL_INTERVAL_MS = 200;
 
+    /** The deferred-registration thread, so {@link #stop(BundleContext)} can cancel a pending wait. */
+    private volatile Thread registrar;
+
     protected abstract Map<String, IFormExtension> getExtensions();
 
     protected void onStart(BundleContext context) {
@@ -51,7 +54,12 @@ public abstract class GenericBundleActivator implements BundleActivator {
 
     @Override
     public void stop(BundleContext context) {
-        // nothing by default
+        // Cancel a still-pending deferred registration so a stopped/hot-reloaded bundle does not
+        // register stale extensions once (or if) the Guice platform becomes ready.
+        Thread current = registrar;
+        if (current != null) {
+            current.interrupt();
+        }
     }
 
     /**
@@ -59,9 +67,10 @@ public abstract class GenericBundleActivator implements BundleActivator {
      * can execute it synchronously.
      */
     protected void runAsync(@NotNull Runnable task) {
-        Thread registrar = new Thread(task, "generic-form-extension-registrar");
-        registrar.setDaemon(true);
-        registrar.start();
+        Thread thread = new Thread(task, "generic-form-extension-registrar");
+        thread.setDaemon(true);
+        registrar = thread;
+        thread.start();
     }
 
     /**
@@ -78,13 +87,20 @@ public abstract class GenericBundleActivator implements BundleActivator {
      * server lifetime (the visible symptom is e.g. "Form extension 'velocity_form' was not found").
      * <p>
      * Waiting for the injector guarantees that the registry first loads Polarion's core extensions;
-     * only then do we add ours on top via {@link FormExtensionsRegistry#registerExtension}.
+     * only then do we add ours on top via {@link FormExtensionsRegistry#registerExtension}. A wait
+     * interrupted via {@link #stop(BundleContext)} aborts registration entirely.
      */
     void registerExtensionsWhenReady(@NotNull Map<String, IFormExtension> extensions) {
-        if (!awaitGuicePlatform()) {
-            logger.warn("Polarion's Guice platform did not become ready within "
-                    + getPlatformWaitTimeoutMs() + " ms; registering form extensions anyway. "
-                    + "Polarion's own form extensions may be unavailable.");
+        try {
+            if (!awaitGuicePlatform()) {
+                logger.warn("Polarion's Guice platform did not become ready within "
+                        + getPlatformWaitTimeoutMs() + " ms; registering form extensions anyway. "
+                        + "Polarion's own form extensions may be unavailable.");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.info("Form extension registration cancelled before the Guice platform was ready (bundle stopping)");
+            return;
         }
         // Serialize registration across bundles: several activators may cross the readiness barrier
         // at once, and FormExtensionsRegistry's backing map is not synchronized.
@@ -100,19 +116,15 @@ public abstract class GenericBundleActivator implements BundleActivator {
      * Blocks until Polarion's global Guice injector is available or the timeout elapses.
      *
      * @return {@code true} if the injector became available, {@code false} on timeout
+     * @throws InterruptedException if the wait is interrupted (e.g. by {@link #stop(BundleContext)})
      */
-    private boolean awaitGuicePlatform() {
+    private boolean awaitGuicePlatform() throws InterruptedException {
         long deadline = System.currentTimeMillis() + getPlatformWaitTimeoutMs();
         while (!isGuicePlatformReady()) {
             if (System.currentTimeMillis() >= deadline) {
                 return false;
             }
-            try {
-                Thread.sleep(getPlatformPollIntervalMs());
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return isGuicePlatformReady();
-            }
+            Thread.sleep(getPlatformPollIntervalMs());
         }
         return true;
     }
@@ -142,6 +154,9 @@ public abstract class GenericBundleActivator implements BundleActivator {
 
     /** Member-injection target used only to detect that the global Guice injector is available. */
     static final class ReadinessProbe {
+        // Field (not constructor) injection is required: Guice populates this via tryInjectMembers()
+        // on an already-constructed probe, exactly as Polarion's own FormExtensionsRegistry does.
+        @SuppressWarnings("java:S6813")
         @Inject
         Set<FormExtensionContribution> contributions;
     }

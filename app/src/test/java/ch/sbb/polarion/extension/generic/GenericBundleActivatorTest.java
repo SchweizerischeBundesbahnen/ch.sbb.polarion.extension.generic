@@ -73,10 +73,8 @@ class GenericBundleActivatorTest {
     }
 
     @Test
-    void restoresInterruptFlagAndRegistersWhenWaitInterrupted() throws InterruptedException {
+    void cancelsRegistrationWhenWaitInterrupted() {
         try (MockedStatic<FormExtensionsRegistry> extensionsRegistryStatic = mockStatic(FormExtensionsRegistry.class)) {
-            extensionsRegistryStatic.when(FormExtensionsRegistry::getInstance).thenReturn(registry);
-
             CountDownLatch polling = new CountDownLatch(1);
             TestBundleActivator activator = new TestBundleActivator(Map.of()) {
                 @Override
@@ -103,8 +101,29 @@ class GenericBundleActivatorTest {
             activator.registerExtensionsWhenReady(Map.of("only", mock(IFormExtension.class)));
 
             assertTrue(Thread.interrupted(), "interrupt flag should have been restored"); // also clears it
-            verify(registry, times(1)).registerExtension(eq("only"), any());
+            extensionsRegistryStatic.verify(FormExtensionsRegistry::getInstance, never()); // registration aborted
         }
+    }
+
+    @Test
+    void stopInterruptsPendingRegistrar() throws InterruptedException {
+        RealSeamsActivator activator = new RealSeamsActivator();
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch interrupted = new CountDownLatch(1);
+
+        activator.runAsync(() -> {
+            started.countDown();
+            try {
+                Thread.sleep(TimeUnit.SECONDS.toMillis(10));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                interrupted.countDown();
+            }
+        });
+
+        assertTrue(started.await(5, TimeUnit.SECONDS), "background task should have started");
+        activator.stop(mock(BundleContext.class));
+        assertTrue(interrupted.await(5, TimeUnit.SECONDS), "stop() should interrupt the registrar thread");
     }
 
     @Test
