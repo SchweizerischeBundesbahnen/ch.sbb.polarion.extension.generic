@@ -1,16 +1,17 @@
 package ch.sbb.polarion.extension.generic;
 
+import com.polarion.alm.ui.server.forms.extensions.FormExtensionContribution;
 import com.polarion.alm.ui.server.forms.extensions.IFormExtension;
 import com.polarion.alm.ui.server.forms.extensions.impl.FormExtensionsRegistry;
 import com.polarion.core.util.logging.Logger;
-import com.polarion.platform.guice.internal.GuicePlatform;
+import com.polarion.platform.guice.ipi.GuicePlatform;
+import jakarta.inject.Inject;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,9 +29,6 @@ public abstract class GenericBundleActivator implements BundleActivator {
     private static final long PLATFORM_WAIT_TIMEOUT_MS = TimeUnit.MINUTES.toMillis(5);
     /** How often to poll for the global Guice injector while waiting. */
     private static final long PLATFORM_POLL_INTERVAL_MS = 200;
-
-    /** {@code GuicePlatform.getGlobalInjector()}, resolved reflectively; {@code null} if unavailable. */
-    private static final Method GET_GLOBAL_INJECTOR = resolveGetGlobalInjector();
 
     protected abstract Map<String, IFormExtension> getExtensions();
 
@@ -85,7 +83,7 @@ public abstract class GenericBundleActivator implements BundleActivator {
     void registerExtensionsWhenReady(@NotNull Map<String, IFormExtension> extensions) {
         if (!awaitGuicePlatform()) {
             logger.warn("Polarion's Guice platform did not become ready within "
-                    + PLATFORM_WAIT_TIMEOUT_MS + " ms; registering form extensions anyway. "
+                    + getPlatformWaitTimeoutMs() + " ms; registering form extensions anyway. "
                     + "Polarion's own form extensions may be unavailable.");
         }
         // Serialize registration across bundles: several activators may cross the readiness barrier
@@ -104,13 +102,13 @@ public abstract class GenericBundleActivator implements BundleActivator {
      * @return {@code true} if the injector became available, {@code false} on timeout
      */
     private boolean awaitGuicePlatform() {
-        long deadline = System.currentTimeMillis() + PLATFORM_WAIT_TIMEOUT_MS;
+        long deadline = System.currentTimeMillis() + getPlatformWaitTimeoutMs();
         while (!isGuicePlatformReady()) {
             if (System.currentTimeMillis() >= deadline) {
                 return false;
             }
             try {
-                Thread.sleep(PLATFORM_POLL_INTERVAL_MS);
+                Thread.sleep(getPlatformPollIntervalMs());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return isGuicePlatformReady();
@@ -120,39 +118,31 @@ public abstract class GenericBundleActivator implements BundleActivator {
     }
 
     /**
-     * Probes {@code GuicePlatform.getGlobalInjector()} reflectively — it throws while the platform
-     * is not yet initialized, which is what we treat as "not ready". Reflection is used only to
-     * avoid a compile-time dependency on Guice ({@code com.google.inject.Injector}, the method's
-     * return type), which this framework does not otherwise need. Overridable so tests can drive
-     * readiness without touching the Guice platform.
+     * Probes the global Guice injector the same way {@link FormExtensionsRegistry} does: while the
+     * platform is not yet initialized {@code GuicePlatform.tryInjectMembers} is a no-op, so the
+     * probe's {@code @Inject} field stays {@code null}; once the injector exists the (always-bound)
+     * {@code Set<FormExtensionContribution>} gets injected. Using {@code tryInjectMembers} keeps
+     * this free of any compile-time dependency on Guice. Overridable so tests can drive readiness.
      *
-     * @return {@code true} once the global injector resolves without throwing
+     * @return {@code true} once the global injector injects the probe
      */
     protected boolean isGuicePlatformReady() {
-        if (GET_GLOBAL_INJECTOR == null) {
-            return true; // cannot probe -> fail open, don't block registration forever
-        }
-        try {
-            GET_GLOBAL_INJECTOR.invoke(null);
-            return true;
-        } catch (InvocationTargetException notReadyYet) {
-            return false; // getGlobalInjector() threw -> global injector not built yet
-        } catch (IllegalAccessException e) {
-            logger.error("Unable to probe Guice platform readiness", e);
-            return true; // fail open
-        }
+        ReadinessProbe probe = new ReadinessProbe();
+        GuicePlatform.tryInjectMembers(probe);
+        return probe.contributions != null;
     }
 
-    @SuppressWarnings({"java:S1181", "java:S2139"}) // catch Throwable: a static-init probe must never fail <clinit>
-    private static Method resolveGetGlobalInjector() {
-        try {
-            return GuicePlatform.class.getMethod("getGlobalInjector");
-        } catch (Throwable e) {
-            // NoSuchMethodException, or — e.g. in a unit-test JVM without Guice on the classpath — a
-            // LinkageError while resolving the method's return type (com.google.inject.Injector).
-            // Either way the probe is unavailable and isGuicePlatformReady() fails open.
-            logger.error("Cannot resolve GuicePlatform.getGlobalInjector(); platform-readiness probing disabled", e);
-            return null;
-        }
+    protected long getPlatformWaitTimeoutMs() {
+        return PLATFORM_WAIT_TIMEOUT_MS;
+    }
+
+    protected long getPlatformPollIntervalMs() {
+        return PLATFORM_POLL_INTERVAL_MS;
+    }
+
+    /** Member-injection target used only to detect that the global Guice injector is available. */
+    static final class ReadinessProbe {
+        @Inject
+        Set<FormExtensionContribution> contributions;
     }
 }
