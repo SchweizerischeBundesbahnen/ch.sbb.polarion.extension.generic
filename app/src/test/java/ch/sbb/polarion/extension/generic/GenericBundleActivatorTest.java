@@ -65,7 +65,7 @@ class GenericBundleActivatorTest {
             TestBundleActivator activator = new TestBundleActivator(Map.of("only", mock(IFormExtension.class)));
             activator.readyAfterPolls = 2; // not ready for the first two polls, then ready
 
-            activator.registerExtensionsWhenReady(Map.of("only", mock(IFormExtension.class)));
+            activator.startWhenReady(mock(BundleContext.class));
 
             assertEquals(3, activator.readinessPolls); // polled until ready (2 misses + 1 hit)
             verify(registry, times(1)).registerExtension(eq("only"), any());
@@ -76,7 +76,7 @@ class GenericBundleActivatorTest {
     void cancelsRegistrationWhenWaitInterrupted() {
         try (MockedStatic<FormExtensionsRegistry> extensionsRegistryStatic = mockStatic(FormExtensionsRegistry.class)) {
             CountDownLatch polling = new CountDownLatch(1);
-            TestBundleActivator activator = new TestBundleActivator(Map.of()) {
+            TestBundleActivator activator = new TestBundleActivator(Map.of("only", mock(IFormExtension.class))) {
                 @Override
                 protected boolean isGuicePlatformReady() {
                     polling.countDown();
@@ -98,7 +98,7 @@ class GenericBundleActivatorTest {
             interrupter.setDaemon(true);
             interrupter.start();
 
-            activator.registerExtensionsWhenReady(Map.of("only", mock(IFormExtension.class)));
+            activator.startWhenReady(mock(BundleContext.class));
 
             assertTrue(Thread.interrupted(), "interrupt flag should have been restored"); // also clears it
             extensionsRegistryStatic.verify(FormExtensionsRegistry::getInstance, never()); // registration aborted
@@ -108,11 +108,11 @@ class GenericBundleActivatorTest {
     @Test
     void cancelsRegistrationWhenAlreadyInterruptedAndPlatformReady() {
         try (MockedStatic<FormExtensionsRegistry> extensionsRegistryStatic = mockStatic(FormExtensionsRegistry.class)) {
-            TestBundleActivator activator = new TestBundleActivator(Map.of());
+            TestBundleActivator activator = new TestBundleActivator(Map.of("only", mock(IFormExtension.class)));
             activator.readyAfterPolls = 0; // platform ready immediately -> no sleep would occur
 
             Thread.currentThread().interrupt(); // interrupt set before the first readiness check
-            activator.registerExtensionsWhenReady(Map.of("only", mock(IFormExtension.class)));
+            activator.startWhenReady(mock(BundleContext.class));
 
             assertTrue(Thread.interrupted(), "interrupt flag should have been restored"); // also clears it
             extensionsRegistryStatic.verify(FormExtensionsRegistry::getInstance, never()); // registration aborted
@@ -150,7 +150,7 @@ class GenericBundleActivatorTest {
             activator.timeoutMs = 20;
             activator.pollMs = 5;
 
-            activator.registerExtensionsWhenReady(Map.of("only", mock(IFormExtension.class)));
+            activator.startWhenReady(mock(BundleContext.class));
 
             verify(registry, times(1)).registerExtension(eq("only"), any()); // registered despite timeout
         }

@@ -18,8 +18,9 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Simplifies the way of registering form extension(s).
  * <p>
- * Registration is performed on a background thread and only once Polarion's global Guice injector
- * is available — see {@link #registerExtensionsWhenReady(Map)} for why this deferral is required.
+ * Both the {@link #onStart(BundleContext)} hook and form-extension registration run on a background
+ * thread, and only once Polarion's global Guice injector is available — see
+ * {@link #startWhenReady(BundleContext)} for why this deferral is required.
  */
 @SuppressWarnings("unused")
 public abstract class GenericBundleActivator implements BundleActivator {
@@ -42,21 +43,17 @@ public abstract class GenericBundleActivator implements BundleActivator {
 
     @Override
     public void start(BundleContext context) {
-        onStart(context);
-        Map<String, IFormExtension> extensions = getExtensions();
-        if (extensions.isEmpty()) {
-            return;
-        }
-        // Do not touch FormExtensionsRegistry on the OSGi activation thread — defer it, see
-        // registerExtensionsWhenReady(). start() must stay non-blocking: the global injector may
-        // still be built later on this very thread, so blocking here could deadlock startup.
-        runAsync(() -> registerExtensionsWhenReady(extensions));
+        // Defer the whole startup — the onStart() hook and form-extension registration — onto a
+        // background thread that first waits for Polarion's global Guice injector, see
+        // startWhenReady(). start() must stay non-blocking: the global injector may still be built
+        // later on this very thread, so blocking here could deadlock startup.
+        runAsync(() -> startWhenReady(context));
     }
 
     @Override
     public void stop(BundleContext context) {
-        // Cancel a still-pending deferred registration so a stopped/hot-reloaded bundle does not
-        // register stale extensions once (or if) the Guice platform becomes ready.
+        // Cancel a still-pending deferred startup so a stopped/hot-reloaded bundle does not run
+        // onStart() or register stale extensions once (or if) the Guice platform becomes ready.
         Thread current = registrar.get();
         if (current != null) {
             current.interrupt();
@@ -64,8 +61,8 @@ public abstract class GenericBundleActivator implements BundleActivator {
     }
 
     /**
-     * Runs the deferred registration task. Spawns a daemon thread by default; overridable so tests
-     * can execute it synchronously.
+     * Runs the deferred startup task. Spawns a daemon thread by default; overridable so tests can
+     * execute it synchronously.
      */
     protected void runAsync(@NotNull Runnable task) {
         Thread thread = new Thread(task, "generic-form-extension-registrar");
@@ -75,8 +72,8 @@ public abstract class GenericBundleActivator implements BundleActivator {
     }
 
     /**
-     * Registers this bundle's form extensions, but only after Polarion's global Guice injector has
-     * been built.
+     * Deferred startup: waits for Polarion's global Guice injector, then runs the subclass
+     * {@link #onStart(BundleContext)} hook and registers this bundle's form extensions.
      * <p>
      * {@link FormExtensionsRegistry} is a lazily-initialized singleton. Its constructor injects
      * Polarion's own (Guice-bound) form extensions — {@code velocity_form}, {@code oslc},
@@ -88,24 +85,35 @@ public abstract class GenericBundleActivator implements BundleActivator {
      * server lifetime (the visible symptom is e.g. "Form extension 'velocity_form' was not found").
      * <p>
      * Waiting for the injector guarantees that the registry first loads Polarion's core extensions;
-     * only then do we add ours on top via {@link FormExtensionsRegistry#registerExtension}. A wait
-     * interrupted via {@link #stop(BundleContext)} aborts registration entirely.
+     * only then do we run {@link #onStart(BundleContext)} and add ours on top. onStart() is deferred
+     * past the barrier too, so that a subclass hook touching {@code FormExtensionsRegistry.getInstance()}
+     * cannot poison the registry either. A wait interrupted via {@link #stop(BundleContext)} aborts
+     * startup entirely.
      */
-    void registerExtensionsWhenReady(@NotNull Map<String, IFormExtension> extensions) {
+    void startWhenReady(@NotNull BundleContext context) {
         try {
             if (!awaitGuicePlatform()) {
                 logger.warn("Polarion's Guice platform did not become ready within "
-                        + getPlatformWaitTimeoutMs() + " ms; registering form extensions anyway. "
+                        + getPlatformWaitTimeoutMs() + " ms; starting anyway. "
                         + "Polarion's own form extensions may be unavailable.");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            logger.info("Form extension registration cancelled before the Guice platform was ready (bundle stopping)");
+            logger.info("Bundle startup cancelled before the Guice platform was ready (bundle stopping)");
             return;
         }
+        onStart(context);
+        registerExtensions(getExtensions());
+    }
+
+    private void registerExtensions(@NotNull Map<String, IFormExtension> extensions) {
         // Serialize registration across bundles: several activators may cross the readiness barrier
-        // at once, and FormExtensionsRegistry's backing map is not synchronized.
-        synchronized (GenericBundleActivator.class) {
+        // at once, and FormExtensionsRegistry's backing map is not synchronized. Lock on a monitor
+        // shared by every bundle: FormExtensionsRegistry comes from Polarion's shared bundle, so its
+        // Class is the same object in every extension, whereas each bundle loads its own
+        // GenericBundleActivator Class (bundle-private classloaders) — locking on the latter would
+        // NOT serialize across bundles. Referencing the Class does not construct the singleton.
+        synchronized (FormExtensionsRegistry.class) {
             extensions.forEach((key, value) -> {
                 logger.info("Registering form extension: " + key);
                 FormExtensionsRegistry.getInstance().registerExtension(key, value);
