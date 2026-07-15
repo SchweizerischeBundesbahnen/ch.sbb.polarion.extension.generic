@@ -276,8 +276,7 @@ export default class StylePackageWeights {
         insertIndex = Math.max(0, Math.min(this.items.length, insertIndex));
         this.items.splice(insertIndex, 0, moved);
         moved.weight = this.computeWeightForPosition(insertIndex);
-        this.sortItems();
-        return true;
+        return true; // every caller re-renders, and render() re-sorts
     }
 
     // Weight that keeps the moved item at insertIndex: reuse its original weight when it still fits the
@@ -308,6 +307,9 @@ export default class StylePackageWeights {
     commitWeight(item, input) {
         StylePackageWeights.adjustWeight(input);
         item.weight = parseFloat(input.value);
+        // A manually typed weight becomes the new preferred value, so a later reorder keeps it (via
+        // computeWeightForPosition) instead of reverting to the server snapshot.
+        item.originalWeight = item.weight;
         this.render();
     }
 
@@ -320,6 +322,9 @@ export default class StylePackageWeights {
 
         if (value > 100) {
             value = 100;
+        }
+        if (value < 0) {
+            value = 0;
         }
         if (value % 1 !== 0) {
             value = parseFloat(value.toFixed(1));
