@@ -13,6 +13,7 @@ import org.osgi.framework.BundleContext;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Simplifies the way of registering form extension(s).
@@ -31,7 +32,7 @@ public abstract class GenericBundleActivator implements BundleActivator {
     private static final long PLATFORM_POLL_INTERVAL_MS = 200;
 
     /** The deferred-registration thread, so {@link #stop(BundleContext)} can cancel a pending wait. */
-    private volatile Thread registrar;
+    private final AtomicReference<Thread> registrar = new AtomicReference<>();
 
     protected abstract Map<String, IFormExtension> getExtensions();
 
@@ -56,7 +57,7 @@ public abstract class GenericBundleActivator implements BundleActivator {
     public void stop(BundleContext context) {
         // Cancel a still-pending deferred registration so a stopped/hot-reloaded bundle does not
         // register stale extensions once (or if) the Guice platform becomes ready.
-        Thread current = registrar;
+        Thread current = registrar.get();
         if (current != null) {
             current.interrupt();
         }
@@ -69,7 +70,7 @@ public abstract class GenericBundleActivator implements BundleActivator {
     protected void runAsync(@NotNull Runnable task) {
         Thread thread = new Thread(task, "generic-form-extension-registrar");
         thread.setDaemon(true);
-        registrar = thread;
+        registrar.set(thread);
         thread.start();
     }
 

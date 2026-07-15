@@ -114,7 +114,7 @@ class GenericBundleActivatorTest {
         activator.runAsync(() -> {
             started.countDown();
             try {
-                Thread.sleep(TimeUnit.SECONDS.toMillis(10));
+                new CountDownLatch(1).await(); // block until interrupted by stop()
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 interrupted.countDown();
