@@ -1,0 +1,150 @@
+/*
+ * Style Package Weights list — shared look for the exporter extensions' weights admin page
+ * (see js/modules/StylePackageWeights.js). Flat Polarion 2606 styling built on the --sbb-* control
+ * tokens (control-tokens.css), so it stays in sync with the rest of the UI. Scoped to
+ * .standard-admin-page, where the tokens are declared. Link it from the page:
+ *   <link rel="stylesheet" href="../ui/generic/css/style-package-weights.css?bundle=...">
+ */
+.standard-admin-page .weights-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    max-width: 500px;
+    border: 1px solid var(--sbb-control-border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.standard-admin-page .weight-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    background-color: #fff;
+    border-bottom: 1px solid #ededed;
+    cursor: grab;
+    transition: background-color 0.12s ease, box-shadow 0.08s ease;
+}
+
+.standard-admin-page .weight-item:last-child {
+    border-bottom: none;
+}
+
+.standard-admin-page .weight-item:hover {
+    background-color: var(--sbb-hover-tint);
+}
+
+.standard-admin-page .weight-item.dragging {
+    opacity: 0.4;
+}
+
+/* Insertion indicator: an accent line on the edge the dragged item would land on. */
+.standard-admin-page .weight-item.drop-above {
+    box-shadow: inset 0 3px 0 var(--sbb-accent);
+}
+
+.standard-admin-page .weight-item.drop-below {
+    box-shadow: inset 0 -3px 0 var(--sbb-accent);
+}
+
+.standard-admin-page .weight-item.static {
+    background-color: #f7f7f5;
+    color: #9a9a9a;
+    cursor: default;
+}
+
+.standard-admin-page .weight-item .name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+}
+
+/* Left slot — drag handle (movable rows) or lock marker (read-only global rows). Both occupy the
+   same 14px box so names line up across all rows. */
+.standard-admin-page .weight-item .drag-handle,
+.standard-admin-page .weight-item .lock-marker {
+    flex: 0 0 auto;
+    width: 14px;
+    padding: 2px 0;
+    box-sizing: content-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+}
+
+.standard-admin-page .weight-item .drag-handle {
+    color: #9a9a9a;
+    cursor: grab;
+    border-radius: 3px;
+}
+
+.standard-admin-page .weight-item .drag-handle:hover {
+    color: #555;
+    background-color: var(--sbb-hover-tint);
+}
+
+.standard-admin-page .weight-item .lock-marker {
+    color: #8a8a8a;
+    cursor: help;
+}
+
+.standard-admin-page .weight-item .drag-handle svg,
+.standard-admin-page .weight-item .lock-marker svg {
+    display: block;
+}
+
+.standard-admin-page .weights-list .sbb-number {
+    flex: 0 0 auto;
+    width: 66px;
+}
+
+.standard-admin-page .weight-item.static .weight-input {
+    background-color: #f1f1f1;
+    color: #9a9a9a;
+    pointer-events: none;
+}
+
+/* Up / down reorder buttons — keyboard-accessible alternative to drag. */
+.standard-admin-page .reorder-arrows {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.standard-admin-page .reorder-arrows.placeholder {
+    width: 22px;
+}
+
+.standard-admin-page .reorder-arrows button {
+    width: 22px;
+    height: 13px;
+    padding: 0;
+    margin: 0;
+    border: 1px solid var(--sbb-btn-border);
+    border-radius: 2px;
+    background-color: var(--sbb-btn-control-bg);
+    color: #595959;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+}
+
+.standard-admin-page .reorder-arrows button:hover:not(:disabled) {
+    background-color: var(--sbb-hover-tint);
+    border-color: var(--sbb-btn-hover-border);
+}
+
+.standard-admin-page .reorder-arrows button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.standard-admin-page .reorder-arrows svg {
+    display: block;
+    width: 9px;
+    height: 6px;
+}
