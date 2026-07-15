@@ -957,6 +957,18 @@ export default class SearchableDropdown {
             const chip = document.createElement('span');
             chip.className = 'sd-chip';
 
+            // Mirror the option's icon (and optional coloured tile) onto the chip, rendered
+            // smaller than the popup/trigger icon (see .sd-chip-icon). Reuses _applyIconBg so the
+            // tile handling matches the options list and single-select trigger.
+            if (item.icon) {
+                const icon = document.createElement('img');
+                icon.className = 'sd-chip-icon';
+                icon.src = item.icon;
+                icon.alt = '';
+                this._applyIconBg(icon, item.iconBg);
+                chip.appendChild(icon);
+            }
+
             const label = document.createElement('span');
             label.className = 'sd-chip-label';
             label.textContent = item.label;
