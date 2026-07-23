@@ -44,11 +44,23 @@
         }
     }
 
+    // GWT shows/hides widgets with inline styles; a widget is effectively hidden when it or any
+    // ancestor carries inline display:none / visibility:hidden (e.g. a stale Rich Page panel kept
+    // in the DOM during an SPA transition).
+    function isInlineVisible(el) {
+        for (let node = el; node && node.style; node = node.parentElement) {
+            if (node.style.display === 'none' || node.style.visibility === 'hidden') {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Polarion toolbar DOM per supported target — same for all extensions.
     //   rowSelector          the toolbar <tr> buttons are injected into (alternate/row mode);
+    //   findRow              alternative to rowSelector: resolves the row with target-specific
+    //                        logic (used when a plain selector cannot express the constraints);
     //   richTextAreaSelector (dleEditor only) anchor for the default above-the-editor mode;
-    //   guardSelector        when set, injection only happens while this selector matches — used
-    //                        to keep the Rich Page button out of the page's edit mode;
     //   stableAncestorSelector  ancestor that survives the toolbar re-render — observer anchor.
     const TARGETS = {
         dleEditor: {
@@ -57,9 +69,21 @@
             stableAncestorSelector: 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container'
         },
         richPagePreview: {
-            rowSelector: 'div.polarion-rpe-MainPanel table.polarion-dle-ToolbarPanel tr',
             // Only the preview (view) mode of a Rich Page — never the page's edit-mode toolbar.
-            guardSelector: 'div.polarion-rpe-MainPanel div.polarion-rpe-view',
+            // The view marker and the toolbar row are resolved within the SAME visible panel, so a
+            // stale panel kept in the DOM during an SPA transition can neither satisfy the guard
+            // for another panel's toolbar nor receive the button itself.
+            findRow: function (doc) {
+                for (const panel of doc.querySelectorAll('div.polarion-rpe-MainPanel')) {
+                    if (isInlineVisible(panel) && panel.querySelector('div.polarion-rpe-view')) {
+                        const row = panel.querySelector('table.polarion-dle-ToolbarPanel tr');
+                        if (row) {
+                            return row;
+                        }
+                    }
+                }
+                return null;
+            },
             stableAncestorSelector: 'div.polarion-content-container'
         }
     };
@@ -83,7 +107,8 @@
          *   defaultHtml   markup injected above the rich-text area otherwise ('dleEditor' target only).
          *   target        which Polarion toolbar to inject into: 'dleEditor' (default) or
          *                 'richPagePreview'. The 'richPagePreview' target always injects into the
-         *                 toolbar row (alternateHtml), regardless of the alternate flag.
+         *                 toolbar row (alternateHtml), regardless of the alternate flag, and only
+         *                 while the page is in view (preview) mode.
          *
          *   SECURITY: alternateHtml / defaultHtml are written via innerHTML into the top Polarion
          *   frame, so they MUST be static, trusted markup. Never interpolate user-controlled data
@@ -112,13 +137,12 @@
                 if (top.document.getElementById(config.markerId)) {
                     return; // already present
                 }
-                if (target.guardSelector && !top.document.querySelector(target.guardSelector)) {
-                    return; // guarded off (e.g. Rich Page is in edit mode)
-                }
                 if ((params && params.alternate) || !target.richTextAreaSelector) {
-                    const toolbarParent = top.document.querySelector(target.rowSelector);
+                    const toolbarParent = target.findRow
+                        ? target.findRow(top.document)
+                        : top.document.querySelector(target.rowSelector);
                     if (!toolbarParent) {
-                        return; // toolbar not rendered (yet)
+                        return; // toolbar not rendered (yet), or guarded off (e.g. edit mode)
                     }
                     const toolbarContainer = top.document.createElement('td');
                     toolbarContainer.id = config.markerId;
@@ -223,10 +247,12 @@
                 return;
             }
             function expand() {
-                const handle = top.document.querySelector(EXPAND_TOOLS_SELECTOR);
-                // GWT hides widgets with inline display:none — don't click an invisible handle.
-                if (handle && handle.style.display !== 'none') {
-                    handle.click();
+                // Several handles can coexist during an SPA transition (a stale, inline-hidden
+                // Rich Page panel next to the active one) — click only the visible one.
+                for (const handle of top.document.querySelectorAll(EXPAND_TOOLS_SELECTOR)) {
+                    if (isInlineVisible(handle)) {
+                        handle.click();
+                    }
                 }
             }
             let scheduled = false;
@@ -242,8 +268,16 @@
                 });
             });
             top.__genericRpeAutoExpandObserver = observer;
-            observer.observe(top.document.body, { childList: true, subtree: true });
-            expand();
+            // A head-injected script can run before <body> exists — defer until it does.
+            function start() {
+                observer.observe(top.document.body, { childList: true, subtree: true });
+                expand();
+            }
+            if (top.document.body) {
+                start();
+            } else {
+                top.document.addEventListener('DOMContentLoaded', start, { once: true });
+            }
         }
     };
 })();

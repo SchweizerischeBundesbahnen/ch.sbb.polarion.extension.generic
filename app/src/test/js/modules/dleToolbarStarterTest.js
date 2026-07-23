@@ -268,6 +268,28 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
             expect(document.getElementById('my-btn')).to.equal(null);
         });
 
+        it('ignores a stale view panel and does not inject into another panel in edit mode', function () {
+            // SPA transition: a stale (hidden) panel still carrying the view marker coexists with
+            // the active panel that is in edit mode — nothing may be injected.
+            document.body.innerHTML =
+                `<div class="polarion-content-container">
+                   <div class="polarion-rpe-MainPanel" style="display: none;">
+                     <div class="polarion-rpe-view"></div>
+                   </div>
+                   <div class="polarion-rpe-MainPanel">
+                     <div class="polarion-rte-ToolbarPanelWrapper">
+                       <table class="polarion-dle-ToolbarPanel"><tbody>
+                         <tr><td class="existing-tool"></td><td width="100%"></td></tr>
+                       </tbody></table>
+                     </div>
+                     <div class="polarion-rpe-edit"></div>
+                   </div>
+                 </div>`;
+            const starter = window.GenericDleToolbarStarter.create(cfg({ target: 'richPagePreview' }));
+            starter.injectToolbar();
+            expect(document.getElementById('my-btn')).to.equal(null);
+        });
+
         it('injects via the observer once the toolbar gets expanded', async function () {
             document.body.innerHTML = rpeHtml({ toolbar: false, expandHandle: true });
             const starter = window.GenericDleToolbarStarter.create(cfg({ target: 'richPagePreview' }));
@@ -320,6 +342,36 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
             expect(rafCallbacks.length).to.be.greaterThan(0);
             rafCallbacks.forEach((cb) => cb());
             expect(clicked.calledOnce).to.be.true;
+        });
+
+        it('ignores a handle hidden by an inline-hidden ancestor (stale SPA panel)', function () {
+            document.body.innerHTML =
+                `<div class="polarion-rpe-MainPanel" style="display: none;">
+                   <div class="polarion-rpe-expandTools"><span>Expand Tools</span></div>
+                 </div>`;
+            const clicked = sinon.spy();
+            document.querySelector('.polarion-rpe-expandTools').addEventListener('click', clicked);
+
+            window.GenericDleToolbarStarter.autoExpandRichPageTools();
+            expect(clicked.called).to.be.false;
+        });
+
+        it('clicks the visible handle even when a stale hidden one comes first in the DOM', function () {
+            document.body.innerHTML =
+                `<div class="polarion-rpe-MainPanel" style="display: none;">
+                   <div class="polarion-rpe-expandTools"><span>Expand Tools</span></div>
+                 </div>
+                 <div class="polarion-rpe-MainPanel">
+                   <div class="polarion-rpe-expandTools"><span>Expand Tools</span></div>
+                 </div>`;
+            const handles = document.querySelectorAll('.polarion-rpe-expandTools');
+            const staleClicked = sinon.spy(), activeClicked = sinon.spy();
+            handles[0].addEventListener('click', staleClicked);
+            handles[1].addEventListener('click', activeClicked);
+
+            window.GenericDleToolbarStarter.autoExpandRichPageTools();
+            expect(staleClicked.called).to.be.false;
+            expect(activeClicked.calledOnce).to.be.true;
         });
 
         it('is idempotent — repeated calls keep a single shared observer', function () {
