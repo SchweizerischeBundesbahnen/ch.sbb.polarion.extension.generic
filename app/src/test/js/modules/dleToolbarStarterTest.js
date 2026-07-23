@@ -38,6 +38,26 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
                 </div></div>`;
     }
 
+    // Rich Page (Live Report) sub-tree: the preview toolbar row plus the view/edit content marker
+    // and, optionally, the collapsed-state "Expand Tools" handle.
+    function rpeHtml({ toolbar = true, view = true, spacer = true, expandHandle = false, handleHidden = false } = {}) {
+        const spacerCell = spacer ? '<td width="100%"></td>' : '';
+        const toolbarRow = toolbar
+            ? `<div class="polarion-rte-ToolbarPanelWrapper">
+                 <table class="polarion-dle-ToolbarPanel"><tbody>
+                   <tr><td class="existing-tool"></td>${spacerCell}</tr>
+                 </tbody></table>
+               </div>`
+            : '';
+        const content = view ? '<div class="polarion-rpe-view"></div>' : '<div class="polarion-rpe-edit"></div>';
+        const handle = expandHandle
+            ? `<div class="polarion-rpe-expandTools"${handleHidden ? ' style="display: none;"' : ''}><span>Expand Tools</span></div>`
+            : '';
+        return `<div class="polarion-content-container">
+                  <div class="polarion-rpe-MainPanel">${toolbarRow}${content}${handle}</div>
+                </div>`;
+    }
+
     const cfg = (over = {}) => ({ markerId: 'my-btn', alternateHtml: '<button>A</button>', defaultHtml: '<button>D</button>', ...over });
 
     before(async function () {
@@ -67,6 +87,11 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
         Object.keys(reg).forEach((k) => { try { reg[k].disconnect(); } catch { /* node gone */ } delete reg[k]; });
         const order = window.__genericDleToolbarOrder;
         if (order) Object.keys(order).forEach((k) => delete order[k]);
+        // Release the shared auto-expand observer so each test starts from a clean slate.
+        if (window.__genericRpeAutoExpandObserver) {
+            window.__genericRpeAutoExpandObserver.disconnect();
+            delete window.__genericRpeAutoExpandObserver;
+        }
         document.head.innerHTML = '';
         document.body.innerHTML = '';
         rafCallbacks.length = 0;
@@ -210,6 +235,152 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
         second.injectToolbar({ alternate: true });
         expect(spy.calledOnce).to.be.true;           // the previous observer was disconnected
         expect(reg['my-btn']).to.not.equal(firstObserver); // registry now holds the new one
+    });
+
+    it("throws on an unknown target", function () {
+        expect(() => window.GenericDleToolbarStarter.create(cfg({ target: 'nope' }))).to.throw("unknown target 'nope'");
+    });
+
+    describe("richPagePreview target", function () {
+        it('injects the button into the Rich Page toolbar row before the spacer cell', function () {
+            document.body.innerHTML = rpeHtml();
+            const starter = window.GenericDleToolbarStarter.create(cfg({ target: 'richPagePreview' }));
+            starter.injectToolbar(); // no alternate flag — row injection is implied for this target
+
+            const cell = document.getElementById('my-btn');
+            expect(cell).to.exist;
+            expect(cell.tagName).to.equal('TD');
+            expect(cell.innerHTML).to.equal('<button>A</button>');
+            expect(cell.nextElementSibling.getAttribute('width')).to.equal('100%'); // sits before the spacer
+        });
+
+        it('does not inject while the Rich Page is in edit mode (guard selector)', function () {
+            document.body.innerHTML = rpeHtml({ view: false });
+            const starter = window.GenericDleToolbarStarter.create(cfg({ target: 'richPagePreview' }));
+            starter.injectToolbar();
+            expect(document.getElementById('my-btn')).to.equal(null);
+        });
+
+        it('does nothing while the toolbar is still collapsed (row absent)', function () {
+            document.body.innerHTML = rpeHtml({ toolbar: false, expandHandle: true });
+            const starter = window.GenericDleToolbarStarter.create(cfg({ target: 'richPagePreview' }));
+            starter.injectToolbar();
+            expect(document.getElementById('my-btn')).to.equal(null);
+        });
+
+        it('ignores a stale view panel and does not inject into another panel in edit mode', function () {
+            // SPA transition: a stale (hidden) panel still carrying the view marker coexists with
+            // the active panel that is in edit mode — nothing may be injected.
+            document.body.innerHTML =
+                `<div class="polarion-content-container">
+                   <div class="polarion-rpe-MainPanel" style="display: none;">
+                     <div class="polarion-rpe-view"></div>
+                   </div>
+                   <div class="polarion-rpe-MainPanel">
+                     <div class="polarion-rte-ToolbarPanelWrapper">
+                       <table class="polarion-dle-ToolbarPanel"><tbody>
+                         <tr><td class="existing-tool"></td><td width="100%"></td></tr>
+                       </tbody></table>
+                     </div>
+                     <div class="polarion-rpe-edit"></div>
+                   </div>
+                 </div>`;
+            const starter = window.GenericDleToolbarStarter.create(cfg({ target: 'richPagePreview' }));
+            starter.injectToolbar();
+            expect(document.getElementById('my-btn')).to.equal(null);
+        });
+
+        it('injects via the observer once the toolbar gets expanded', async function () {
+            document.body.innerHTML = rpeHtml({ toolbar: false, expandHandle: true });
+            const starter = window.GenericDleToolbarStarter.create(cfg({ target: 'richPagePreview' }));
+            starter.injectToolbar(); // nothing yet — row absent, but the observer is armed
+
+            // "Expand Tools" clicked: GWT replaces the handle with the toolbar
+            const panel = document.querySelector('.polarion-rpe-MainPanel');
+            panel.querySelector('.polarion-rpe-expandTools').remove();
+            panel.insertAdjacentHTML('afterbegin',
+                `<div class="polarion-rte-ToolbarPanelWrapper">
+                   <table class="polarion-dle-ToolbarPanel"><tbody>
+                     <tr><td class="existing-tool"></td><td width="100%"></td></tr>
+                   </tbody></table>
+                 </div>`);
+            await flushObserver();
+            expect(rafCallbacks.length).to.be.greaterThan(0);
+            rafCallbacks.forEach((cb) => cb());
+            expect(document.getElementById('my-btn')).to.exist;
+        });
+    });
+
+    describe('autoExpandRichPageTools', function () {
+        it('clicks a visible "Expand Tools" handle on the initial call', function () {
+            document.body.innerHTML = rpeHtml({ toolbar: false, expandHandle: true });
+            const handle = document.querySelector('.polarion-rpe-expandTools');
+            const clicked = sinon.spy();
+            handle.addEventListener('click', clicked);
+
+            window.GenericDleToolbarStarter.autoExpandRichPageTools();
+            expect(clicked.calledOnce).to.be.true;
+        });
+
+        it('ignores a handle hidden by GWT (inline display:none)', function () {
+            document.body.innerHTML = rpeHtml({ toolbar: false, expandHandle: true, handleHidden: true });
+            const clicked = sinon.spy();
+            document.querySelector('.polarion-rpe-expandTools').addEventListener('click', clicked);
+
+            window.GenericDleToolbarStarter.autoExpandRichPageTools();
+            expect(clicked.called).to.be.false;
+        });
+
+        it('clicks the handle when it appears later (SPA navigation)', async function () {
+            document.body.innerHTML = '';
+            window.GenericDleToolbarStarter.autoExpandRichPageTools();
+
+            document.body.innerHTML = rpeHtml({ toolbar: false, expandHandle: true });
+            const clicked = sinon.spy();
+            document.querySelector('.polarion-rpe-expandTools').addEventListener('click', clicked);
+            await flushObserver();
+            expect(rafCallbacks.length).to.be.greaterThan(0);
+            rafCallbacks.forEach((cb) => cb());
+            expect(clicked.calledOnce).to.be.true;
+        });
+
+        it('ignores a handle hidden by an inline-hidden ancestor (stale SPA panel)', function () {
+            document.body.innerHTML =
+                `<div class="polarion-rpe-MainPanel" style="display: none;">
+                   <div class="polarion-rpe-expandTools"><span>Expand Tools</span></div>
+                 </div>`;
+            const clicked = sinon.spy();
+            document.querySelector('.polarion-rpe-expandTools').addEventListener('click', clicked);
+
+            window.GenericDleToolbarStarter.autoExpandRichPageTools();
+            expect(clicked.called).to.be.false;
+        });
+
+        it('clicks the visible handle even when a stale hidden one comes first in the DOM', function () {
+            document.body.innerHTML =
+                `<div class="polarion-rpe-MainPanel" style="display: none;">
+                   <div class="polarion-rpe-expandTools"><span>Expand Tools</span></div>
+                 </div>
+                 <div class="polarion-rpe-MainPanel">
+                   <div class="polarion-rpe-expandTools"><span>Expand Tools</span></div>
+                 </div>`;
+            const handles = document.querySelectorAll('.polarion-rpe-expandTools');
+            const staleClicked = sinon.spy(), activeClicked = sinon.spy();
+            handles[0].addEventListener('click', staleClicked);
+            handles[1].addEventListener('click', activeClicked);
+
+            window.GenericDleToolbarStarter.autoExpandRichPageTools();
+            expect(staleClicked.called).to.be.false;
+            expect(activeClicked.calledOnce).to.be.true;
+        });
+
+        it('is idempotent — repeated calls keep a single shared observer', function () {
+            document.body.innerHTML = '';
+            window.GenericDleToolbarStarter.autoExpandRichPageTools();
+            const observer = window.__genericRpeAutoExpandObserver;
+            window.GenericDleToolbarStarter.autoExpandRichPageTools();
+            expect(window.__genericRpeAutoExpandObserver).to.equal(observer);
+        });
     });
 
     it('injectStyles adds a stylesheet link once and injectScript adds a script once', function () {
