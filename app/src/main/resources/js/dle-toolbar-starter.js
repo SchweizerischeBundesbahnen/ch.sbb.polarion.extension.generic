@@ -1,13 +1,20 @@
 /*
- * Universal self-healing DLE-toolbar button injector — single source for all extensions
- * that inject a button into Polarion's document (DLE) editor toolbar via
- * `scriptInjection.dleEditorHead`.
+ * Universal self-healing Polarion-toolbar button injector — single source for all extensions
+ * that inject a button into a native Polarion toolbar via `scriptInjection.*` configuration.
+ *
+ * Supported toolbars (the `target` config, see TARGETS below):
+ *   - 'dleEditor' (default)      the document (DLE) editor toolbar, configured via
+ *                                `scriptInjection.dleEditorHead`;
+ *   - 'richPagePreview'          the Rich Page / Live Report toolbar in view mode (the one behind
+ *                                the "Expand Tools" handle), configured via `scriptInjection.mainHead`.
  *
  * Polarion (GWT) re-renders the toolbar sub-tree on actions like Save, which wipes out a
  * one-time injected element. This engine injects idempotently and re-injects via a
- * MutationObserver whenever the toolbar is re-rendered and the button disappears.
+ * MutationObserver whenever the toolbar is re-rendered and the button disappears. The Rich Page
+ * toolbar additionally does not exist in the DOM at all until the user expands it — the same
+ * observer picks it up the moment it is rendered.
  *
- * The DLE toolbar selectors below are Polarion's own DOM and identical for every extension.
+ * The toolbar selectors below are Polarion's own DOM and identical for every extension.
  * Extension-specific parts (button HTML, marker id) come in via create(config).
  *
  * Usage (thin extension starter.js loads this, then):
@@ -37,11 +44,28 @@
         }
     }
 
-    // Polarion DLE toolbar DOM — same for all extensions.
-    const ALTERNATE_TOOLBAR_SELECTOR = 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container > div.polarion-dle-Wrapper > div.polarion-dle-RpcPanel > div.polarion-dle-MainDockPanel div.polarion-rte-ToolbarPanelWrapper table.polarion-dle-ToolbarPanel tr';
-    const RICH_TEXT_AREA_SELECTOR = 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container>div.polarion-dle-Wrapper>div.polarion-dle-RpcPanel>div.polarion-dle-MainDockPanel div.polarion-dle-SplitPanel:last-child .polarion-dle-RichTextArea';
-    // Stable ancestor that survives the toolbar re-render — observed for re-injection.
-    const STABLE_ANCESTOR_SELECTOR = 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container';
+    // Polarion toolbar DOM per supported target — same for all extensions.
+    //   rowSelector          the toolbar <tr> buttons are injected into (alternate/row mode);
+    //   richTextAreaSelector (dleEditor only) anchor for the default above-the-editor mode;
+    //   guardSelector        when set, injection only happens while this selector matches — used
+    //                        to keep the Rich Page button out of the page's edit mode;
+    //   stableAncestorSelector  ancestor that survives the toolbar re-render — observer anchor.
+    const TARGETS = {
+        dleEditor: {
+            rowSelector: 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container > div.polarion-dle-Wrapper > div.polarion-dle-RpcPanel > div.polarion-dle-MainDockPanel div.polarion-rte-ToolbarPanelWrapper table.polarion-dle-ToolbarPanel tr',
+            richTextAreaSelector: 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container>div.polarion-dle-Wrapper>div.polarion-dle-RpcPanel>div.polarion-dle-MainDockPanel div.polarion-dle-SplitPanel:last-child .polarion-dle-RichTextArea',
+            stableAncestorSelector: 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container'
+        },
+        richPagePreview: {
+            rowSelector: 'div.polarion-rpe-MainPanel table.polarion-dle-ToolbarPanel tr',
+            // Only the preview (view) mode of a Rich Page — never the page's edit-mode toolbar.
+            guardSelector: 'div.polarion-rpe-MainPanel div.polarion-rpe-view',
+            stableAncestorSelector: 'div.polarion-content-container'
+        }
+    };
+
+    // The "Expand Tools" handle of a collapsed Rich Page toolbar (see autoExpandRichPageTools).
+    const EXPAND_TOOLS_SELECTOR = 'div.polarion-rpe-expandTools';
 
     // Registry of live observers keyed by markerId, kept on the top window so it survives this
     // script being re-loaded each time the DLE editor is (re-)opened in Polarion's GWT SPA.
@@ -53,10 +77,13 @@
         injectScript: injectScript,
 
         /**
-         * @param config {{ markerId: string, alternateHtml: string, defaultHtml: string }}
+         * @param config {{ markerId: string, alternateHtml: string, defaultHtml: string, target: string|undefined, order: number|undefined }}
          *   markerId      unique id set on the injected element; also the idempotency/dedup key.
          *   alternateHtml markup injected into the toolbar row when injectToolbar({alternate: true}).
-         *   defaultHtml   markup injected above the rich-text area otherwise.
+         *   defaultHtml   markup injected above the rich-text area otherwise ('dleEditor' target only).
+         *   target        which Polarion toolbar to inject into: 'dleEditor' (default) or
+         *                 'richPagePreview'. The 'richPagePreview' target always injects into the
+         *                 toolbar row (alternateHtml), regardless of the alternate flag.
          *
          *   SECURITY: alternateHtml / defaultHtml are written via innerHTML into the top Polarion
          *   frame, so they MUST be static, trusted markup. Never interpolate user-controlled data
@@ -65,6 +92,11 @@
          * @returns {{ injectToolbar: function, destroy: function }}
          */
         create: function (config) {
+            const target = TARGETS[config.target || 'dleEditor'];
+            if (!target) {
+                throw new Error(`GenericDleToolbarStarter: unknown target '${config.target}'.`);
+            }
+
             // Stable left-to-right order across re-renders. Each button keeps the order it was
             // registered with (config.order — the config-execution order); re-injection inserts
             // before the first already-present button with a *higher* order. Buttons with distinct
@@ -80,13 +112,19 @@
                 if (top.document.getElementById(config.markerId)) {
                     return; // already present
                 }
-                if (params && params.alternate) {
-                    const toolbarParent = top.document.querySelector(ALTERNATE_TOOLBAR_SELECTOR);
+                if (target.guardSelector && !top.document.querySelector(target.guardSelector)) {
+                    return; // guarded off (e.g. Rich Page is in edit mode)
+                }
+                if ((params && params.alternate) || !target.richTextAreaSelector) {
+                    const toolbarParent = top.document.querySelector(target.rowSelector);
                     if (!toolbarParent) {
                         return; // toolbar not rendered (yet)
                     }
                     const toolbarContainer = top.document.createElement('td');
                     toolbarContainer.id = config.markerId;
+                    // Polarion's own toolbar cells carry vertical-align: middle inline — match them
+                    // so injected buttons line up with the native ones.
+                    toolbarContainer.style.verticalAlign = 'middle';
                     toolbarContainer.innerHTML = config.alternateHtml;
                     const spacer = toolbarParent.querySelector('td[width="100%"]');
                     if (!spacer) {
@@ -106,7 +144,7 @@
                     }
                     toolbarParent.insertBefore(toolbarContainer, reference);
                 } else {
-                    const documentFrame = top.document.querySelector(RICH_TEXT_AREA_SELECTOR);
+                    const documentFrame = top.document.querySelector(target.richTextAreaSelector);
                     if (!documentFrame) {
                         return;
                     }
@@ -132,7 +170,7 @@
                     if (observerSetUp) {
                         return;
                     }
-                    const anchor = top.document.querySelector(STABLE_ANCESTOR_SELECTOR) || top.document.body;
+                    const anchor = top.document.querySelector(target.stableAncestorSelector) || top.document.body;
                     if (!anchor) {
                         return;
                     }
@@ -168,6 +206,44 @@
                     observerSetUp = false;
                 }
             };
+        },
+
+        /**
+         * Keep the Rich Page (Live Report) tools toolbar always expanded. Polarion renders it
+         * collapsed behind an "Expand Tools" handle on every page open and does not persist the
+         * expanded state, so this clicks the handle whenever it (re-)appears — on the initial page
+         * load and on SPA navigation between pages.
+         *
+         * Idempotent across callers: a single shared observer per top window (several extensions
+         * calling this results in one observer). There is no opposite-direction fighting to worry
+         * about — Polarion offers no collapse control once the toolbar is expanded.
+         */
+        autoExpandRichPageTools: function () {
+            if (top.__genericRpeAutoExpandObserver) {
+                return;
+            }
+            function expand() {
+                const handle = top.document.querySelector(EXPAND_TOOLS_SELECTOR);
+                // GWT hides widgets with inline display:none — don't click an invisible handle.
+                if (handle && handle.style.display !== 'none') {
+                    handle.click();
+                }
+            }
+            let scheduled = false;
+            const observer = new MutationObserver(function () {
+                if (scheduled) {
+                    return;
+                }
+                scheduled = true;
+                // Coalesce the burst of mutations during a page render into a single check.
+                requestAnimationFrame(function () {
+                    scheduled = false;
+                    expand();
+                });
+            });
+            top.__genericRpeAutoExpandObserver = observer;
+            observer.observe(top.document.body, { childList: true, subtree: true });
+            expand();
         }
     };
 })();
