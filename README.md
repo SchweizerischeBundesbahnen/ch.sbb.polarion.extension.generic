@@ -896,7 +896,7 @@ There are two ways to use it.
 ```js
 // The engine GETs the URL and expects JSON { "permitted": boolean }.
 // permitted !== true, a non-OK HTTP status, or an error → the button stays disabled (fail-closed).
-generic.create({
+window.GenericDleToolbarStarter.create({
     markerId: 'my-extension-toolbar-injected',
     alternateHtml: ALTERNATE_TOOLBAR_HTML,
     defaultHtml: TOOLBAR_HTML,
@@ -904,7 +904,7 @@ generic.create({
 }).injectToolbar({ alternate: true });
 
 // ...or run the check yourself (custom headers, your own REST wrapper, extra context):
-generic.create({
+window.GenericDleToolbarStarter.create({
     markerId: 'my-extension-toolbar-injected',
     alternateHtml: ALTERNATE_TOOLBAR_HTML,
     defaultHtml: TOOLBAR_HTML,
@@ -921,7 +921,7 @@ is configured the button is enabled, as before.
 accepts a `disabled` flag — use these if you resolve the permission on your own schedule:
 
 ```js
-const starter = generic.create({ markerId: '…', alternateHtml: ALTERNATE_TOOLBAR_HTML, defaultHtml: TOOLBAR_HTML });
+const starter = window.GenericDleToolbarStarter.create({ markerId: '…', alternateHtml: ALTERNATE_TOOLBAR_HTML, defaultHtml: TOOLBAR_HTML });
 starter.injectToolbar({ alternate: true, disabled: true });   // start disabled
 myPermissionCheck().then(allowed => starter.setDisabled(!allowed));   // enable/disable later
 ```

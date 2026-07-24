@@ -292,6 +292,33 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
             expect(isDisabled()).to.be.false;
         });
 
+        it('swallows keyboard/programmatic clicks while disabled (capture blocker)', function () {
+            document.body.innerHTML = dleHtml();
+            const starter = window.GenericDleToolbarStarter.create(cfg({ alternateHtml: '<button id="inner">A</button>' }));
+            starter.injectToolbar({ alternate: true, disabled: true });
+            const inner = document.getElementById('inner');
+            const onClick = sinon.spy();
+            inner.addEventListener('click', onClick);
+
+            inner.click();                          // programmatic click reaches the container blocker
+            expect(onClick.called).to.be.false;     // ...which stops it before the button handler
+
+            starter.setDisabled(false);
+            inner.click();
+            expect(onClick.calledOnce).to.be.true;  // enabled again → click passes through
+        });
+
+        it('a later injectToolbar() without disabled keeps a previously set disabled state', function () {
+            document.body.innerHTML = dleHtml();
+            const starter = window.GenericDleToolbarStarter.create(cfg());
+            starter.injectToolbar({ alternate: true });
+            starter.setDisabled(true);
+            // Extension re-injects (e.g. re-runs its bootstrap) without passing disabled.
+            document.getElementById('my-btn').remove();
+            starter.injectToolbar({ alternate: true });
+            expect(isDisabled()).to.be.true;        // merged lastParams preserved disabled
+        });
+
         it('keeps the disabled state across a self-healing re-inject', async function () {
             document.body.innerHTML = dleHtml();
             const starter = window.GenericDleToolbarStarter.create(cfg());

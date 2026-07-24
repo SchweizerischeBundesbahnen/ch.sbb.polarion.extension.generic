@@ -209,16 +209,28 @@
             const orderByMarker = top.__genericDleToolbarOrder || (top.__genericDleToolbarOrder = {});
             orderByMarker[config.markerId] = myOrder;
 
+            // Capture-phase click swallower for the disabled state: pointer-events: none already
+            // blocks the mouse, and this additionally stops a keyboard- or script-triggered click
+            // from reaching the button's baked-in onclick. Stable reference so it can be removed.
+            function blockClick(event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
             // Toggle the disabled look/behavior on an injected container: the dleToolBarDisabled
-            // class (pointer-events: none) blocks the click regardless of the onclick baked into the
-            // button markup. Applied on every (re-)inject and by setDisabled() on the live element.
+            // class fades it and blocks the mouse (pointer-events: none), aria-disabled announces it,
+            // and the capture-phase blocker covers keyboard/programmatic clicks — so the click is
+            // stopped regardless of the onclick baked into the button markup. Applied on every
+            // (re-)inject and by setDisabled() on the live element.
             function applyDisabled(container, disabled) {
                 if (!container) {
                     return;
                 }
+                container.removeEventListener('click', blockClick, true);
                 if (disabled) {
                     container.classList.add('dleToolBarDisabled');
                     container.setAttribute('aria-disabled', 'true');
+                    container.addEventListener('click', blockClick, true);
                 } else {
                     container.classList.remove('dleToolBarDisabled');
                     container.removeAttribute('aria-disabled');
@@ -235,7 +247,10 @@
                 if (config.permissionCheck) {
                     return Promise.resolve().then(config.permissionCheck);
                 }
-                return fetch(config.permissionCheckUrl, { credentials: 'same-origin' })
+                // Wrap fetch in a promise so even a synchronous throw (e.g. fetch unavailable) turns
+                // into a rejection handled by the caller's .catch → fail-closed.
+                return Promise.resolve()
+                    .then(() => fetch(config.permissionCheckUrl, { credentials: 'same-origin' }))
                     .then(response => response.ok ? response.json() : { permitted: false })
                     .then(data => !!(data && data.permitted));
             }
@@ -308,8 +323,11 @@
                     if (hasPermissionCheck && !permissionCheckStarted) {
                         params = Object.assign({}, params, { disabled: true });
                     }
-                    lastParams = params;
-                    inject(params);
+                    // Merge onto the previous params (don't replace) so a disabled state set via
+                    // setDisabled() or the pending permission check isn't dropped by a later
+                    // injectToolbar() that omits `disabled`. Self-heal re-injects with the merged set.
+                    lastParams = Object.assign({}, lastParams, params);
+                    inject(lastParams);
 
                     // Kick off the global permission check once; on error keep it disabled
                     // (fail-closed — a check that can't confirm access denies it).
