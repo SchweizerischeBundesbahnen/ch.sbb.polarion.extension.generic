@@ -58,6 +58,70 @@
         }
     }
 
+    // Capture-phase click swallower for the disabled state: pointer-events: none already blocks the
+    // mouse; this additionally stops a keyboard- or script-triggered click from reaching the
+    // button's baked-in onclick. Module-level (stateless) so a single shared reference add/removes
+    // consistently on ANY element — including a stale panel's button kept across an SPA navigation,
+    // whose listener a later enable must be able to clear regardless of which starter instance runs.
+    function blockClick(event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    // Toggle the disabled look/behavior on an injected container and its inner interactive elements:
+    // the dleToolBarDisabled class fades it and makes the container non-hit-testable to the mouse
+    // (pointer-events: none), so a mouse click can't reach the button; the capture-phase blocker
+    // covers keyboard- and script-triggered clicks (which bypass pointer-events); aria-disabled +
+    // tabindex=-1 on inner [role=button]/button/a announce the disabled state to assistive tech and
+    // drop it from the tab order. So the click is stopped regardless of the onclick baked into the
+    // button markup.
+    function applyDisabled(container, disabled) {
+        if (!container) {
+            return;
+        }
+        container.removeEventListener('click', blockClick, true);
+        const interactive = container.querySelectorAll('[role="button"], button, a');
+        if (disabled) {
+            container.classList.add('dleToolBarDisabled');
+            container.setAttribute('aria-disabled', 'true');
+            container.addEventListener('click', blockClick, true);
+            interactive.forEach(el => {
+                // Remember the element's own aria-disabled / tabindex (if any) so re-enabling
+                // restores the markup's values instead of clobbering them.
+                if (!el.hasAttribute('data-generic-prev-aria-disabled')) {
+                    el.setAttribute('data-generic-prev-aria-disabled', el.getAttribute('aria-disabled') || '');
+                }
+                if (!el.hasAttribute('data-generic-prev-tabindex')) {
+                    el.setAttribute('data-generic-prev-tabindex', el.getAttribute('tabindex') || '');
+                }
+                el.setAttribute('aria-disabled', 'true');
+                el.setAttribute('tabindex', '-1');
+            });
+        } else {
+            container.classList.remove('dleToolBarDisabled');
+            container.removeAttribute('aria-disabled');
+            interactive.forEach(el => {
+                restoreAttr(el, 'aria-disabled', 'data-generic-prev-aria-disabled');
+                restoreAttr(el, 'tabindex', 'data-generic-prev-tabindex');
+            });
+        }
+    }
+
+    // Restore an attribute the engine overrode from its saved-original data attribute: put back the
+    // original value, or remove the attribute if it had none originally. No-op if nothing was saved.
+    function restoreAttr(el, attr, savedAttr) {
+        if (!el.hasAttribute(savedAttr)) {
+            return;
+        }
+        const prev = el.getAttribute(savedAttr);
+        el.removeAttribute(savedAttr);
+        if (prev === '') {
+            el.removeAttribute(attr);
+        } else {
+            el.setAttribute(attr, prev);
+        }
+    }
+
     // GWT shows/hides widgets with inline styles; a widget is effectively hidden when it or any
     // ancestor carries inline display:none / visibility:hidden (e.g. a stale Rich Page panel kept
     // in the DOM during an SPA transition).
@@ -164,20 +228,33 @@
         injectOwnStyles: injectOwnStyles,
 
         /**
-         * @param config {{ markerId: string, alternateHtml: string, defaultHtml: string, target: string|undefined, order: number|undefined }}
+         * @param config {{ markerId: string, alternateHtml: string, defaultHtml: string, target: string|undefined, order: number|undefined, permissionCheckUrl: string|undefined, permissionCheck: function|undefined }}
          *   markerId      unique id set on the injected element; also the idempotency/dedup key.
          *   alternateHtml markup injected into the toolbar row when injectToolbar({alternate: true}).
          *   defaultHtml   markup injected above the rich-text area otherwise ('dleEditor' target only).
          *   target        which Polarion toolbar to inject into: 'dleEditor' (default) or
-         *                 'richPagePreview'. The 'richPagePreview' target always injects into the
-         *                 toolbar row (alternateHtml), regardless of the alternate flag, and only
-         *                 while the page is in view (preview) mode.
+         *                 'richPagePreview' (works for the Live Report toolbar too). The
+         *                 'richPagePreview' target always injects into the toolbar row
+         *                 (alternateHtml), regardless of the alternate flag, and only while the page
+         *                 is in view (preview) mode.
+         *   permissionCheckUrl  optional: a URL the engine GETs to decide if the button is enabled.
+         *                 Expected JSON response { permitted: boolean }; permitted !== true (or a
+         *                 non-OK status / error) disables the button (fail-closed). Works for both
+         *                 targets (Live Doc and Live Report).
+         *   permissionCheck     optional: a function returning boolean|Promise<boolean>, used
+         *                 instead of permissionCheckUrl when given (e.g. to run the extension's own
+         *                 REST wrapper). While either check is pending the button is shown disabled.
          *
          *   SECURITY: alternateHtml / defaultHtml are written via innerHTML into the top Polarion
          *   frame, so they MUST be static, trusted markup. Never interpolate user-controlled data
          *   (document fields, work-item attributes, ...) into them without sanitizing it first.
          *
-         * @returns {{ injectToolbar: function, destroy: function }}
+         * @returns {{ injectToolbar: function, setDisabled: function, destroy: function }}
+         *   injectToolbar(params)  params.alternate → row injection; params.disabled → inject
+         *                          disabled. The latest params are re-used by the self-healing
+         *                          re-inject, so the disabled state survives toolbar re-renders.
+         *   setDisabled(bool)      toggle the disabled state on the live button and for future
+         *                          re-injects (call it when an async permission result arrives).
          */
         create: function (config) {
             const target = TARGETS[config.target || 'dleEditor'];
@@ -195,6 +272,24 @@
             const myOrder = domOrder(config.markerId, fallbackOrder);
             const orderByMarker = top.__genericDleToolbarOrder || (top.__genericDleToolbarOrder = {});
             orderByMarker[config.markerId] = myOrder;
+
+            // Optional engine-driven global permission check: permissionCheck (a function returning
+            // boolean|Promise<boolean>) takes precedence over permissionCheckUrl (GET → JSON
+            // { permitted: boolean }). Resolves to whether the button is permitted (enabled).
+            const hasPermissionCheck = !!(config.permissionCheck || config.permissionCheckUrl);
+            let permissionCheckStarted = false;
+
+            function runPermissionCheck() {
+                if (config.permissionCheck) {
+                    return Promise.resolve().then(config.permissionCheck);
+                }
+                // Wrap fetch in a promise so even a synchronous throw (e.g. fetch unavailable) turns
+                // into a rejection handled by the caller's .catch → fail-closed.
+                return Promise.resolve()
+                    .then(() => fetch(config.permissionCheckUrl, { credentials: 'same-origin' }))
+                    .then(response => response.ok ? response.json() : { permitted: false })
+                    .then(data => !!(data && data.permitted));
+            }
 
             // Idempotent: only inject if the toolbar exists and our button isn't already there.
             function inject(params) {
@@ -214,6 +309,7 @@
                     // so injected buttons line up with the native ones.
                     toolbarContainer.style.verticalAlign = 'middle';
                     toolbarContainer.innerHTML = config.alternateHtml;
+                    applyDisabled(toolbarContainer, params && params.disabled);
                     const spacer = toolbarParent.querySelector('td[width="100%"]');
                     if (!spacer) {
                         // Polarion DOM changed (e.g. after an upgrade) — fall back to appending at the
@@ -241,18 +337,55 @@
                     toolbarContainer.classList.add("dleToolBarContainer");
                     toolbarContainer.style.marginRight = "14px";
                     toolbarContainer.innerHTML = config.defaultHtml;
+                    applyDisabled(toolbarContainer, params && params.disabled);
                     documentFrame.parentNode.parentNode.prepend(toolbarContainer);
                 }
             }
 
             let observerSetUp = false;
+            let destroyed = false;
             // The observer re-injects with the params of the latest injectToolbar() call.
             let lastParams;
 
+            // Claim ownership of this markerId. If a newer starter is created for the same markerId
+            // (e.g. two create() calls in one context), the older one becomes "superseded" and its
+            // async callbacks (a late permission result) must not touch the shared button — the newer
+            // owner is the source of truth. Prevents a stale instance from overwriting current state.
+            const instanceToken = {};
+            const ownerRegistry = top.__genericDleToolbarOwners || (top.__genericDleToolbarOwners = {});
+            ownerRegistry[config.markerId] = instanceToken;
+            const isCurrentOwner = () => ownerRegistry[config.markerId] === instanceToken;
+
+            // Toggle the button's disabled state on the live element and for future (re-)injects.
+            function setDisabled(disabled) {
+                if (!isCurrentOwner()) {
+                    return; // a newer starter instance owns this markerId — don't fight it
+                }
+                lastParams = Object.assign({}, lastParams, { disabled: disabled });
+                applyDisabled(top.document.getElementById(config.markerId), disabled);
+            }
+
             return {
                 injectToolbar: function (params) {
-                    lastParams = params;
-                    inject(params);
+                    // When a permission check is configured, inject disabled first (no
+                    // enabled→disabled flicker) and resolve the real state asynchronously.
+                    if (hasPermissionCheck && !permissionCheckStarted) {
+                        params = Object.assign({}, params, { disabled: true });
+                    }
+                    // Merge onto the previous params (don't replace) so a disabled state set via
+                    // setDisabled() or the pending permission check isn't dropped by a later
+                    // injectToolbar() that omits `disabled`. Self-heal re-injects with the merged set.
+                    lastParams = Object.assign({}, lastParams, params);
+                    inject(lastParams);
+
+                    // Kick off the global permission check once; on error keep it disabled
+                    // (fail-closed — a check that can't confirm access denies it).
+                    if (hasPermissionCheck && !permissionCheckStarted) {
+                        permissionCheckStarted = true;
+                        runPermissionCheck()
+                            .then(permitted => { if (!destroyed) setDisabled(!permitted); })
+                            .catch(() => { if (!destroyed) setDisabled(true); });
+                    }
 
                     // Set up the self-healing observer once per starter instance.
                     if (observerSetUp) {
@@ -277,7 +410,7 @@
                         });
                     });
                     // Disconnect any observer left over from a previous editor open for this markerId
-                    // so observers don't accumulate across the SPA's editor open/close cycles.
+                    // so observers don't accumulate across editor open/close cycles.
                     if (observerRegistry[config.markerId]) {
                         observerRegistry[config.markerId].disconnect();
                     }
@@ -285,12 +418,20 @@
                     observer.observe(anchor, { childList: true, subtree: true });
                 },
 
+                setDisabled: setDisabled,
+
                 // Stop self-healing and release the observer (for callers that have a teardown hook).
                 destroy: function () {
+                    // Mark destroyed so a still-pending permission check doesn't apply its result
+                    // (setDisabled) after teardown.
+                    destroyed = true;
                     if (observerRegistry[config.markerId]) {
                         observerRegistry[config.markerId].disconnect();
                         delete observerRegistry[config.markerId];
                     }
+                    // Clear the disabled state (and its capture-phase click blocker) from our
+                    // element so a torn-down button left in the DOM doesn't keep swallowing clicks.
+                    applyDisabled(top.document.getElementById(config.markerId), false);
                     observerSetUp = false;
                 }
             };
