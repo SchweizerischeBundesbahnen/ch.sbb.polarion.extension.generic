@@ -34,6 +34,18 @@
         }
     }
 
+    // Inject the shared toolbar-button stylesheet that ships next to this script
+    // (…/ui/generic/css/dle-toolbar.css). Deriving the href from this script's own URL keeps the
+    // /polarion/<ext>/ context out of the code; idempotent via the fixed id, so loading the engine
+    // from several extensions injects it once.
+    function injectOwnStyles() {
+        const selfSrc = (document.currentScript && document.currentScript.src) || '';
+        const href = selfSrc.replace(/js\/dle-toolbar-starter\.js.*$/, 'css/dle-toolbar.css');
+        if (href && href !== selfSrc) {
+            injectStyles('generic-dle-toolbar-styles', href);
+        }
+    }
+
     function injectScript(id, src, type = "text/javascript") {
         if (!top.document.getElementById(id)) {
             const script = top.document.createElement("script");
@@ -147,6 +159,7 @@
     window.GenericDleToolbarStarter = {
         injectStyles: injectStyles,
         injectScript: injectScript,
+        injectOwnStyles: injectOwnStyles,
 
         /**
          * @param config {{ markerId: string, alternateHtml: string, defaultHtml: string, target: string|undefined, order: number|undefined }}
@@ -329,4 +342,8 @@
             }
         }
     };
+
+    // Ship the shared toolbar-button styles the moment the engine loads (currentScript is still
+    // available here), so consumers don't each carry their own copy of the CSS.
+    injectOwnStyles();
 })();

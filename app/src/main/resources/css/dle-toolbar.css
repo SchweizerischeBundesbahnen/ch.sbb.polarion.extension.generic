@@ -1,0 +1,76 @@
+/*
+ * Shared styling for buttons injected into Polarion's native document (DLE) and Rich Page toolbars
+ * by the self-healing engine (dle-toolbar-starter.js). Previously each exporter extension shipped
+ * its own private copy of these rules; because the class names are global, those copies overrode
+ * each other in the same page. This is the single source of truth — the engine injects it, so every
+ * consumer inherits identical (and fixable-in-one-place) toolbar-button styling.
+ */
+
+.dleToolBarContainer {
+    width: fit-content;
+    height: 45px;
+    background-color: #f5f5f5;
+    z-index: 1;
+    position: absolute;
+    right: 0;
+    border-bottom: 1px solid #DEDEDE;
+    border-right: 1px solid #DEDEDE;
+    border-left: 1px solid #DEDEDE;
+    padding-left: 8px;
+    padding-right: 3px;
+    vertical-align: middle;
+    display: flex;
+}
+
+.dleToolBarTable {
+    align-self: center;
+    border-spacing: 0;
+}
+
+.dleToolBarRow {
+    display: table-row;
+    vertical-align: middle;
+}
+
+.dleToolBarTableCell {
+    padding: 0;
+}
+
+.dleToolBarButton {
+    cursor: pointer;
+    opacity: .6;
+}
+
+.dleToolBarButton:hover {
+    opacity: 1;
+}
+
+.dleToolBarSingleButton {
+    border: 1px solid #DEDEDE;
+    padding: 5px;
+    border-radius: 2px;
+}
+
+/* Only the default (above-the-editor) button needs a right margin. In the alternate toolbar-row
+   layout the button sits between two padded separators, so an extra right margin would make it
+   asymmetric (closer to the left separator than the right one). */
+.dleToolBarContainer .dleToolBarSingleButton {
+    margin-right: 5px;
+}
+
+.dleToolBarLeftButton {
+    border: 1px solid #DEDEDE;
+    padding: 5px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.dleToolBarRightButton {
+    border-width: 1px 1px 1px 0px;
+    border-style: solid;
+    border-color: #DEDEDE;
+    padding: 5px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    margin-right: 5px;
+}

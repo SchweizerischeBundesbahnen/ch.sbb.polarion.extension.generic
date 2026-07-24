@@ -526,6 +526,26 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
         });
     });
 
+    it('injectOwnStyles injects the shared toolbar stylesheet derived from its own script URL', function () {
+        const fakeScript = { src: 'http://x/polarion/pdf-exporter/ui/generic/js/dle-toolbar-starter.js?timestamp=1' };
+        Object.defineProperty(document, 'currentScript', { configurable: true, get: () => fakeScript });
+        try {
+            window.GenericDleToolbarStarter.injectOwnStyles();
+        } finally {
+            Object.defineProperty(document, 'currentScript', { configurable: true, get: () => null });
+        }
+        const link = document.getElementById('generic-dle-toolbar-styles');
+        expect(link).to.exist;
+        expect(link.tagName).to.equal('LINK');
+        expect(link.href).to.contain('/polarion/pdf-exporter/ui/generic/css/dle-toolbar.css');
+    });
+
+    it('injectOwnStyles is a no-op when the script URL cannot be resolved', function () {
+        Object.defineProperty(document, 'currentScript', { configurable: true, get: () => null });
+        window.GenericDleToolbarStarter.injectOwnStyles();
+        expect(document.getElementById('generic-dle-toolbar-styles')).to.equal(null);
+    });
+
     it('injectStyles adds a stylesheet link once and injectScript adds a script once', function () {
         window.GenericDleToolbarStarter.injectStyles('sbb-css', '/x.css');
         window.GenericDleToolbarStarter.injectStyles('sbb-css', '/x.css'); // idempotent
