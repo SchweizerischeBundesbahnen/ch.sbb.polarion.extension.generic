@@ -69,11 +69,12 @@
     }
 
     // Toggle the disabled look/behavior on an injected container and its inner interactive elements:
-    // the dleToolBarDisabled class fades it and blocks the mouse (pointer-events: none, an inherited
-    // property, so it reaches descendants too); the capture-phase blocker covers keyboard/scripted
-    // clicks; aria-disabled + tabindex=-1 on inner [role=button]/button/a announce the disabled state
-    // to assistive tech and drop it from the tab order. So the click is stopped regardless of the
-    // onclick baked into the button markup.
+    // the dleToolBarDisabled class fades it and makes the container non-hit-testable to the mouse
+    // (pointer-events: none), so a mouse click can't reach the button; the capture-phase blocker
+    // covers keyboard- and script-triggered clicks (which bypass pointer-events); aria-disabled +
+    // tabindex=-1 on inner [role=button]/button/a announce the disabled state to assistive tech and
+    // drop it from the tab order. So the click is stopped regardless of the onclick baked into the
+    // button markup.
     function applyDisabled(container, disabled) {
         if (!container) {
             return;
@@ -330,6 +331,7 @@
             }
 
             let observerSetUp = false;
+            let destroyed = false;
             // The observer re-injects with the params of the latest injectToolbar() call.
             let lastParams;
 
@@ -357,8 +359,8 @@
                     if (hasPermissionCheck && !permissionCheckStarted) {
                         permissionCheckStarted = true;
                         runPermissionCheck()
-                            .then(permitted => setDisabled(!permitted))
-                            .catch(() => setDisabled(true));
+                            .then(permitted => { if (!destroyed) setDisabled(!permitted); })
+                            .catch(() => { if (!destroyed) setDisabled(true); });
                     }
 
                     // Set up the self-healing observer once per starter instance.
@@ -384,7 +386,7 @@
                         });
                     });
                     // Disconnect any observer left over from a previous editor open for this markerId
-                    // so observers don't accumulate across the SPA's editor open/close cycles.
+                    // so observers don't accumulate across editor open/close cycles.
                     if (observerRegistry[config.markerId]) {
                         observerRegistry[config.markerId].disconnect();
                     }
@@ -396,6 +398,9 @@
 
                 // Stop self-healing and release the observer (for callers that have a teardown hook).
                 destroy: function () {
+                    // Mark destroyed so a still-pending permission check doesn't apply its result
+                    // (setDisabled) after teardown.
+                    destroyed = true;
                     if (observerRegistry[config.markerId]) {
                         observerRegistry[config.markerId].disconnect();
                         delete observerRegistry[config.markerId];

@@ -459,6 +459,23 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
             starter.setDisabled(true); // element missing → applyDisabled early-returns, no error
         });
 
+        it('does not apply a permission result that resolves after destroy()', async function () {
+            document.body.innerHTML = dleHtml();
+            let resolveCheck;
+            const starter = window.GenericDleToolbarStarter.create(cfg({
+                permissionCheck: () => new Promise((r) => { resolveCheck = r; })
+            }));
+            starter.injectToolbar({ alternate: true });
+            await flushPromises();                 // let permissionCheck get invoked (sets resolveCheck)
+            expect(isDisabled()).to.be.true;       // disabled while pending
+
+            starter.destroy();                     // torn down before the check resolves
+            resolveCheck(true);                    // late "permitted" result
+            await flushPromises();
+            // destroy() cleared the disabled state and the late result must not re-apply anything.
+            expect(document.getElementById('my-btn').classList.contains('dleToolBarDisabled')).to.be.false;
+        });
+
         it('runs the permission check only once across re-injects', async function () {
             document.body.innerHTML = dleHtml();
             const check = sinon.stub().resolves(true);
