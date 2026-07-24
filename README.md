@@ -891,16 +891,20 @@ same for the Live Doc (`dleEditor`) and Live Report (`richPagePreview`) toolbars
 
 There are two ways to use it.
 
-**1. Let the engine run a global permission check.** Pass either a URL or a function to `create(...)`:
+**1. Let the engine run a permission check.** Pass either a URL or a function to `create(...)`. The
+engine treats the result as a plain boolean; **any context the check needs (project, document, …) is
+the extension's to supply** — the engine doesn't parse the page or know about projects. The extension
+knows the context (e.g. from its own `ExportContext`) and bakes it into the URL or the function:
 
 ```js
 // The engine GETs the URL and expects JSON { "permitted": boolean }.
 // permitted !== true, a non-OK HTTP status, or an error → the button stays disabled (fail-closed).
+// Build the URL with whatever the check is scoped to — here a project-level permission:
 window.GenericDleToolbarStarter.create({
     markerId: 'my-extension-toolbar-injected',
     alternateHtml: ALTERNATE_TOOLBAR_HTML,
     defaultHtml: TOOLBAR_HTML,
-    permissionCheckUrl: '/polarion/my-extension/rest/internal/permissions/export'
+    permissionCheckUrl: `/polarion/my-extension/rest/internal/permissions/export?projectId=${ctx.getProjectId()}`
 }).injectToolbar({ alternate: true });
 
 // ...or run the check yourself (custom headers, your own REST wrapper, extra context):
@@ -908,7 +912,10 @@ window.GenericDleToolbarStarter.create({
     markerId: 'my-extension-toolbar-injected',
     alternateHtml: ALTERNATE_TOOLBAR_HTML,
     defaultHtml: TOOLBAR_HTML,
-    permissionCheck: () => ctx.callAsync({ method: 'GET', url: '…' }).then(r => r.response.permitted)
+    permissionCheck: () => ctx.callAsync({
+        method: 'GET',
+        url: `/polarion/my-extension/rest/internal/permissions/export?projectId=${ctx.getProjectId()}`
+    }).then(r => r.response.permitted)
 }).injectToolbar({ alternate: true });
 ```
 
