@@ -114,16 +114,16 @@
         // Collect the distinct extension web-context segments from the inject scripts, in DOM order
         // (which Polarion keeps equal to the configured order). The generic engine script itself
         // (…/js/dle-toolbar-starter.js) is excluded by INJECT_SCRIPT_RE.
-        const seen = {}, contexts = [];
-        for (const script of document.querySelectorAll('head script[src], script[src]')) {
-            const src = script.getAttribute('src') || '';
+        const seen = new Set(), contexts = [];
+        for (const script of document.querySelectorAll('script[src]')) {
+            const src = script.getAttribute('src'); // the [src] selector guarantees a string
             if (!INJECT_SCRIPT_RE.test(src)) {
                 continue;
             }
             const match = EXT_CONTEXT_RE.exec(src);
             const ctx = match && match[1];
-            if (ctx && !seen[ctx]) {
-                seen[ctx] = true;
+            if (ctx && !seen.has(ctx)) {
+                seen.add(ctx);
                 contexts.push(ctx);
             }
         }
