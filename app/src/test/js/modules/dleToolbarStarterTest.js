@@ -139,7 +139,48 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
         expect(warn.firstCall.args[0]).to.contain('my-btn');
     });
 
-    it('keeps a stable order — a lower-order button is inserted before a higher-order one', function () {
+    // Add the extensions' single-tag inject scripts to <head> in configured order — Polarion keeps
+    // their DOM position equal to the scriptInjection order, and the engine derives the button
+    // order from it (see domOrder).
+    function addInjectScripts(...contexts) {
+        for (const ctx of contexts) {
+            const s = document.createElement('script');
+            s.setAttribute('src', `/polarion/${ctx}/js/dle-toolbar.js?timestamp=1`);
+            document.head.appendChild(s);
+        }
+    }
+
+    it('orders buttons by the DOM position of their inject scripts, ignoring a race-prone config.order', function () {
+        document.body.innerHTML = dleHtml();
+        // Scripts are in configured order pdf, docx, strictdoc...
+        addInjectScripts('pdf-exporter', 'docx-exporter', 'strictdoc-exporter');
+        // ...but the create() calls arrive in onload-race order (reversed) with misleading orders.
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'strictdoc-exporter-toolbar-injected', order: 1 })).injectToolbar({ alternate: true });
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'docx-exporter-toolbar-injected', order: 2 })).injectToolbar({ alternate: true });
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'pdf-exporter-toolbar-injected', order: 3 })).injectToolbar({ alternate: true });
+
+        const ids = [...document.querySelector('table.polarion-dle-ToolbarPanel tr').children].map(c => c.id).filter(Boolean);
+        expect(ids).to.deep.equal(['pdf-exporter-toolbar-injected', 'docx-exporter-toolbar-injected', 'strictdoc-exporter-toolbar-injected']);
+    });
+
+    it('heals to the configured order after a re-render regardless of re-inject timing', function () {
+        document.body.innerHTML = dleHtml();
+        addInjectScripts('pdf-exporter', 'docx-exporter');
+        const pdf = window.GenericDleToolbarStarter.create(cfg({ markerId: 'pdf-exporter-toolbar-injected', order: 5 }));
+        const docx = window.GenericDleToolbarStarter.create(cfg({ markerId: 'docx-exporter-toolbar-injected', order: 0 }));
+        pdf.injectToolbar({ alternate: true });
+        docx.injectToolbar({ alternate: true });
+        // GWT wipes both, then docx re-injects before pdf — order must still be pdf, docx.
+        document.getElementById('pdf-exporter-toolbar-injected').remove();
+        document.getElementById('docx-exporter-toolbar-injected').remove();
+        docx.injectToolbar({ alternate: true });
+        pdf.injectToolbar({ alternate: true });
+
+        const ids = [...document.querySelector('table.polarion-dle-ToolbarPanel tr').children].map(c => c.id).filter(Boolean);
+        expect(ids).to.deep.equal(['pdf-exporter-toolbar-injected', 'docx-exporter-toolbar-injected']);
+    });
+
+    it('falls back to config.order when no inject script matches (deprecated inline config)', function () {
         document.body.innerHTML = dleHtml();
         window.GenericDleToolbarStarter.create(cfg({ markerId: 'btn-high', order: 10 })).injectToolbar({ alternate: true });
         window.GenericDleToolbarStarter.create(cfg({ markerId: 'btn-low', order: 0 })).injectToolbar({ alternate: true });
