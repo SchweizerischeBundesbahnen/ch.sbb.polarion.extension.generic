@@ -9,7 +9,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Objects;
 
 @UtilityClass
 public class ObjectUtils {
@@ -40,9 +39,8 @@ public class ObjectUtils {
     public static @NotNull <T> T requireNotNull(@Nullable T object, @NotNull String message) {
         if (object == null) {
             throw new IllegalStateException(message);
-        } else {
-            return Objects.requireNonNull(object);
         }
+        return object;
     }
 
     /**

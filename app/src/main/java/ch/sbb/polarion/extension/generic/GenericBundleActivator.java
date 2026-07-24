@@ -106,6 +106,7 @@ public abstract class GenericBundleActivator implements BundleActivator {
         registerExtensions(getExtensions());
     }
 
+    @SuppressWarnings("java:S5803")
     private void registerExtensions(@NotNull Map<String, IFormExtension> extensions) {
         // Serialize registration across bundles: several activators may cross the readiness barrier
         // at once, and FormExtensionsRegistry's backing map is not synchronized. Lock on a monitor
