@@ -1,5 +1,18 @@
 # Changelog
 
+## [15.7.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.6.0...v15.7.0) (2026-07-24)
+
+
+### Features
+
+* add rich page toolbar target to DLE engine ([#587](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/587)) ([37b99fc](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/37b99fccca680620ab45727f19f357b7d8c8c1c0)), closes [#582](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/582)
+* move shared DLE toolbar CSS into generic, fix button symmetry ([#594](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/594)) ([8f51e0a](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/8f51e0abf44bfe7afb64b84f7f229df70125d71e)), closes [#593](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/593)
+
+
+### Bug Fixes
+
+* keep injected DLE toolbar buttons in configured order ([#592](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/592)) ([9eb65db](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/9eb65db2124ef4d32a69648ebc576e492d06a7c5)), closes [#591](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/591)
+
 ## [15.6.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.5.0...v15.6.0) (2026-07-23)
 
 
