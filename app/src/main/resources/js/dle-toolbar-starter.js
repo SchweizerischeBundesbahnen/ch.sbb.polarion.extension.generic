@@ -335,8 +335,20 @@
             // The observer re-injects with the params of the latest injectToolbar() call.
             let lastParams;
 
+            // Claim ownership of this markerId. If a newer starter is created for the same markerId
+            // (e.g. two create() calls in one context), the older one becomes "superseded" and its
+            // async callbacks (a late permission result) must not touch the shared button — the newer
+            // owner is the source of truth. Prevents a stale instance from overwriting current state.
+            const instanceToken = {};
+            const ownerRegistry = top.__genericDleToolbarOwners || (top.__genericDleToolbarOwners = {});
+            ownerRegistry[config.markerId] = instanceToken;
+            const isCurrentOwner = () => ownerRegistry[config.markerId] === instanceToken;
+
             // Toggle the button's disabled state on the live element and for future (re-)injects.
             function setDisabled(disabled) {
+                if (!isCurrentOwner()) {
+                    return; // a newer starter instance owns this markerId — don't fight it
+                }
                 lastParams = Object.assign({}, lastParams, { disabled: disabled });
                 applyDisabled(top.document.getElementById(config.markerId), disabled);
             }

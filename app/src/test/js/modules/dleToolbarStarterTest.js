@@ -87,6 +87,8 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
         Object.keys(reg).forEach((k) => { try { reg[k].disconnect(); } catch { /* node gone */ } delete reg[k]; });
         const order = window.__genericDleToolbarOrder;
         if (order) Object.keys(order).forEach((k) => delete order[k]);
+        const owners = window.__genericDleToolbarOwners;
+        if (owners) Object.keys(owners).forEach((k) => delete owners[k]);
         // Release the shared auto-expand observer so each test starts from a clean slate.
         if (window.__genericRpeAutoExpandObserver) {
             window.__genericRpeAutoExpandObserver.disconnect();
@@ -457,6 +459,20 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
             starter.injectToolbar({ alternate: true });
             expect(document.getElementById('my-btn')).to.equal(null);
             starter.setDisabled(true); // element missing → applyDisabled early-returns, no error
+        });
+
+        it('a superseded starter instance does not apply setDisabled (newer owner wins)', function () {
+            document.body.innerHTML = dleHtml();
+            const oldStarter = window.GenericDleToolbarStarter.create(cfg());
+            oldStarter.injectToolbar({ alternate: true });
+            // A newer starter for the SAME markerId is created → it becomes the owner.
+            const newStarter = window.GenericDleToolbarStarter.create(cfg());
+            newStarter.injectToolbar({ alternate: true });
+
+            oldStarter.setDisabled(true);          // stale instance → must be a no-op
+            expect(isDisabled()).to.be.false;
+            newStarter.setDisabled(true);          // current owner → applies
+            expect(isDisabled()).to.be.true;
         });
 
         it('does not apply a permission result that resolves after destroy()', async function () {
