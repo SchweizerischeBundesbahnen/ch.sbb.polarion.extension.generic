@@ -164,20 +164,33 @@
         injectOwnStyles: injectOwnStyles,
 
         /**
-         * @param config {{ markerId: string, alternateHtml: string, defaultHtml: string, target: string|undefined, order: number|undefined }}
+         * @param config {{ markerId: string, alternateHtml: string, defaultHtml: string, target: string|undefined, order: number|undefined, permissionCheckUrl: string|undefined, permissionCheck: function|undefined }}
          *   markerId      unique id set on the injected element; also the idempotency/dedup key.
          *   alternateHtml markup injected into the toolbar row when injectToolbar({alternate: true}).
          *   defaultHtml   markup injected above the rich-text area otherwise ('dleEditor' target only).
          *   target        which Polarion toolbar to inject into: 'dleEditor' (default) or
-         *                 'richPagePreview'. The 'richPagePreview' target always injects into the
-         *                 toolbar row (alternateHtml), regardless of the alternate flag, and only
-         *                 while the page is in view (preview) mode.
+         *                 'richPagePreview' (works for the Live Report toolbar too). The
+         *                 'richPagePreview' target always injects into the toolbar row
+         *                 (alternateHtml), regardless of the alternate flag, and only while the page
+         *                 is in view (preview) mode.
+         *   permissionCheckUrl  optional: a URL the engine GETs to decide if the button is enabled.
+         *                 Expected JSON response { permitted: boolean }; permitted !== true (or a
+         *                 non-OK status / error) disables the button (fail-closed). Works for both
+         *                 targets (Live Doc and Live Report).
+         *   permissionCheck     optional: a function returning boolean|Promise<boolean>, used
+         *                 instead of permissionCheckUrl when given (e.g. to run the extension's own
+         *                 REST wrapper). While either check is pending the button is shown disabled.
          *
          *   SECURITY: alternateHtml / defaultHtml are written via innerHTML into the top Polarion
          *   frame, so they MUST be static, trusted markup. Never interpolate user-controlled data
          *   (document fields, work-item attributes, ...) into them without sanitizing it first.
          *
-         * @returns {{ injectToolbar: function, destroy: function }}
+         * @returns {{ injectToolbar: function, setDisabled: function, destroy: function }}
+         *   injectToolbar(params)  params.alternate → row injection; params.disabled → inject
+         *                          disabled. The latest params are re-used by the self-healing
+         *                          re-inject, so the disabled state survives toolbar re-renders.
+         *   setDisabled(bool)      toggle the disabled state on the live button and for future
+         *                          re-injects (call it when an async permission result arrives).
          */
         create: function (config) {
             const target = TARGETS[config.target || 'dleEditor'];
@@ -195,6 +208,37 @@
             const myOrder = domOrder(config.markerId, fallbackOrder);
             const orderByMarker = top.__genericDleToolbarOrder || (top.__genericDleToolbarOrder = {});
             orderByMarker[config.markerId] = myOrder;
+
+            // Toggle the disabled look/behavior on an injected container: the dleToolBarDisabled
+            // class (pointer-events: none) blocks the click regardless of the onclick baked into the
+            // button markup. Applied on every (re-)inject and by setDisabled() on the live element.
+            function applyDisabled(container, disabled) {
+                if (!container) {
+                    return;
+                }
+                if (disabled) {
+                    container.classList.add('dleToolBarDisabled');
+                    container.setAttribute('aria-disabled', 'true');
+                } else {
+                    container.classList.remove('dleToolBarDisabled');
+                    container.removeAttribute('aria-disabled');
+                }
+            }
+
+            // Optional engine-driven global permission check: permissionCheck (a function returning
+            // boolean|Promise<boolean>) takes precedence over permissionCheckUrl (GET → JSON
+            // { permitted: boolean }). Resolves to whether the button is permitted (enabled).
+            const hasPermissionCheck = !!(config.permissionCheck || config.permissionCheckUrl);
+            let permissionCheckStarted = false;
+
+            function runPermissionCheck() {
+                if (config.permissionCheck) {
+                    return Promise.resolve().then(config.permissionCheck);
+                }
+                return fetch(config.permissionCheckUrl, { credentials: 'same-origin' })
+                    .then(response => response.ok ? response.json() : { permitted: false })
+                    .then(data => !!(data && data.permitted));
+            }
 
             // Idempotent: only inject if the toolbar exists and our button isn't already there.
             function inject(params) {
@@ -214,6 +258,7 @@
                     // so injected buttons line up with the native ones.
                     toolbarContainer.style.verticalAlign = 'middle';
                     toolbarContainer.innerHTML = config.alternateHtml;
+                    applyDisabled(toolbarContainer, params && params.disabled);
                     const spacer = toolbarParent.querySelector('td[width="100%"]');
                     if (!spacer) {
                         // Polarion DOM changed (e.g. after an upgrade) — fall back to appending at the
@@ -241,6 +286,7 @@
                     toolbarContainer.classList.add("dleToolBarContainer");
                     toolbarContainer.style.marginRight = "14px";
                     toolbarContainer.innerHTML = config.defaultHtml;
+                    applyDisabled(toolbarContainer, params && params.disabled);
                     documentFrame.parentNode.parentNode.prepend(toolbarContainer);
                 }
             }
@@ -249,10 +295,30 @@
             // The observer re-injects with the params of the latest injectToolbar() call.
             let lastParams;
 
+            // Toggle the button's disabled state on the live element and for future (re-)injects.
+            function setDisabled(disabled) {
+                lastParams = Object.assign({}, lastParams, { disabled: disabled });
+                applyDisabled(top.document.getElementById(config.markerId), disabled);
+            }
+
             return {
                 injectToolbar: function (params) {
+                    // When a permission check is configured, inject disabled first (no
+                    // enabled→disabled flicker) and resolve the real state asynchronously.
+                    if (hasPermissionCheck && !permissionCheckStarted) {
+                        params = Object.assign({}, params, { disabled: true });
+                    }
                     lastParams = params;
                     inject(params);
+
+                    // Kick off the global permission check once; on error keep it disabled
+                    // (fail-closed — a check that can't confirm access denies it).
+                    if (hasPermissionCheck && !permissionCheckStarted) {
+                        permissionCheckStarted = true;
+                        runPermissionCheck()
+                            .then(permitted => setDisabled(!permitted))
+                            .catch(() => setDisabled(true));
+                    }
 
                     // Set up the self-healing observer once per starter instance.
                     if (observerSetUp) {
@@ -284,6 +350,8 @@
                     observerRegistry[config.markerId] = observer;
                     observer.observe(anchor, { childList: true, subtree: true });
                 },
+
+                setDisabled: setDisabled,
 
                 // Stop self-healing and release the observer (for callers that have a teardown hook).
                 destroy: function () {

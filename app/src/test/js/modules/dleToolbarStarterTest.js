@@ -267,6 +267,142 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
         expect(document.getElementById('my-btn')).to.equal(null);
     });
 
+    describe('disabled state & permission check', function () {
+        const isDisabled = () => {
+            const el = document.getElementById('my-btn');
+            return el.classList.contains('dleToolBarDisabled') && el.getAttribute('aria-disabled') === 'true';
+        };
+        // Let the pending permission promise(s) settle before asserting.
+        const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+        it('injects disabled when injectToolbar({disabled: true})', function () {
+            document.body.innerHTML = dleHtml();
+            window.GenericDleToolbarStarter.create(cfg()).injectToolbar({ alternate: true, disabled: true });
+            expect(isDisabled()).to.be.true;
+        });
+
+        it('injects enabled by default and setDisabled toggles the live button both ways', function () {
+            document.body.innerHTML = dleHtml();
+            const starter = window.GenericDleToolbarStarter.create(cfg());
+            starter.injectToolbar({ alternate: true });
+            expect(isDisabled()).to.be.false;
+            starter.setDisabled(true);
+            expect(isDisabled()).to.be.true;
+            starter.setDisabled(false);
+            expect(isDisabled()).to.be.false;
+        });
+
+        it('keeps the disabled state across a self-healing re-inject', async function () {
+            document.body.innerHTML = dleHtml();
+            const starter = window.GenericDleToolbarStarter.create(cfg());
+            starter.injectToolbar({ alternate: true });
+            starter.setDisabled(true);
+
+            document.getElementById('my-btn').remove();                       // GWT wipes the button
+            document.querySelector('div.polarion-dle-Container').appendChild(document.createElement('span'));
+            await flushObserver();
+            rafCallbacks.forEach((cb) => cb());
+            expect(isDisabled()).to.be.true;                                  // healed AND still disabled
+        });
+
+        it('permissionCheck(): disables when it resolves false', async function () {
+            document.body.innerHTML = dleHtml();
+            window.GenericDleToolbarStarter.create(cfg({ permissionCheck: () => Promise.resolve(false) }))
+                .injectToolbar({ alternate: true });
+            expect(isDisabled()).to.be.true;                                  // disabled while pending
+            await flushPromises();
+            expect(isDisabled()).to.be.true;                                  // stays disabled — not permitted
+        });
+
+        it('permissionCheck(): enables when it resolves true', async function () {
+            document.body.innerHTML = dleHtml();
+            window.GenericDleToolbarStarter.create(cfg({ permissionCheck: () => Promise.resolve(true) }))
+                .injectToolbar({ alternate: true });
+            expect(isDisabled()).to.be.true;                                  // disabled while pending (no flicker)
+            await flushPromises();
+            expect(isDisabled()).to.be.false;                                 // enabled — permitted
+        });
+
+        it('permissionCheck(): fail-closed when it rejects', async function () {
+            document.body.innerHTML = dleHtml();
+            window.GenericDleToolbarStarter.create(cfg({ permissionCheck: () => Promise.reject(new Error('boom')) }))
+                .injectToolbar({ alternate: true });
+            await flushPromises();
+            expect(isDisabled()).to.be.true;
+        });
+
+        it('permissionCheckUrl(): enables on { permitted: true }', async function () {
+            document.body.innerHTML = dleHtml();
+            global.fetch = sinon.stub().resolves({ ok: true, json: () => Promise.resolve({ permitted: true }) });
+            try {
+                window.GenericDleToolbarStarter.create(cfg({ permissionCheckUrl: '/perm' })).injectToolbar({ alternate: true });
+                await flushPromises();
+                expect(global.fetch.calledOnceWith('/perm')).to.be.true;
+                expect(isDisabled()).to.be.false;
+            } finally {
+                delete global.fetch;
+            }
+        });
+
+        it('permissionCheckUrl(): disables on { permitted: false }', async function () {
+            document.body.innerHTML = dleHtml();
+            global.fetch = sinon.stub().resolves({ ok: true, json: () => Promise.resolve({ permitted: false }) });
+            try {
+                window.GenericDleToolbarStarter.create(cfg({ permissionCheckUrl: '/perm' })).injectToolbar({ alternate: true });
+                await flushPromises();
+                expect(isDisabled()).to.be.true;
+            } finally {
+                delete global.fetch;
+            }
+        });
+
+        it('permissionCheckUrl(): fail-closed on a non-OK response', async function () {
+            document.body.innerHTML = dleHtml();
+            global.fetch = sinon.stub().resolves({ ok: false, json: () => Promise.resolve({}) });
+            try {
+                window.GenericDleToolbarStarter.create(cfg({ permissionCheckUrl: '/perm' })).injectToolbar({ alternate: true });
+                await flushPromises();
+                expect(isDisabled()).to.be.true;
+            } finally {
+                delete global.fetch;
+            }
+        });
+
+        it('permissionCheck takes precedence over permissionCheckUrl', async function () {
+            document.body.innerHTML = dleHtml();
+            global.fetch = sinon.stub().resolves({ ok: true, json: () => Promise.resolve({ permitted: false }) });
+            try {
+                window.GenericDleToolbarStarter.create(cfg({
+                    permissionCheck: () => true,
+                    permissionCheckUrl: '/perm'
+                })).injectToolbar({ alternate: true });
+                await flushPromises();
+                expect(global.fetch.called).to.be.false;   // URL not used
+                expect(isDisabled()).to.be.false;           // function said permitted
+            } finally {
+                delete global.fetch;
+            }
+        });
+
+        it('setDisabled is a no-op (no throw) when the button is not currently in the DOM', function () {
+            document.body.innerHTML = dleHtml({ toolbar: false }); // toolbar absent → nothing injected
+            const starter = window.GenericDleToolbarStarter.create(cfg());
+            starter.injectToolbar({ alternate: true });
+            expect(document.getElementById('my-btn')).to.equal(null);
+            starter.setDisabled(true); // element missing → applyDisabled early-returns, no error
+        });
+
+        it('runs the permission check only once across re-injects', async function () {
+            document.body.innerHTML = dleHtml();
+            const check = sinon.stub().resolves(true);
+            const starter = window.GenericDleToolbarStarter.create(cfg({ permissionCheck: check }));
+            starter.injectToolbar({ alternate: true });
+            starter.injectToolbar({ alternate: true });
+            await flushPromises();
+            expect(check.calledOnce).to.be.true;
+        });
+    });
+
     it('re-injects the button when the toolbar re-renders (self-healing observer)', async function () {
         document.body.innerHTML = dleHtml();
         const starter = window.GenericDleToolbarStarter.create(cfg());
