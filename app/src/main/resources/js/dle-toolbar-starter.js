@@ -86,27 +86,39 @@
             container.setAttribute('aria-disabled', 'true');
             container.addEventListener('click', blockClick, true);
             interactive.forEach(el => {
-                el.setAttribute('aria-disabled', 'true');
+                // Remember the element's own aria-disabled / tabindex (if any) so re-enabling
+                // restores the markup's values instead of clobbering them.
+                if (!el.hasAttribute('data-generic-prev-aria-disabled')) {
+                    el.setAttribute('data-generic-prev-aria-disabled', el.getAttribute('aria-disabled') || '');
+                }
                 if (!el.hasAttribute('data-generic-prev-tabindex')) {
                     el.setAttribute('data-generic-prev-tabindex', el.getAttribute('tabindex') || '');
                 }
+                el.setAttribute('aria-disabled', 'true');
                 el.setAttribute('tabindex', '-1');
             });
         } else {
             container.classList.remove('dleToolBarDisabled');
             container.removeAttribute('aria-disabled');
             interactive.forEach(el => {
-                el.removeAttribute('aria-disabled');
-                if (el.hasAttribute('data-generic-prev-tabindex')) {
-                    const prev = el.getAttribute('data-generic-prev-tabindex');
-                    el.removeAttribute('data-generic-prev-tabindex');
-                    if (prev === '') {
-                        el.removeAttribute('tabindex');
-                    } else {
-                        el.setAttribute('tabindex', prev);
-                    }
-                }
+                restoreAttr(el, 'aria-disabled', 'data-generic-prev-aria-disabled');
+                restoreAttr(el, 'tabindex', 'data-generic-prev-tabindex');
             });
+        }
+    }
+
+    // Restore an attribute the engine overrode from its saved-original data attribute: put back the
+    // original value, or remove the attribute if it had none originally. No-op if nothing was saved.
+    function restoreAttr(el, attr, savedAttr) {
+        if (!el.hasAttribute(savedAttr)) {
+            return;
+        }
+        const prev = el.getAttribute(savedAttr);
+        el.removeAttribute(savedAttr);
+        if (prev === '') {
+            el.removeAttribute(attr);
+        } else {
+            el.setAttribute(attr, prev);
         }
     }
 

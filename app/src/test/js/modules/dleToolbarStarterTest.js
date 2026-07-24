@@ -325,6 +325,27 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
             expect(inner.getAttribute('tabindex')).to.equal('0');   // original tabindex restored
         });
 
+        it("preserves the markup's own aria-disabled on re-enable instead of clobbering it", function () {
+            document.body.innerHTML = dleHtml();
+            const starter = window.GenericDleToolbarStarter.create(cfg({
+                alternateHtml: '<button id="inner" aria-disabled="true">A</button>' // extension owns aria-disabled
+            }));
+            starter.injectToolbar({ alternate: true, disabled: true });
+            expect(document.getElementById('inner').getAttribute('aria-disabled')).to.equal('true');
+            starter.setDisabled(false);
+            // engine restores the markup's original value, does not remove it
+            expect(document.getElementById('inner').getAttribute('aria-disabled')).to.equal('true');
+        });
+
+        it('removes an aria-disabled it added when the element had none originally', function () {
+            document.body.innerHTML = dleHtml();
+            const starter = window.GenericDleToolbarStarter.create(cfg({ alternateHtml: '<button id="inner">A</button>' }));
+            starter.injectToolbar({ alternate: true, disabled: true });
+            expect(document.getElementById('inner').getAttribute('aria-disabled')).to.equal('true');
+            starter.setDisabled(false);
+            expect(document.getElementById('inner').hasAttribute('aria-disabled')).to.be.false;
+        });
+
         it('removes a tabindex it added when the element had none originally', function () {
             document.body.innerHTML = dleHtml();
             const starter = window.GenericDleToolbarStarter.create(cfg({
