@@ -91,6 +91,54 @@
     // The "Expand Tools" handle of a collapsed Rich Page toolbar (see autoExpandRichPageTools).
     const EXPAND_TOOLS_SELECTOR = 'div.polarion-rpe-expandTools';
 
+    // Derive a button's left-to-right order from the DOM position of its extension's own inject
+    // script, rather than from config.order.
+    //
+    // Why: several extensions each configure a single-tag injector (…/<ext>/js/dle-toolbar.js or
+    // live-reports.js) in the SAME scriptInjection property, in a deliberate order. Each injector
+    // then ASYNCHRONOUSLY loads its own starter.js, whose stub captures a sequence number when it
+    // finally runs — inside starter.js's onload. Those onloads fire in network-race order, so the
+    // captured config.order does NOT reflect the configured order (the buttons visibly reshuffle
+    // between reloads). Polarion, by contrast, inserts the injector <script> tags into the page in
+    // scriptInjection order and they stay put, so their DOM position IS a stable, deterministic
+    // reflection of the configured order. This runs in the same document as those scripts (the DLE
+    // editor iframe for dleEditor, the top page for richPagePreview), so it can read them directly.
+    //
+    // markerId convention: it starts with the extension's web-context segment (e.g. the button
+    // 'pdf-exporter-toolbar-injected' belongs to '/polarion/pdf-exporter/...'). Falls back to the
+    // caller-supplied order when no matching inject script is found (e.g. deprecated inline config).
+    const INJECT_SCRIPT_RE = /\/js\/(?:dle-toolbar|starter|live-reports)\.js/;
+    const EXT_CONTEXT_RE = /\/polarion\/([^/]+)\/(?:ui\/[^/]+\/)?js\//;
+
+    function domOrder(markerId, fallback) {
+        // Collect the distinct extension web-context segments from the inject scripts, in DOM order
+        // (which Polarion keeps equal to the configured order). The generic engine script itself
+        // (…/js/dle-toolbar-starter.js) is excluded by INJECT_SCRIPT_RE.
+        const seen = new Set(), contexts = [];
+        for (const script of document.querySelectorAll('script[src]')) {
+            const src = script.getAttribute('src'); // the [src] selector guarantees a string
+            if (!INJECT_SCRIPT_RE.test(src)) {
+                continue;
+            }
+            const match = EXT_CONTEXT_RE.exec(src);
+            const ctx = match && match[1];
+            if (ctx && !seen.has(ctx)) {
+                seen.add(ctx);
+                contexts.push(ctx);
+            }
+        }
+        // markerId starts with its extension context; pick the longest matching prefix so a more
+        // specific context wins (e.g. a hypothetical 'pdf-exporter-rp' over 'pdf-exporter').
+        let bestIndex = -1, bestLength = -1;
+        for (let i = 0; i < contexts.length; i++) {
+            if (markerId.indexOf(contexts[i]) === 0 && contexts[i].length > bestLength) {
+                bestIndex = i;
+                bestLength = contexts[i].length;
+            }
+        }
+        return bestIndex >= 0 ? bestIndex : fallback;
+    }
+
     // Registry of live observers keyed by markerId, kept on the top window so it survives this
     // script being re-loaded each time the DLE editor is (re-)opened in Polarion's GWT SPA.
     // Re-using the key lets us disconnect the previous observer instead of accumulating them.
@@ -122,13 +170,14 @@
                 throw new Error(`GenericDleToolbarStarter: unknown target '${config.target}'.`);
             }
 
-            // Stable left-to-right order across re-renders. Each button keeps the order it was
-            // registered with (config.order — the config-execution order); re-injection inserts
-            // before the first already-present button with a *higher* order. Buttons with distinct
-            // orders keep their position regardless of which extension's observer re-fires first;
-            // buttons sharing an order (e.g. callers that omit it → default 0) tie-break by
-            // observer-fire order, so distinct orders are required for full determinism.
-            const myOrder = (typeof config.order === 'number') ? config.order : 0;
+            // Stable left-to-right order across re-renders. Re-injection inserts before the first
+            // already-present button with a *higher* order. The order is derived from the DOM
+            // position of the extension's own inject script (deterministic, = configured order),
+            // falling back to config.order when that can't be resolved (see domOrder). Buttons with
+            // distinct orders keep their position regardless of which extension's observer re-fires
+            // first; buttons sharing an order tie-break by observer-fire order.
+            const fallbackOrder = (typeof config.order === 'number') ? config.order : 0;
+            const myOrder = domOrder(config.markerId, fallbackOrder);
             const orderByMarker = top.__genericDleToolbarOrder || (top.__genericDleToolbarOrder = {});
             orderByMarker[config.markerId] = myOrder;
 

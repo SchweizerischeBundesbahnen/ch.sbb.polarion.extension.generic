@@ -139,13 +139,112 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
         expect(warn.firstCall.args[0]).to.contain('my-btn');
     });
 
-    it('keeps a stable order — a lower-order button is inserted before a higher-order one', function () {
+    // Add the extensions' single-tag inject scripts to <head> in configured order — Polarion keeps
+    // their DOM position equal to the scriptInjection order, and the engine derives the button
+    // order from it (see domOrder).
+    function addInjectScripts(...contexts) {
+        for (const ctx of contexts) {
+            const s = document.createElement('script');
+            s.setAttribute('src', `/polarion/${ctx}/js/dle-toolbar.js?timestamp=1`);
+            document.head.appendChild(s);
+        }
+    }
+
+    function addScript(src) {
+        const s = document.createElement('script');
+        if (src !== null) {
+            s.setAttribute('src', src);
+        }
+        document.head.appendChild(s);
+    }
+
+    it('orders buttons by the DOM position of their inject scripts, ignoring a race-prone config.order', function () {
+        document.body.innerHTML = dleHtml();
+        // Scripts are in configured order pdf, docx, strictdoc...
+        addInjectScripts('pdf-exporter', 'docx-exporter', 'strictdoc-exporter');
+        // ...but the create() calls arrive in onload-race order (reversed) with misleading orders.
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'strictdoc-exporter-toolbar-injected', order: 1 })).injectToolbar({ alternate: true });
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'docx-exporter-toolbar-injected', order: 2 })).injectToolbar({ alternate: true });
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'pdf-exporter-toolbar-injected', order: 3 })).injectToolbar({ alternate: true });
+
+        const ids = [...document.querySelector('table.polarion-dle-ToolbarPanel tr').children].map(c => c.id).filter(Boolean);
+        expect(ids).to.deep.equal(['pdf-exporter-toolbar-injected', 'docx-exporter-toolbar-injected', 'strictdoc-exporter-toolbar-injected']);
+    });
+
+    it('heals to the configured order after a re-render regardless of re-inject timing', function () {
+        document.body.innerHTML = dleHtml();
+        addInjectScripts('pdf-exporter', 'docx-exporter');
+        const pdf = window.GenericDleToolbarStarter.create(cfg({ markerId: 'pdf-exporter-toolbar-injected', order: 5 }));
+        const docx = window.GenericDleToolbarStarter.create(cfg({ markerId: 'docx-exporter-toolbar-injected', order: 0 }));
+        pdf.injectToolbar({ alternate: true });
+        docx.injectToolbar({ alternate: true });
+        // GWT wipes both, then docx re-injects before pdf — order must still be pdf, docx.
+        document.getElementById('pdf-exporter-toolbar-injected').remove();
+        document.getElementById('docx-exporter-toolbar-injected').remove();
+        docx.injectToolbar({ alternate: true });
+        pdf.injectToolbar({ alternate: true });
+
+        const ids = [...document.querySelector('table.polarion-dle-ToolbarPanel tr').children].map(c => c.id).filter(Boolean);
+        expect(ids).to.deep.equal(['pdf-exporter-toolbar-injected', 'docx-exporter-toolbar-injected']);
+    });
+
+    it('falls back to config.order when no inject script matches (deprecated inline config)', function () {
         document.body.innerHTML = dleHtml();
         window.GenericDleToolbarStarter.create(cfg({ markerId: 'btn-high', order: 10 })).injectToolbar({ alternate: true });
         window.GenericDleToolbarStarter.create(cfg({ markerId: 'btn-low', order: 0 })).injectToolbar({ alternate: true });
 
         const ids = [...document.querySelector('table.polarion-dle-ToolbarPanel tr').children].map((c) => c.id);
         expect(ids.indexOf('btn-low')).to.be.lessThan(ids.indexOf('btn-high')); // low sits before high
+    });
+
+    it('ignores non-inject scripts (engine script, empty/foreign src) when deriving the order', function () {
+        document.body.innerHTML = dleHtml();
+        addScript(null);                                                          // src-less <script>
+        addScript('/polarion/pdf-exporter/ui/generic/js/dle-toolbar-starter.js'); // the engine itself
+        addScript('/some/unrelated/app.js');                                      // foreign script
+        addInjectScripts('pdf-exporter', 'docx-exporter');                        // the real injectors
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'docx-exporter-toolbar-injected', order: 9 })).injectToolbar({ alternate: true });
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'pdf-exporter-toolbar-injected', order: 9 })).injectToolbar({ alternate: true });
+
+        const ids = [...document.querySelector('table.polarion-dle-ToolbarPanel tr').children].map(c => c.id).filter(Boolean);
+        expect(ids).to.deep.equal(['pdf-exporter-toolbar-injected', 'docx-exporter-toolbar-injected']);
+    });
+
+    it('dedupes multiple inject scripts of the same extension (dle-toolbar.js + starter.js)', function () {
+        document.body.innerHTML = dleHtml();
+        // Each extension ships both a dle-toolbar.js and a starter.js — they must count as one context.
+        addScript('/polarion/pdf-exporter/js/dle-toolbar.js');
+        addScript('/polarion/pdf-exporter/js/starter.js');
+        addScript('/polarion/docx-exporter/js/dle-toolbar.js');
+        addScript('/polarion/docx-exporter/js/starter.js');
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'docx-exporter-toolbar-injected' })).injectToolbar({ alternate: true });
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'pdf-exporter-toolbar-injected' })).injectToolbar({ alternate: true });
+
+        const ids = [...document.querySelector('table.polarion-dle-ToolbarPanel tr').children].map(c => c.id).filter(Boolean);
+        expect(ids).to.deep.equal(['pdf-exporter-toolbar-injected', 'docx-exporter-toolbar-injected']);
+    });
+
+    it('is not confused by a context named like an Object prototype key', function () {
+        document.body.innerHTML = dleHtml();
+        // 'constructor' as an extension context must be treated as a normal, distinct segment
+        // (regression guard for using a Set rather than a plain-object seen-map).
+        addInjectScripts('constructor', 'pdf-exporter');
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'pdf-exporter-toolbar-injected' })).injectToolbar({ alternate: true });
+        window.GenericDleToolbarStarter.create(cfg({ markerId: 'constructor-toolbar-injected' })).injectToolbar({ alternate: true });
+
+        const ids = [...document.querySelector('table.polarion-dle-ToolbarPanel tr').children].map(c => c.id).filter(Boolean);
+        expect(ids).to.deep.equal(['constructor-toolbar-injected', 'pdf-exporter-toolbar-injected']);
+    });
+
+    it('picks the longest matching context prefix for the markerId', function () {
+        document.body.innerHTML = dleHtml();
+        // Two extensions whose contexts both prefix the marker id; the longer, more specific one wins.
+        addInjectScripts('pdf-exporter', 'pdf-exporter-plus');
+        const order = window.GenericDleToolbarStarter
+            .create(cfg({ markerId: 'pdf-exporter-plus-toolbar-injected', order: 99 }));
+        order.injectToolbar({ alternate: true });
+        // 'pdf-exporter-plus' is at DOM index 1 → the button records order 1, not 0 (the shorter match).
+        expect(window.__genericDleToolbarOrder['pdf-exporter-plus-toolbar-injected']).to.equal(1);
     });
 
     it('injects the default button as a div above the rich-text area', function () {
@@ -202,6 +301,20 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
         document.body.appendChild(document.createElement('span'));
         await flushObserver();
         expect(rafCallbacks.length).to.be.greaterThan(0); // observing body works
+    });
+
+    it('sets up no observer when neither the stable ancestor nor document.body exist', function () {
+        document.body.innerHTML = '';
+        // Both the ancestor selector and top.document.body resolve to nothing.
+        const realBody = document.body;
+        Object.defineProperty(document, 'body', { configurable: true, get: () => null });
+        try {
+            const starter = window.GenericDleToolbarStarter.create(cfg());
+            starter.injectToolbar({ alternate: true });
+            expect(reg['my-btn']).to.be.undefined; // no anchor → observer not installed
+        } finally {
+            Object.defineProperty(document, 'body', { configurable: true, get: () => realBody });
+        }
     });
 
     it('destroy() disconnects the observer and drops it from the registry', function () {
@@ -380,6 +493,36 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
             const observer = window.__genericRpeAutoExpandObserver;
             window.GenericDleToolbarStarter.autoExpandRichPageTools();
             expect(window.__genericRpeAutoExpandObserver).to.equal(observer);
+        });
+
+        it('coalesces mutations across observer callbacks into a single expand check', async function () {
+            document.body.innerHTML = '';
+            window.GenericDleToolbarStarter.autoExpandRichPageTools();
+
+            // Two mutation bursts in separate observer callbacks, before the queued frame runs:
+            // the second callback must early-return on the `scheduled` guard, not queue a 2nd rAF.
+            document.body.appendChild(document.createElement('span'));
+            await flushObserver();                                  // callback 1 → schedules one rAF
+            document.body.appendChild(document.createElement('span'));
+            await flushObserver();                                  // callback 2 → scheduled → returns
+            expect(rafCallbacks.length).to.equal(1);
+        });
+
+        it('defers until the body exists when invoked from a head injection', function () {
+            // Simulate a script running before <body> is parsed: body is momentarily absent.
+            const realBody = document.body;
+            Object.defineProperty(document, 'body', { configurable: true, get: () => null });
+            try {
+                window.GenericDleToolbarStarter.autoExpandRichPageTools();
+            } finally {
+                Object.defineProperty(document, 'body', { configurable: true, get: () => realBody });
+            }
+            // The observer isn't observing yet; it starts on DOMContentLoaded.
+            realBody.innerHTML = rpeHtml({ toolbar: false, expandHandle: true });
+            const clicked = sinon.spy();
+            document.querySelector('.polarion-rpe-expandTools').addEventListener('click', clicked);
+            document.dispatchEvent(new window.Event('DOMContentLoaded'));
+            expect(clicked.calledOnce).to.be.true;
         });
     });
 
