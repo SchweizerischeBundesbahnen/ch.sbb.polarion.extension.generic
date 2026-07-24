@@ -75,3 +75,12 @@
 .dleToolBarContainer .dleToolBarRightButton {
     margin-right: 5px;
 }
+
+/* Disabled state (e.g. when the user is not permitted to export). The engine adds this class to
+   the injected container; pointer-events: none blocks the click regardless of the onclick baked
+   into the button markup, and the faded look matches Polarion's own disabled toolbar buttons. */
+.dleToolBarDisabled {
+    opacity: .4;
+    pointer-events: none;
+    cursor: default;
+}

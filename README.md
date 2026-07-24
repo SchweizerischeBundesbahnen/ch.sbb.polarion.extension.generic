@@ -801,7 +801,11 @@ of writing the injection logic in every extension. The engine knows the toolbar 
 user clicks *Save* — so the button does not disappear (a one-time injection otherwise would).
 
 The engine is served to each extension at `/polarion/<extension>/ui/generic/js/dle-toolbar-starter.js`
-and exposes `window.GenericDleToolbarStarter.create({ markerId, alternateHtml, defaultHtml, order })`.
+and exposes `window.GenericDleToolbarStarter.create({ markerId, alternateHtml, defaultHtml, target,
+order, permissionCheckUrl, permissionCheck })`, which returns `{ injectToolbar, setDisabled, destroy }`.
+The same engine also drives the **Live Report** (Rich Page) toolbar — pass `target: 'richPagePreview'`
+(see below); everything here, including disabling, works for both toolbars. It also injects the shared
+toolbar-button stylesheet (`css/dle-toolbar.css`) itself, so you don't ship those `.dleToolBar*` rules.
 
 Add a thin `starter.js` to your extension's webapp that supplies only the extension-specific parts
 (button markup, a unique `markerId`, any css/js the button needs) and bootstraps the engine:
@@ -876,3 +880,52 @@ To change the order, reorder the `injectToolbar` lines in `dleEditorHead`. Note 
 **distinct** `order` values: buttons that share the same `order` (including any caller that omits it — it
 defaults to `0`) tie-break by observer-fire order, i.e. non-deterministically, exactly as before this
 mechanism existed.
+
+#### Disabling the button (permission-gated actions)
+
+When the button's action isn't always available — e.g. the user isn't permitted to export — inject it
+**disabled** instead of clickable. The disabled state is kept by the engine and re-applied on every
+self-healing re-injection (so it survives toolbar re-renders), and the click is blocked via a
+`pointer-events: none` class regardless of the `onclick` baked into your button markup. This works the
+same for the Live Doc (`dleEditor`) and Live Report (`richPagePreview`) toolbars.
+
+There are two ways to use it.
+
+**1. Let the engine run a global permission check.** Pass either a URL or a function to `create(...)`:
+
+```js
+// The engine GETs the URL and expects JSON { "permitted": boolean }.
+// permitted !== true, a non-OK HTTP status, or an error → the button stays disabled (fail-closed).
+generic.create({
+    markerId: 'my-extension-toolbar-injected',
+    alternateHtml: ALTERNATE_TOOLBAR_HTML,
+    defaultHtml: TOOLBAR_HTML,
+    permissionCheckUrl: '/polarion/my-extension/rest/internal/permissions/export'
+}).injectToolbar({ alternate: true });
+
+// ...or run the check yourself (custom headers, your own REST wrapper, extra context):
+generic.create({
+    markerId: 'my-extension-toolbar-injected',
+    alternateHtml: ALTERNATE_TOOLBAR_HTML,
+    defaultHtml: TOOLBAR_HTML,
+    permissionCheck: () => ctx.callAsync({ method: 'GET', url: '…' }).then(r => r.response.permitted)
+}).injectToolbar({ alternate: true });
+```
+
+While the check is pending the button is shown **disabled**, so it never flickers enabled→disabled;
+it becomes clickable only once the check confirms access. `permissionCheck` (a function returning
+`boolean | Promise<boolean>`) takes precedence over `permissionCheckUrl` if both are given. If neither
+is configured the button is enabled, as before.
+
+**2. Toggle it yourself.** `create(...)` returns a `setDisabled(bool)` method, and `injectToolbar`
+accepts a `disabled` flag — use these if you resolve the permission on your own schedule:
+
+```js
+const starter = generic.create({ markerId: '…', alternateHtml: ALTERNATE_TOOLBAR_HTML, defaultHtml: TOOLBAR_HTML });
+starter.injectToolbar({ alternate: true, disabled: true });   // start disabled
+myPermissionCheck().then(allowed => starter.setDisabled(!allowed));   // enable/disable later
+```
+
+The backend endpoint (or whatever decides *whether* the action is permitted) is owned by your
+extension; the engine only renders and preserves the disabled look. The disabled styling lives in the
+shared `css/dle-toolbar.css` as `.dleToolBarDisabled`.
