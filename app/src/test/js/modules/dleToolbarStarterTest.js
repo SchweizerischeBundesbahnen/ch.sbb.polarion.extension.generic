@@ -308,6 +308,46 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
             expect(onClick.calledOnce).to.be.true;  // enabled again → click passes through
         });
 
+        it('marks inner interactive elements aria-disabled and drops them from the tab order', function () {
+            document.body.innerHTML = dleHtml();
+            const starter = window.GenericDleToolbarStarter.create(cfg({
+                alternateHtml: '<div id="inner" role="button" tabindex="0">A</div>'
+            }));
+            starter.injectToolbar({ alternate: true, disabled: true });
+            const inner = document.getElementById('inner');
+            expect(inner.getAttribute('aria-disabled')).to.equal('true');
+            expect(inner.getAttribute('tabindex')).to.equal('-1');
+
+            starter.setDisabled(false);
+            expect(inner.hasAttribute('aria-disabled')).to.be.false;
+            expect(inner.getAttribute('tabindex')).to.equal('0');   // original tabindex restored
+        });
+
+        it('removes a tabindex it added when the element had none originally', function () {
+            document.body.innerHTML = dleHtml();
+            const starter = window.GenericDleToolbarStarter.create(cfg({
+                alternateHtml: '<button id="inner">A</button>' // no tabindex to begin with
+            }));
+            starter.injectToolbar({ alternate: true, disabled: true });
+            expect(document.getElementById('inner').getAttribute('tabindex')).to.equal('-1');
+            starter.setDisabled(false);
+            expect(document.getElementById('inner').hasAttribute('tabindex')).to.be.false;
+        });
+
+        it('destroy() clears the disabled state and its click blocker from the element', function () {
+            document.body.innerHTML = dleHtml();
+            const starter = window.GenericDleToolbarStarter.create(cfg({ alternateHtml: '<button id="inner">A</button>' }));
+            starter.injectToolbar({ alternate: true, disabled: true });
+            const inner = document.getElementById('inner');
+            const onClick = sinon.spy();
+            inner.addEventListener('click', onClick);
+
+            starter.destroy();
+            expect(document.getElementById('my-btn').classList.contains('dleToolBarDisabled')).to.be.false;
+            inner.click();
+            expect(onClick.calledOnce).to.be.true;   // blocker removed → click passes
+        });
+
         it('a later injectToolbar() without disabled keeps a previously set disabled state', function () {
             document.body.innerHTML = dleHtml();
             const starter = window.GenericDleToolbarStarter.create(cfg());

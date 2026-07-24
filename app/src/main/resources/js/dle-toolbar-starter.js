@@ -58,6 +58,57 @@
         }
     }
 
+    // Capture-phase click swallower for the disabled state: pointer-events: none already blocks the
+    // mouse; this additionally stops a keyboard- or script-triggered click from reaching the
+    // button's baked-in onclick. Module-level (stateless) so a single shared reference add/removes
+    // consistently on ANY element — including a stale panel's button kept across an SPA navigation,
+    // whose listener a later enable must be able to clear regardless of which starter instance runs.
+    function blockClick(event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    // Toggle the disabled look/behavior on an injected container and its inner interactive elements:
+    // the dleToolBarDisabled class fades it and blocks the mouse (pointer-events: none, an inherited
+    // property, so it reaches descendants too); the capture-phase blocker covers keyboard/scripted
+    // clicks; aria-disabled + tabindex=-1 on inner [role=button]/button/a announce the disabled state
+    // to assistive tech and drop it from the tab order. So the click is stopped regardless of the
+    // onclick baked into the button markup.
+    function applyDisabled(container, disabled) {
+        if (!container) {
+            return;
+        }
+        container.removeEventListener('click', blockClick, true);
+        const interactive = container.querySelectorAll('[role="button"], button, a');
+        if (disabled) {
+            container.classList.add('dleToolBarDisabled');
+            container.setAttribute('aria-disabled', 'true');
+            container.addEventListener('click', blockClick, true);
+            interactive.forEach(el => {
+                el.setAttribute('aria-disabled', 'true');
+                if (!el.hasAttribute('data-generic-prev-tabindex')) {
+                    el.setAttribute('data-generic-prev-tabindex', el.getAttribute('tabindex') || '');
+                }
+                el.setAttribute('tabindex', '-1');
+            });
+        } else {
+            container.classList.remove('dleToolBarDisabled');
+            container.removeAttribute('aria-disabled');
+            interactive.forEach(el => {
+                el.removeAttribute('aria-disabled');
+                if (el.hasAttribute('data-generic-prev-tabindex')) {
+                    const prev = el.getAttribute('data-generic-prev-tabindex');
+                    el.removeAttribute('data-generic-prev-tabindex');
+                    if (prev === '') {
+                        el.removeAttribute('tabindex');
+                    } else {
+                        el.setAttribute('tabindex', prev);
+                    }
+                }
+            });
+        }
+    }
+
     // GWT shows/hides widgets with inline styles; a widget is effectively hidden when it or any
     // ancestor carries inline display:none / visibility:hidden (e.g. a stale Rich Page panel kept
     // in the DOM during an SPA transition).
@@ -209,34 +260,6 @@
             const orderByMarker = top.__genericDleToolbarOrder || (top.__genericDleToolbarOrder = {});
             orderByMarker[config.markerId] = myOrder;
 
-            // Capture-phase click swallower for the disabled state: pointer-events: none already
-            // blocks the mouse, and this additionally stops a keyboard- or script-triggered click
-            // from reaching the button's baked-in onclick. Stable reference so it can be removed.
-            function blockClick(event) {
-                event.stopPropagation();
-                event.preventDefault();
-            }
-
-            // Toggle the disabled look/behavior on an injected container: the dleToolBarDisabled
-            // class fades it and blocks the mouse (pointer-events: none), aria-disabled announces it,
-            // and the capture-phase blocker covers keyboard/programmatic clicks — so the click is
-            // stopped regardless of the onclick baked into the button markup. Applied on every
-            // (re-)inject and by setDisabled() on the live element.
-            function applyDisabled(container, disabled) {
-                if (!container) {
-                    return;
-                }
-                container.removeEventListener('click', blockClick, true);
-                if (disabled) {
-                    container.classList.add('dleToolBarDisabled');
-                    container.setAttribute('aria-disabled', 'true');
-                    container.addEventListener('click', blockClick, true);
-                } else {
-                    container.classList.remove('dleToolBarDisabled');
-                    container.removeAttribute('aria-disabled');
-                }
-            }
-
             // Optional engine-driven global permission check: permissionCheck (a function returning
             // boolean|Promise<boolean>) takes precedence over permissionCheckUrl (GET → JSON
             // { permitted: boolean }). Resolves to whether the button is permitted (enabled).
@@ -377,6 +400,9 @@
                         observerRegistry[config.markerId].disconnect();
                         delete observerRegistry[config.markerId];
                     }
+                    // Clear the disabled state (and its capture-phase click blocker) from our
+                    // element so a torn-down button left in the DOM doesn't keep swallowing clicks.
+                    applyDisabled(top.document.getElementById(config.markerId), false);
                     observerSetUp = false;
                 }
             };
