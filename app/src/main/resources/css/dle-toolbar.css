@@ -51,13 +51,6 @@
     border-radius: 2px;
 }
 
-/* Only the default (above-the-editor) button needs a right margin. In the alternate toolbar-row
-   layout the button sits between two padded separators, so an extra right margin would make it
-   asymmetric (closer to the left separator than the right one). */
-.dleToolBarContainer .dleToolBarSingleButton {
-    margin-right: 5px;
-}
-
 .dleToolBarLeftButton {
     border: 1px solid #DEDEDE;
     padding: 5px;
@@ -72,5 +65,13 @@
     padding: 5px;
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
+}
+
+/* Only the default (above-the-editor) button needs a right margin (both the single button and the
+   right half of a left/right split pair). In the alternate toolbar-row layout the button sits
+   between two padded separators, so an extra right margin would make it asymmetric — closer to the
+   left separator than the right one. */
+.dleToolBarContainer .dleToolBarSingleButton,
+.dleToolBarContainer .dleToolBarRightButton {
     margin-right: 5px;
 }

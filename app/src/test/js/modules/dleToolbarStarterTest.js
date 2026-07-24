@@ -526,24 +526,40 @@ describe('GenericDleToolbarStarter (dle-toolbar-starter.js)', function () {
         });
     });
 
-    it('injectOwnStyles injects the shared toolbar stylesheet derived from its own script URL', function () {
-        const fakeScript = { src: 'http://x/polarion/pdf-exporter/ui/generic/js/dle-toolbar-starter.js?timestamp=1' };
-        Object.defineProperty(document, 'currentScript', { configurable: true, get: () => fakeScript });
-        try {
-            window.GenericDleToolbarStarter.injectOwnStyles();
-        } finally {
-            Object.defineProperty(document, 'currentScript', { configurable: true, get: () => null });
-        }
+    it('injectOwnStyles injects the shared toolbar stylesheet derived from the given script URL', function () {
+        window.GenericDleToolbarStarter.injectOwnStyles('http://x/polarion/pdf-exporter/ui/generic/js/dle-toolbar-starter.js?timestamp=1');
         const link = document.getElementById('generic-dle-toolbar-styles');
         expect(link).to.exist;
         expect(link.tagName).to.equal('LINK');
         expect(link.href).to.contain('/polarion/pdf-exporter/ui/generic/css/dle-toolbar.css');
     });
 
-    it('injectOwnStyles is a no-op when the script URL cannot be resolved', function () {
-        Object.defineProperty(document, 'currentScript', { configurable: true, get: () => null });
+    it('injectOwnStyles is a no-op when no script URL is given and currentScript is unavailable', function () {
+        // In this ESM test document.currentScript is null, and no explicit URL is passed.
         window.GenericDleToolbarStarter.injectOwnStyles();
         expect(document.getElementById('generic-dle-toolbar-styles')).to.equal(null);
+    });
+
+    it('injectOwnStyles falls back to document.currentScript on the on-load path', function () {
+        // The on-load self-inject path (no explicit URL) reads document.currentScript. Mock it and
+        // restore the original property descriptor so no state leaks into other tests.
+        const original = Object.getOwnPropertyDescriptor(document, 'currentScript');
+        Object.defineProperty(document, 'currentScript', {
+            configurable: true,
+            get: () => ({ src: 'http://x/polarion/docx-exporter/ui/generic/js/dle-toolbar-starter.js?timestamp=1' })
+        });
+        try {
+            window.GenericDleToolbarStarter.injectOwnStyles();
+        } finally {
+            if (original) {
+                Object.defineProperty(document, 'currentScript', original);
+            } else {
+                delete document.currentScript;
+            }
+        }
+        const link = document.getElementById('generic-dle-toolbar-styles');
+        expect(link).to.exist;
+        expect(link.href).to.contain('/polarion/docx-exporter/ui/generic/css/dle-toolbar.css');
     });
 
     it('injectStyles adds a stylesheet link once and injectScript adds a script once', function () {
