@@ -6,12 +6,10 @@ import ch.sbb.polarion.extension.generic.fields.IConverter;
 import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Date;
@@ -23,6 +21,11 @@ public class StringToDateConverter implements IConverter<String, Date> {
     private static final String ISO_DATE_PATTERN = "yyyy-MM-dd";
     private static final String ISO_TIME_PATTERN = "HH:mm";
     private static final String ISO_TIME_PATTERN_WITH_SECONDS = "HH:mm:ss";
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(ISO_DATE_PATTERN);
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(ISO_TIME_PATTERN);
+    private static final DateTimeFormatter TIME_WITH_SECONDS_FORMATTER = DateTimeFormatter.ofPattern(ISO_TIME_PATTERN_WITH_SECONDS);
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(ISO_DATE_PATTERN + " " + ISO_TIME_PATTERN);
 
     @Override
     public Date convert(@NotNull String initialValue, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
@@ -41,13 +44,14 @@ public class StringToDateConverter implements IConverter<String, Date> {
 
     @Override
     public String convertBack(@NotNull Date value, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-        String format = ISO_DATE_PATTERN + " " + ISO_TIME_PATTERN;
+        LocalDateTime dateTime = value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        DateTimeFormatter formatter = DATE_TIME_FORMATTER;
         if (Objects.equals(fieldMetadata.getType(), FieldType.DATE_ONLY.getType())) {
-            format = ISO_DATE_PATTERN;
+            formatter = DATE_FORMATTER;
         } else if (Objects.equals(fieldMetadata.getType(), FieldType.TIME_ONLY.getType())) {
-            format = value.toInstant().atZone(ZoneOffset.UTC).getSecond() == 0 ? ISO_TIME_PATTERN : ISO_TIME_PATTERN_WITH_SECONDS;
+            formatter = dateTime.getSecond() == 0 ? TIME_FORMATTER : TIME_WITH_SECONDS_FORMATTER;
         }
-        return new SimpleDateFormat(format).format(value);
+        return dateTime.format(formatter);
     }
 
     private Date convertDateOnly(DateTimeFormatterBuilder builder, String initialValue) {
