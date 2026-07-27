@@ -131,6 +131,24 @@ describe('BreadcrumbBridge', function () {
     expect(customEl().style.display).to.not.equal('none');
   });
 
+  it('copies the original breadcrumb flex order onto its replacement', function () {
+    boot('https://host/polarion/xml-repair-app/#/xml-repair/scan');
+    const original = addOriginal();
+    original.style.order = '2'; // sit the replacement in the same flex slot
+    handle = install(CONFIG);
+    expect(customEl().style.order).to.equal('2');
+  });
+
+  it('hides its replacement when navigating away from the app page', function () {
+    boot('https://host/polarion/xml-repair-app/#/xml-repair/scan');
+    addOriginal();
+    handle = install(CONFIG);
+    expect(customEl().style.display).to.not.equal('none'); // mounted on the app page
+    dom.reconfigure({ url: 'https://host/polarion/other-page/' }); // marker no longer in the URL
+    handle.sync();
+    expect(customEl().style.display).to.equal('none');
+  });
+
   it('keeps hiding across a GWT re-render (observer stays connected)', async function () {
     boot('https://host/polarion/xml-repair-app/');
     const original = addOriginal();

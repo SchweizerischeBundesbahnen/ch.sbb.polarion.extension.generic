@@ -134,7 +134,8 @@ export default class ConfigurationsPane {
             htmlInput.style.display = "none";
         });
         document.querySelectorAll('#edit-configuration-pane .new-configuration').forEach(htmlInput => {
-            htmlInput.style.display = "inline-block";
+            // Buttons keep the shared flex layout (centres their icon); labels/inputs are inline-block.
+            htmlInput.style.display = htmlInput.tagName === "BUTTON" ? "inline-flex" : "inline-block";
         });
         this.editConfigurationPane.style.display = "block";
         this.setContentAreaEnabled(false);
@@ -145,7 +146,8 @@ export default class ConfigurationsPane {
     editConfiguration() {
         this.configurationsPane.style.display = "none";
         document.querySelectorAll('#edit-configuration-pane .edit-configuration').forEach(htmlInput => {
-            htmlInput.style.display = "inline-block";
+            // Buttons keep the shared flex layout (centres their icon); labels/inputs are inline-block.
+            htmlInput.style.display = htmlInput.tagName === "BUTTON" ? "inline-flex" : "inline-block";
         });
         document.querySelectorAll('#edit-configuration-pane .new-configuration').forEach(htmlInput => {
             htmlInput.style.display = "none";

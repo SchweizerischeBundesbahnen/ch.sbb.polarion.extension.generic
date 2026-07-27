@@ -63,6 +63,14 @@ describe('createSearchableSelect', function () {
     expect(m.nextElementSibling.querySelector('.sd-trigger-multi')).to.exist; // rendered as multi-select
   });
 
+  it('initSearchableDropdowns tolerates a null singleIds list (multi-select only)', function () {
+    const m = selectWith(['c']); m.id = 'roles'; m.multiple = true;
+    const ctx = { getElementById: (id) => document.getElementById(id) };
+    initSearchableDropdowns(ctx, null, 'roles'); // null single-ids → the `singleIds || []` fallback
+    expect(m.nextElementSibling.classList.contains('searchable-dropdown')).to.be.true;
+    expect(m.nextElementSibling.querySelector('.sd-trigger-multi')).to.exist;
+  });
+
   it('createEditableSelect wraps an <input> as an editable free-text dropdown', function () {
     const input = document.createElement('input');
     input.type = 'text';

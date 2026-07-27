@@ -33,6 +33,7 @@
 <head>
     <title></title>
     <link rel="stylesheet" href="../ui/generic/css/common.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
+    <link rel="stylesheet" href="../ui/generic/css/buttons.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
     <link rel="stylesheet" href="../ui/generic/css/about.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
     <link rel="stylesheet" href="../ui/generic/css/github-markdown-light.css?bundle=<%= version.getBundleBuildTimestampDigitsOnly() %>">
 </head>
@@ -67,6 +68,10 @@
             %>
             </tbody>
         </table>
+
+        <% if (CurrentExtensionConfiguration.getInstance().getExtensionConfiguration().isDebug()) { %>
+        <%@ include file="rest-auth-test.jsp" %>
+        <% } %>
 
         <h3>Extension configuration properties</h3>
 

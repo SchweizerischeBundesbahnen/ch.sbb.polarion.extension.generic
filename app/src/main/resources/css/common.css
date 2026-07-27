@@ -5,6 +5,8 @@
 @import url("searchable-dropdown.css");
 @import url("tables.css");
 @import url("buttons.css");
+@import url("alerts.css");
+@import url("tabs.css");
 
 @font-face {
     font-family: "Selawik";
@@ -49,14 +51,25 @@
  * override a token downstream if a page needs a different shade.
  */
 :root {
-    --polarion-accent: #007993;          /* links / accent (was #197FA2) */
-    --polarion-heading-text: #000028;    /* admin / section heading text (was #004d73) */
-    --polarion-heading-bg: #F3F3F0;      /* section-header bar + h1 underline (was #EBF0F5) */
-    --polarion-table-header-bg: #E8E8E3; /* repo-browser header fill (was #75A8E2) */
+    --polarion-heading-text: #000028;    /* admin / section heading text */
+    --polarion-heading-bg: #F3F3F0;      /* section-header bar + h1 underline */
+    --polarion-table-header-bg: #E8E8E3; /* repo-browser header fill */
     --polarion-table-border: #B3B3BE;    /* repo-browser header/column separator */
     --polarion-table-cell-border: #DDDDDD; /* data-cell column separator */
     --polarion-table-row-alt: #F3F3F0;   /* zebra odd-row (repo-browser #F3F3F0/white) */
     --polarion-table-row-hover: #EBF7F8; /* row hover light-teal */
+}
+
+/* --polarion-accent is the one palette entry derived from a --sbb-* token. Since #535 --sbb-accent
+   lives only on the shared UI scopes (control-tokens.css), and var() substitutes at the element that
+   declares the property, derive --polarion-accent on those same scopes — NOT :root, where --sbb-accent
+   is absent and the substitution would be invalid. common.css is admin-only, so every consuming <a>
+   sits under .standard-admin-page. */
+.modal__container,
+.standard-admin-page,
+.form-wrapper,
+.sbb-ui {
+    --polarion-accent: var(--sbb-accent); /* links / accent — derives from the brand accent token */
 }
 
 a, td, div, li, ul, input, button, option {
@@ -209,77 +222,9 @@ code-input {
     padding-right: 1%;
 }
 
-/* Inline text alerts — coloured status text (no box). Two entry points, unified here so consumers
-   don't re-declare them: .action-alerts (admin action results) and .validation-alerts (form
-   validation in the exporter popups). Not bold. */
-.action-alerts .alert,
-.validation-alerts .alert {
-    font-size: 12px;
-}
-
-.action-alerts .alert {
-    padding-left: 20px;
-}
-
-.action-alerts .alert-error,
-.validation-alerts .alert-error {
-    color: red;
-}
-
-.action-alerts .alert-success,
-.validation-alerts .alert-success {
-    color: green;
-}
-
-.notifications .alert {
-    margin-bottom: 10px;
-    font-size: 12px;
-    padding: 8px 16px 5px;
-    border-radius: 3px;
-    width: calc(100% - 32px);
-}
-
-/* Alert triangle icon via ::before, so JS-populated alerts (exporter popups set textContent) get it
-   too. Floated left → the message text wraps beside it. Warning may be standalone (interceptor);
-   error only appears inside .notifications (exporter popups / the generic notifications block).
-   Outlined SVGs; literal fallbacks so they render where control-tokens.css is not linked. */
-.alert-warning::before,
-.notifications .alert-error::before {
-    content: "";
-    display: inline-block;
-    /* vertical-align:middle centers the box on the x-height, which leaves a taller icon sitting
-       ~0.1em below the optical center of the capital-height text; nudge it up to compensate. */
-    vertical-align: middle;
-    position: relative;
-    top: -0.1em;
-    width: 18px;
-    height: 18px;
-    margin-right: 6px;
-    background: center / contain no-repeat;
-}
-
-.alert-warning::before {
-    background-image: var(--sbb-warning-icon);
-}
-
-.notifications .alert-error::before {
-    background-image: var(--sbb-error-icon);
-}
-
-.notifications .alert-error {
-    background-color: #f8d7da;
-    border: 1px solid #b3626a;
-}
-
-.notifications .alert-warning {
-    background-color: #fff7cd;
-    border: 1px solid #ffc328;
-}
-
-.notifications .alert-success {
-    background-color: #d1e7dd;
-    border: 1px solid #75b598;
-}
+/* Alert styles (inline text alerts, notification boxes, warning/error triangle icons) live in the
+   @imported alerts.css so they can be injected on their own into surfaces that don't load common.css
+   (exporter export dialogs, the Bulk PDF Export widget). See alerts.css. */
 
 .actions-pane {
     background: #f5f5f5;
@@ -291,10 +236,14 @@ code-input {
 }
 
 /* .toolbar-button now lives in the unified button system (buttons.css); its legacy selector is
-   aliased there. The icon <img class="button-image"> keeps its own layout rule. */
+   aliased there. .button-image is the button's leading icon (a background-image <span> carrying a
+   .sbb-icon-* class); padding-right gives the icon-to-label gap. vertical-align: middle centres the
+   icon against the label in a non-flex (inline-block) button and is a no-op inside the flex
+   toolbar-button (align-items handles it there) — do NOT float it, a float would top-align the icon
+   in the inline-block case ("icon rides up"). */
 .button-image {
     padding-right: 5px;
-    float: left;
+    vertical-align: middle;
 }
 
 :not(pre) > code[class*=language-],

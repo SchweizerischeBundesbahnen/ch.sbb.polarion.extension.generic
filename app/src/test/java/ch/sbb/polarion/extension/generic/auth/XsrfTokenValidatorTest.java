@@ -30,7 +30,12 @@ import static org.mockito.Mockito.when;
 class XsrfTokenValidatorTest {
 
     private static final String USER_ID = "testUser";
+    private static final String SESSION_ID = "testSession";
     private static final String VALIDATOR_INPUT = "dummy-value";
+
+    // Polarion 2606 token layout is <salt>$<expiration>$<userId>$<sessionId>;
+    // the leading salt is random and ignored during validation.
+    private static final String SALT = "cmFuZG9tU2FsdA==";
 
     // Fixed epoch-milli bounds so the tests don't depend on the system clock:
     // Long.MAX_VALUE is always in the future, 0 (Instant.EPOCH) is always in the past.
@@ -54,7 +59,7 @@ class XsrfTokenValidatorTest {
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
              MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
             mockRestApiTokenEnabled(configurationMockedStatic, true);
-            mockDecryptedToken(passwordEncryptorMockedStatic, FAR_FUTURE_TIMESTAMP + "$" + USER_ID);
+            mockDecryptedToken(passwordEncryptorMockedStatic, token(FAR_FUTURE_TIMESTAMP, USER_ID, SESSION_ID));
 
             Subject subject = new Subject();
             when(securityService.getCurrentSubject()).thenReturn(subject);
@@ -69,7 +74,7 @@ class XsrfTokenValidatorTest {
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
              MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
             mockRestApiTokenEnabled(configurationMockedStatic, true);
-            mockDecryptedToken(passwordEncryptorMockedStatic, PAST_TIMESTAMP + "$" + USER_ID);
+            mockDecryptedToken(passwordEncryptorMockedStatic, token(PAST_TIMESTAMP, USER_ID, SESSION_ID));
 
             assertThrows(AuthenticationFailedException.class, createValidator()::validate);
         }
@@ -80,7 +85,7 @@ class XsrfTokenValidatorTest {
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
              MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
             mockRestApiTokenEnabled(configurationMockedStatic, true);
-            mockDecryptedToken(passwordEncryptorMockedStatic, "notANumber$" + USER_ID);
+            mockDecryptedToken(passwordEncryptorMockedStatic, token("notANumber", USER_ID, SESSION_ID));
 
             assertThrows(AuthenticationFailedException.class, createValidator()::validate);
         }
@@ -91,7 +96,58 @@ class XsrfTokenValidatorTest {
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
              MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
             mockRestApiTokenEnabled(configurationMockedStatic, true);
-            mockDecryptedToken(passwordEncryptorMockedStatic, FAR_FUTURE_TIMESTAMP + "$anotherUser");
+            mockDecryptedToken(passwordEncryptorMockedStatic, token(FAR_FUTURE_TIMESTAMP, "anotherUser", SESSION_ID));
+
+            assertThrows(AuthenticationFailedException.class, createValidator()::validate);
+        }
+    }
+
+    @Test
+    void testTokenWithDifferentSessionRejected() {
+        try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
+             MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
+            mockRestApiTokenEnabled(configurationMockedStatic, true);
+            mockDecryptedToken(passwordEncryptorMockedStatic, token(FAR_FUTURE_TIMESTAMP, USER_ID, "anotherSession"));
+
+            assertThrows(AuthenticationFailedException.class, createValidator()::validate);
+        }
+    }
+
+    @Test
+    void testTokenWithEmptySessionRejected() {
+        try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
+             MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
+            mockRestApiTokenEnabled(configurationMockedStatic, true);
+            mockDecryptedToken(passwordEncryptorMockedStatic, token(FAR_FUTURE_TIMESTAMP, USER_ID, ""));
+
+            assertThrows(AuthenticationFailedException.class, createValidator()::validate);
+        }
+    }
+
+    @Test
+    void testTokenWithAdditionalTrailingPartsAccepted() throws AuthenticationFailedException {
+        // Forward-compatibility: should Polarion append further fields (as 2606 did over 2512),
+        // validation must keep reading the pinned indices salt$expiration$userId$sessionId.
+        try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
+             MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
+            mockRestApiTokenEnabled(configurationMockedStatic, true);
+            mockDecryptedToken(passwordEncryptorMockedStatic, token(FAR_FUTURE_TIMESTAMP, USER_ID, SESSION_ID) + "$hypotheticalFutureField");
+
+            Subject subject = new Subject();
+            when(securityService.getCurrentSubject()).thenReturn(subject);
+            when(securityService.getSubjectUser(subject)).thenReturn(USER_ID);
+
+            assertSame(subject, createValidator().validate());
+        }
+    }
+
+    @Test
+    void testTokenWithTooFewPartsRejected() {
+        try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
+             MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
+            mockRestApiTokenEnabled(configurationMockedStatic, true);
+            // Pre-2606 layout (<expiration>$<userId>) no longer has enough parts.
+            mockDecryptedToken(passwordEncryptorMockedStatic, FAR_FUTURE_TIMESTAMP + "$" + USER_ID);
 
             assertThrows(AuthenticationFailedException.class, createValidator()::validate);
         }
@@ -124,7 +180,7 @@ class XsrfTokenValidatorTest {
         try (MockedStatic<Configuration> configurationMockedStatic = mockStatic(Configuration.class);
              MockedStatic<PasswordEncryptor> passwordEncryptorMockedStatic = mockStatic(PasswordEncryptor.class)) {
             mockRestApiTokenEnabled(configurationMockedStatic, true);
-            mockDecryptedToken(passwordEncryptorMockedStatic, FAR_FUTURE_TIMESTAMP + "$" + USER_ID);
+            mockDecryptedToken(passwordEncryptorMockedStatic, token(FAR_FUTURE_TIMESTAMP, USER_ID, SESSION_ID));
 
             Subject subject = new Subject();
             when(securityService.getCurrentSubject()).thenReturn(subject);
@@ -145,9 +201,13 @@ class XsrfTokenValidatorTest {
         verify(requestContext).setProperty(LogoutFilter.XSRF_SKIP_LOGOUT, Boolean.TRUE);
     }
 
+    private String token(String expiration, String userId, String sessionId) {
+        return SALT + "$" + expiration + "$" + userId + "$" + sessionId;
+    }
+
     private XsrfTokenValidator createValidator() {
         XsrfTokenValidator validator = new XsrfTokenValidator();
-        validator.userId(USER_ID).secret(VALIDATOR_INPUT).securityService(securityService);
+        validator.userId(USER_ID).sessionId(SESSION_ID).secret(VALIDATOR_INPUT).securityService(securityService);
         return validator;
     }
 

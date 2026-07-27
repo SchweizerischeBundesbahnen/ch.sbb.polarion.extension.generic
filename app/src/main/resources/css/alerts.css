@@ -1,0 +1,84 @@
+/*
+ * Shared alert styles — coloured status text, notification boxes, and the warning/error triangle
+ * icons. Split out of common.css so surfaces that assemble their CSS from the individually injected
+ * control sheets (exporter export dialogs via starter.js / ensureSharedStyles.js, the Bulk PDF Export
+ * widget's inlined CSS) can render alerts correctly without pulling the whole common.css.
+ *
+ * common.css @imports this, so admin pages and everything already on common.css are unchanged.
+ *
+ * Tokens: the ::before icons consume --sbb-warning-icon / --sbb-error-icon from control-tokens.css.
+ * Every injection path guarantees control-tokens.css alongside this sheet (ensureSharedStyles lists it
+ * first; common.css @imports it first; standalone pages link it explicitly).
+ */
+
+/* Inline text alerts — coloured status text (no box). Two entry points, unified here so consumers
+   don't re-declare them: .action-alerts (admin action results) and .validation-alerts (form
+   validation in the exporter popups). Not bold. */
+.action-alerts .alert,
+.validation-alerts .alert {
+    font-size: 12px;
+}
+
+.action-alerts .alert {
+    padding-left: 20px;
+}
+
+.action-alerts .alert-error,
+.validation-alerts .alert-error {
+    color: red;
+}
+
+.action-alerts .alert-success,
+.validation-alerts .alert-success {
+    color: green;
+}
+
+.notifications .alert {
+    margin-bottom: 10px;
+    font-size: 12px;
+    padding: 8px 16px 5px;
+    border-radius: 3px;
+    width: calc(100% - 32px);
+}
+
+/* Alert triangle icon via ::before, so JS-populated alerts (exporter popups set textContent) get it
+   too. Floated left → the message text wraps beside it. Warning may be standalone (interceptor);
+   error only appears inside .notifications (exporter popups / the generic notifications block).
+   The --sbb-*-icon tokens come from control-tokens.css, which is guaranteed alongside this sheet. */
+.alert-warning::before,
+.notifications .alert-error::before {
+    content: "";
+    display: inline-block;
+    /* vertical-align:middle centers the box on the x-height, which leaves a taller icon sitting
+       ~0.1em below the optical center of the capital-height text; nudge it up to compensate. */
+    vertical-align: middle;
+    position: relative;
+    top: -0.1em;
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+    background: center / contain no-repeat;
+}
+
+.alert-warning::before {
+    background-image: var(--sbb-warning-icon);
+}
+
+.notifications .alert-error::before {
+    background-image: var(--sbb-error-icon);
+}
+
+.notifications .alert-error {
+    background-color: #f8d7da;
+    border: 1px solid #b3626a;
+}
+
+.notifications .alert-warning {
+    background-color: #fff7cd;
+    border: 1px solid #ffc328;
+}
+
+.notifications .alert-success {
+    background-color: #d1e7dd;
+    border: 1px solid #75b598;
+}

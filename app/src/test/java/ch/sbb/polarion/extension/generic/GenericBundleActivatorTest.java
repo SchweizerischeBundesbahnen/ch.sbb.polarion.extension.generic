@@ -10,7 +10,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.osgi.framework.BundleContext;
 
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -26,6 +31,7 @@ class GenericBundleActivatorTest {
             extensionsRegistryStatic.when(FormExtensionsRegistry::getInstance).thenReturn(registry);
 
             BundleContext bundleContext = mock(BundleContext.class);
+
             new SimplestTestBundleActivator().start(bundleContext); // Force call onStart() in GenericBundleActivator
             verify(registry, times(0)).registerExtension(anyString(), any());
 
@@ -39,10 +45,124 @@ class GenericBundleActivatorTest {
         }
     }
 
+    @Test
+    void runAsyncExecutesTaskOnDaemonThread() throws InterruptedException {
+        CountDownLatch ran = new CountDownLatch(1);
+        new RealSeamsActivator().runAsync(ran::countDown); // real daemon-thread implementation
+        assertTrue(ran.await(5, TimeUnit.SECONDS), "runAsync should have executed the task");
+    }
+
+    @Test
+    void readinessProbeStartsUninjected() {
+        assertNull(new GenericBundleActivator.ReadinessProbe().contributions);
+    }
+
+    @Test
+    void registrationWaitsUntilGuicePlatformReady() {
+        try (MockedStatic<FormExtensionsRegistry> extensionsRegistryStatic = mockStatic(FormExtensionsRegistry.class)) {
+            extensionsRegistryStatic.when(FormExtensionsRegistry::getInstance).thenReturn(registry);
+
+            TestBundleActivator activator = new TestBundleActivator(Map.of("only", mock(IFormExtension.class)));
+            activator.readyAfterPolls = 2; // not ready for the first two polls, then ready
+
+            activator.startWhenReady(mock(BundleContext.class));
+
+            assertEquals(3, activator.readinessPolls); // polled until ready (2 misses + 1 hit)
+            verify(registry, times(1)).registerExtension(eq("only"), any());
+        }
+    }
+
+    @Test
+    void cancelsRegistrationWhenWaitInterrupted() {
+        try (MockedStatic<FormExtensionsRegistry> extensionsRegistryStatic = mockStatic(FormExtensionsRegistry.class)) {
+            CountDownLatch polling = new CountDownLatch(1);
+            TestBundleActivator activator = new TestBundleActivator(Map.of("only", mock(IFormExtension.class))) {
+                @Override
+                protected boolean isGuicePlatformReady() {
+                    polling.countDown();
+                    return false;
+                }
+            };
+            activator.timeoutMs = TimeUnit.MINUTES.toMillis(5);
+            activator.pollMs = TimeUnit.MINUTES.toMillis(5); // long sleep so the wait is interrupted mid-flight
+
+            Thread target = Thread.currentThread();
+            Thread interrupter = new Thread(() -> {
+                try {
+                    polling.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                target.interrupt();
+            });
+            interrupter.setDaemon(true);
+            interrupter.start();
+
+            activator.startWhenReady(mock(BundleContext.class));
+
+            assertTrue(Thread.interrupted(), "interrupt flag should have been restored"); // also clears it
+            extensionsRegistryStatic.verify(FormExtensionsRegistry::getInstance, never()); // registration aborted
+        }
+    }
+
+    @Test
+    void cancelsRegistrationWhenAlreadyInterruptedAndPlatformReady() {
+        try (MockedStatic<FormExtensionsRegistry> extensionsRegistryStatic = mockStatic(FormExtensionsRegistry.class)) {
+            TestBundleActivator activator = new TestBundleActivator(Map.of("only", mock(IFormExtension.class)));
+            activator.readyAfterPolls = 0; // platform ready immediately -> no sleep would occur
+
+            Thread.currentThread().interrupt(); // interrupt set before the first readiness check
+            activator.startWhenReady(mock(BundleContext.class));
+
+            assertTrue(Thread.interrupted(), "interrupt flag should have been restored"); // also clears it
+            extensionsRegistryStatic.verify(FormExtensionsRegistry::getInstance, never()); // registration aborted
+        }
+    }
+
+    @Test
+    void stopInterruptsPendingRegistrar() throws InterruptedException {
+        RealSeamsActivator activator = new RealSeamsActivator();
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch interrupted = new CountDownLatch(1);
+
+        activator.runAsync(() -> {
+            started.countDown();
+            try {
+                new CountDownLatch(1).await(); // block until interrupted by stop()
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                interrupted.countDown();
+            }
+        });
+
+        assertTrue(started.await(5, TimeUnit.SECONDS), "background task should have started");
+        activator.stop(mock(BundleContext.class));
+        assertTrue(interrupted.await(5, TimeUnit.SECONDS), "stop() should interrupt the registrar thread");
+    }
+
+    @Test
+    void registersAnywayWhenPlatformNeverBecomesReady() {
+        try (MockedStatic<FormExtensionsRegistry> extensionsRegistryStatic = mockStatic(FormExtensionsRegistry.class)) {
+            extensionsRegistryStatic.when(FormExtensionsRegistry::getInstance).thenReturn(registry);
+
+            TestBundleActivator activator = new TestBundleActivator(Map.of("only", mock(IFormExtension.class)));
+            activator.readyAfterPolls = Integer.MAX_VALUE; // never ready
+            activator.timeoutMs = 20;
+            activator.pollMs = 5;
+
+            activator.startWhenReady(mock(BundleContext.class));
+
+            verify(registry, times(1)).registerExtension(eq("only"), any()); // registered despite timeout
+        }
+    }
 
     private static class TestBundleActivator extends GenericBundleActivator {
 
-        Map<String, IFormExtension> extensions;
+        final Map<String, IFormExtension> extensions;
+        int readyAfterPolls = 0;
+        int readinessPolls = 0;
+        long timeoutMs = TimeUnit.MINUTES.toMillis(5);
+        long pollMs = 1;
 
         public TestBundleActivator(Map<String, IFormExtension> extensions) {
             this.extensions = extensions;
@@ -57,9 +177,48 @@ class GenericBundleActivatorTest {
         public void onStart(BundleContext context) {
             context.getProperty("test_property");
         }
+
+        @Override
+        protected boolean isGuicePlatformReady() {
+            return readinessPolls++ >= readyAfterPolls;
+        }
+
+        @Override
+        protected long getPlatformWaitTimeoutMs() {
+            return timeoutMs;
+        }
+
+        @Override
+        protected long getPlatformPollIntervalMs() {
+            return pollMs;
+        }
+
+        @Override
+        protected void runAsync(Runnable task) {
+            task.run(); // run synchronously in tests
+        }
     }
 
     private static class SimplestTestBundleActivator extends GenericBundleActivator {
+
+        @Override
+        protected Map<String, IFormExtension> getExtensions() {
+            return Map.of();
+        }
+
+        @Override
+        protected boolean isGuicePlatformReady() {
+            return true;
+        }
+
+        @Override
+        protected void runAsync(Runnable task) {
+            task.run(); // run synchronously in tests
+        }
+    }
+
+    /** Overrides nothing beyond the abstract method, so the real runAsync/isGuicePlatformReady run. */
+    private static class RealSeamsActivator extends GenericBundleActivator {
 
         @Override
         protected Map<String, IFormExtension> getExtensions() {

@@ -22,6 +22,8 @@ const STYLES = [
     ['generic-inputs-styles', 'inputs.css'],
     ['generic-searchable-dropdown-styles', 'searchable-dropdown.css'],
     ['generic-buttons-styles', 'buttons.css'],
+    // alerts.css consumes the --sbb-*-icon tokens defined by control-tokens.css (first entry).
+    ['generic-alerts-styles', 'alerts.css'],
 ];
 
 export default function ensureSharedStyles() {

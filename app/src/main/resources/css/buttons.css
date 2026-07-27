@@ -13,8 +13,10 @@
  * .editor-buttons button) are aliased here, so existing markup gets the unified look with NO change
  * and the duplicated local copies can simply be deleted downstream.
  *
- * Self-contained: every token carries a literal fallback (var(--x, <literal>)), so this file works
- * standalone in popups (no common.css :root) and can be linked directly by the React SPAs.
+ * Tokens: this sheet consumes the --sbb-* custom properties from control-tokens.css (no literal
+ * fallbacks — single source). Every load path guarantees control-tokens.css alongside it:
+ * ensureSharedStyles.js injects it first, common.css @imports it first, and standalone pages link
+ * it explicitly. A new consumer must do the same (or @import control-tokens.css) before linking this.
  */
 
 /* ==================================== Control (default) ==================================== */

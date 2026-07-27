@@ -6,6 +6,7 @@ import ch.sbb.polarion.extension.generic.auth.ValidatorType;
 import com.polarion.platform.core.PlatformContext;
 import com.polarion.platform.security.AuthenticationFailedException;
 import com.polarion.platform.security.ISecurityService;
+import com.polarion.platform.session.PolarionSingleSignOn;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -91,8 +92,10 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     private @NotNull AuthValidator createXsrfTokenValidator(@NotNull String xsrfToken) {
         String userId = httpServletRequest.getUserPrincipal().getName();
+        String sessionId = PolarionSingleSignOn.getSsoId(httpServletRequest);
         return ValidatorFactory.getValidator(ValidatorType.XSRF_TOKEN)
                 .userId(userId)
+                .sessionId(sessionId)
                 .secret(xsrfToken)
                 .securityService(securityService);
     }

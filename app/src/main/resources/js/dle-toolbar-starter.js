@@ -1,13 +1,20 @@
 /*
- * Universal self-healing DLE-toolbar button injector — single source for all extensions
- * that inject a button into Polarion's document (DLE) editor toolbar via
- * `scriptInjection.dleEditorHead`.
+ * Universal self-healing Polarion-toolbar button injector — single source for all extensions
+ * that inject a button into a native Polarion toolbar via `scriptInjection.*` configuration.
+ *
+ * Supported toolbars (the `target` config, see TARGETS below):
+ *   - 'dleEditor' (default)      the document (DLE) editor toolbar, configured via
+ *                                `scriptInjection.dleEditorHead`;
+ *   - 'richPagePreview'          the Rich Page / Live Report toolbar in view mode (the one behind
+ *                                the "Expand Tools" handle), configured via `scriptInjection.mainHead`.
  *
  * Polarion (GWT) re-renders the toolbar sub-tree on actions like Save, which wipes out a
  * one-time injected element. This engine injects idempotently and re-injects via a
- * MutationObserver whenever the toolbar is re-rendered and the button disappears.
+ * MutationObserver whenever the toolbar is re-rendered and the button disappears. The Rich Page
+ * toolbar additionally does not exist in the DOM at all until the user expands it — the same
+ * observer picks it up the moment it is rendered.
  *
- * The DLE toolbar selectors below are Polarion's own DOM and identical for every extension.
+ * The toolbar selectors below are Polarion's own DOM and identical for every extension.
  * Extension-specific parts (button HTML, marker id) come in via create(config).
  *
  * Usage (thin extension starter.js loads this, then):
@@ -27,6 +34,20 @@
         }
     }
 
+    // Inject the shared toolbar-button stylesheet that ships next to this script
+    // (…/ui/generic/css/dle-toolbar.css). The engine URL is taken from `scriptUrl` when given,
+    // otherwise from this script's own URL — available only while the script is executing
+    // (document.currentScript), which is the on-load self-inject path. A later caller (or a test)
+    // that no longer has currentScript passes the URL explicitly. Deriving the href keeps the
+    // /polarion/<ext>/ context out of the code; idempotent via the fixed id.
+    function injectOwnStyles(scriptUrl) {
+        const selfSrc = scriptUrl || (document.currentScript && document.currentScript.src) || '';
+        const href = selfSrc.replace(/js\/dle-toolbar-starter\.js.*$/, 'css/dle-toolbar.css');
+        if (href && href !== selfSrc) {
+            injectStyles('generic-dle-toolbar-styles', href);
+        }
+    }
+
     function injectScript(id, src, type = "text/javascript") {
         if (!top.document.getElementById(id)) {
             const script = top.document.createElement("script");
@@ -37,11 +58,164 @@
         }
     }
 
-    // Polarion DLE toolbar DOM — same for all extensions.
-    const ALTERNATE_TOOLBAR_SELECTOR = 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container > div.polarion-dle-Wrapper > div.polarion-dle-RpcPanel > div.polarion-dle-MainDockPanel div.polarion-rte-ToolbarPanelWrapper table.polarion-dle-ToolbarPanel tr';
-    const RICH_TEXT_AREA_SELECTOR = 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container>div.polarion-dle-Wrapper>div.polarion-dle-RpcPanel>div.polarion-dle-MainDockPanel div.polarion-dle-SplitPanel:last-child .polarion-dle-RichTextArea';
-    // Stable ancestor that survives the toolbar re-render — observed for re-injection.
-    const STABLE_ANCESTOR_SELECTOR = 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container';
+    // Capture-phase click swallower for the disabled state: pointer-events: none already blocks the
+    // mouse; this additionally stops a keyboard- or script-triggered click from reaching the
+    // button's baked-in onclick. Module-level (stateless) so a single shared reference add/removes
+    // consistently on ANY element — including a stale panel's button kept across an SPA navigation,
+    // whose listener a later enable must be able to clear regardless of which starter instance runs.
+    function blockClick(event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    // Toggle the disabled look/behavior on an injected container and its inner interactive elements:
+    // the dleToolBarDisabled class fades it and makes the container non-hit-testable to the mouse
+    // (pointer-events: none), so a mouse click can't reach the button; the capture-phase blocker
+    // covers keyboard- and script-triggered clicks (which bypass pointer-events); aria-disabled +
+    // tabindex=-1 on inner [role=button]/button/a announce the disabled state to assistive tech and
+    // drop it from the tab order. So the click is stopped regardless of the onclick baked into the
+    // button markup.
+    function applyDisabled(container, disabled) {
+        if (!container) {
+            return;
+        }
+        container.removeEventListener('click', blockClick, true);
+        const interactive = container.querySelectorAll('[role="button"], button, a');
+        if (disabled) {
+            container.classList.add('dleToolBarDisabled');
+            container.setAttribute('aria-disabled', 'true');
+            container.addEventListener('click', blockClick, true);
+            interactive.forEach(el => {
+                // Remember the element's own aria-disabled / tabindex (if any) so re-enabling
+                // restores the markup's values instead of clobbering them.
+                if (!el.hasAttribute('data-generic-prev-aria-disabled')) {
+                    el.setAttribute('data-generic-prev-aria-disabled', el.getAttribute('aria-disabled') || '');
+                }
+                if (!el.hasAttribute('data-generic-prev-tabindex')) {
+                    el.setAttribute('data-generic-prev-tabindex', el.getAttribute('tabindex') || '');
+                }
+                el.setAttribute('aria-disabled', 'true');
+                el.setAttribute('tabindex', '-1');
+            });
+        } else {
+            container.classList.remove('dleToolBarDisabled');
+            container.removeAttribute('aria-disabled');
+            interactive.forEach(el => {
+                restoreAttr(el, 'aria-disabled', 'data-generic-prev-aria-disabled');
+                restoreAttr(el, 'tabindex', 'data-generic-prev-tabindex');
+            });
+        }
+    }
+
+    // Restore an attribute the engine overrode from its saved-original data attribute: put back the
+    // original value, or remove the attribute if it had none originally. No-op if nothing was saved.
+    function restoreAttr(el, attr, savedAttr) {
+        if (!el.hasAttribute(savedAttr)) {
+            return;
+        }
+        const prev = el.getAttribute(savedAttr);
+        el.removeAttribute(savedAttr);
+        if (prev === '') {
+            el.removeAttribute(attr);
+        } else {
+            el.setAttribute(attr, prev);
+        }
+    }
+
+    // GWT shows/hides widgets with inline styles; a widget is effectively hidden when it or any
+    // ancestor carries inline display:none / visibility:hidden (e.g. a stale Rich Page panel kept
+    // in the DOM during an SPA transition).
+    function isInlineVisible(el) {
+        for (let node = el; node && node.style; node = node.parentElement) {
+            if (node.style.display === 'none' || node.style.visibility === 'hidden') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Polarion toolbar DOM per supported target — same for all extensions.
+    //   rowSelector          the toolbar <tr> buttons are injected into (alternate/row mode);
+    //   findRow              alternative to rowSelector: resolves the row with target-specific
+    //                        logic (used when a plain selector cannot express the constraints);
+    //   richTextAreaSelector (dleEditor only) anchor for the default above-the-editor mode;
+    //   stableAncestorSelector  ancestor that survives the toolbar re-render — observer anchor.
+    const TARGETS = {
+        dleEditor: {
+            rowSelector: 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container > div.polarion-dle-Wrapper > div.polarion-dle-RpcPanel > div.polarion-dle-MainDockPanel div.polarion-rte-ToolbarPanelWrapper table.polarion-dle-ToolbarPanel tr',
+            richTextAreaSelector: 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container>div.polarion-dle-Wrapper>div.polarion-dle-RpcPanel>div.polarion-dle-MainDockPanel div.polarion-dle-SplitPanel:last-child .polarion-dle-RichTextArea',
+            stableAncestorSelector: 'div.polarion-content-container div.polarion-Container div.polarion-dle-Container'
+        },
+        richPagePreview: {
+            // Only the preview (view) mode of a Rich Page — never the page's edit-mode toolbar.
+            // The view marker and the toolbar row are resolved within the SAME visible panel, so a
+            // stale panel kept in the DOM during an SPA transition can neither satisfy the guard
+            // for another panel's toolbar nor receive the button itself.
+            findRow: function (doc) {
+                for (const panel of doc.querySelectorAll('div.polarion-rpe-MainPanel')) {
+                    if (isInlineVisible(panel) && panel.querySelector('div.polarion-rpe-view')) {
+                        const row = panel.querySelector('table.polarion-dle-ToolbarPanel tr');
+                        if (row) {
+                            return row;
+                        }
+                    }
+                }
+                return null;
+            },
+            stableAncestorSelector: 'div.polarion-content-container'
+        }
+    };
+
+    // The "Expand Tools" handle of a collapsed Rich Page toolbar (see autoExpandRichPageTools).
+    const EXPAND_TOOLS_SELECTOR = 'div.polarion-rpe-expandTools';
+
+    // Derive a button's left-to-right order from the DOM position of its extension's own inject
+    // script, rather than from config.order.
+    //
+    // Why: several extensions each configure a single-tag injector (…/<ext>/js/dle-toolbar.js or
+    // live-reports.js) in the SAME scriptInjection property, in a deliberate order. Each injector
+    // then ASYNCHRONOUSLY loads its own starter.js, whose stub captures a sequence number when it
+    // finally runs — inside starter.js's onload. Those onloads fire in network-race order, so the
+    // captured config.order does NOT reflect the configured order (the buttons visibly reshuffle
+    // between reloads). Polarion, by contrast, inserts the injector <script> tags into the page in
+    // scriptInjection order and they stay put, so their DOM position IS a stable, deterministic
+    // reflection of the configured order. This runs in the same document as those scripts (the DLE
+    // editor iframe for dleEditor, the top page for richPagePreview), so it can read them directly.
+    //
+    // markerId convention: it starts with the extension's web-context segment (e.g. the button
+    // 'pdf-exporter-toolbar-injected' belongs to '/polarion/pdf-exporter/...'). Falls back to the
+    // caller-supplied order when no matching inject script is found (e.g. deprecated inline config).
+    const INJECT_SCRIPT_RE = /\/js\/(?:dle-toolbar|starter|live-reports)\.js/;
+    const EXT_CONTEXT_RE = /\/polarion\/([^/]+)\/(?:ui\/[^/]+\/)?js\//;
+
+    function domOrder(markerId, fallback) {
+        // Collect the distinct extension web-context segments from the inject scripts, in DOM order
+        // (which Polarion keeps equal to the configured order). The generic engine script itself
+        // (…/js/dle-toolbar-starter.js) is excluded by INJECT_SCRIPT_RE.
+        const seen = new Set(), contexts = [];
+        for (const script of document.querySelectorAll('script[src]')) {
+            const src = script.getAttribute('src'); // the [src] selector guarantees a string
+            if (!INJECT_SCRIPT_RE.test(src)) {
+                continue;
+            }
+            const match = EXT_CONTEXT_RE.exec(src);
+            const ctx = match && match[1];
+            if (ctx && !seen.has(ctx)) {
+                seen.add(ctx);
+                contexts.push(ctx);
+            }
+        }
+        // markerId starts with its extension context; pick the longest matching prefix so a more
+        // specific context wins (e.g. a hypothetical 'pdf-exporter-rp' over 'pdf-exporter').
+        let bestIndex = -1, bestLength = -1;
+        for (let i = 0; i < contexts.length; i++) {
+            if (markerId.indexOf(contexts[i]) === 0 && contexts[i].length > bestLength) {
+                bestIndex = i;
+                bestLength = contexts[i].length;
+            }
+        }
+        return bestIndex >= 0 ? bestIndex : fallback;
+    }
 
     // Registry of live observers keyed by markerId, kept on the top window so it survives this
     // script being re-loaded each time the DLE editor is (re-)opened in Polarion's GWT SPA.
@@ -51,43 +225,91 @@
     window.GenericDleToolbarStarter = {
         injectStyles: injectStyles,
         injectScript: injectScript,
+        injectOwnStyles: injectOwnStyles,
 
         /**
-         * @param config {{ markerId: string, alternateHtml: string, defaultHtml: string }}
+         * @param config {{ markerId: string, alternateHtml: string, defaultHtml: string, target: string|undefined, order: number|undefined, permissionCheckUrl: string|undefined, permissionCheck: function|undefined }}
          *   markerId      unique id set on the injected element; also the idempotency/dedup key.
          *   alternateHtml markup injected into the toolbar row when injectToolbar({alternate: true}).
-         *   defaultHtml   markup injected above the rich-text area otherwise.
+         *   defaultHtml   markup injected above the rich-text area otherwise ('dleEditor' target only).
+         *   target        which Polarion toolbar to inject into: 'dleEditor' (default) or
+         *                 'richPagePreview' (works for the Live Report toolbar too). The
+         *                 'richPagePreview' target always injects into the toolbar row
+         *                 (alternateHtml), regardless of the alternate flag, and only while the page
+         *                 is in view (preview) mode.
+         *   permissionCheckUrl  optional: a URL the engine GETs to decide if the button is enabled.
+         *                 Expected JSON response { permitted: boolean }; permitted !== true (or a
+         *                 non-OK status / error) disables the button (fail-closed). Works for both
+         *                 targets (Live Doc and Live Report).
+         *   permissionCheck     optional: a function returning boolean|Promise<boolean>, used
+         *                 instead of permissionCheckUrl when given (e.g. to run the extension's own
+         *                 REST wrapper). While either check is pending the button is shown disabled.
          *
          *   SECURITY: alternateHtml / defaultHtml are written via innerHTML into the top Polarion
          *   frame, so they MUST be static, trusted markup. Never interpolate user-controlled data
          *   (document fields, work-item attributes, ...) into them without sanitizing it first.
          *
-         * @returns {{ injectToolbar: function, destroy: function }}
+         * @returns {{ injectToolbar: function, setDisabled: function, destroy: function }}
+         *   injectToolbar(params)  params.alternate → row injection; params.disabled → inject
+         *                          disabled. The latest params are re-used by the self-healing
+         *                          re-inject, so the disabled state survives toolbar re-renders.
+         *   setDisabled(bool)      toggle the disabled state on the live button and for future
+         *                          re-injects (call it when an async permission result arrives).
          */
         create: function (config) {
-            // Stable left-to-right order across re-renders. Each button keeps the order it was
-            // registered with (config.order — the config-execution order); re-injection inserts
-            // before the first already-present button with a *higher* order. Buttons with distinct
-            // orders keep their position regardless of which extension's observer re-fires first;
-            // buttons sharing an order (e.g. callers that omit it → default 0) tie-break by
-            // observer-fire order, so distinct orders are required for full determinism.
-            const myOrder = (typeof config.order === 'number') ? config.order : 0;
+            const target = TARGETS[config.target || 'dleEditor'];
+            if (!target) {
+                throw new Error(`GenericDleToolbarStarter: unknown target '${config.target}'.`);
+            }
+
+            // Stable left-to-right order across re-renders. Re-injection inserts before the first
+            // already-present button with a *higher* order. The order is derived from the DOM
+            // position of the extension's own inject script (deterministic, = configured order),
+            // falling back to config.order when that can't be resolved (see domOrder). Buttons with
+            // distinct orders keep their position regardless of which extension's observer re-fires
+            // first; buttons sharing an order tie-break by observer-fire order.
+            const fallbackOrder = (typeof config.order === 'number') ? config.order : 0;
+            const myOrder = domOrder(config.markerId, fallbackOrder);
             const orderByMarker = top.__genericDleToolbarOrder || (top.__genericDleToolbarOrder = {});
             orderByMarker[config.markerId] = myOrder;
+
+            // Optional engine-driven global permission check: permissionCheck (a function returning
+            // boolean|Promise<boolean>) takes precedence over permissionCheckUrl (GET → JSON
+            // { permitted: boolean }). Resolves to whether the button is permitted (enabled).
+            const hasPermissionCheck = !!(config.permissionCheck || config.permissionCheckUrl);
+            let permissionCheckStarted = false;
+
+            function runPermissionCheck() {
+                if (config.permissionCheck) {
+                    return Promise.resolve().then(config.permissionCheck);
+                }
+                // Wrap fetch in a promise so even a synchronous throw (e.g. fetch unavailable) turns
+                // into a rejection handled by the caller's .catch → fail-closed.
+                return Promise.resolve()
+                    .then(() => fetch(config.permissionCheckUrl, { credentials: 'same-origin' }))
+                    .then(response => response.ok ? response.json() : { permitted: false })
+                    .then(data => !!(data && data.permitted));
+            }
 
             // Idempotent: only inject if the toolbar exists and our button isn't already there.
             function inject(params) {
                 if (top.document.getElementById(config.markerId)) {
                     return; // already present
                 }
-                if (params && params.alternate) {
-                    const toolbarParent = top.document.querySelector(ALTERNATE_TOOLBAR_SELECTOR);
+                if ((params && params.alternate) || !target.richTextAreaSelector) {
+                    const toolbarParent = target.findRow
+                        ? target.findRow(top.document)
+                        : top.document.querySelector(target.rowSelector);
                     if (!toolbarParent) {
-                        return; // toolbar not rendered (yet)
+                        return; // toolbar not rendered (yet), or guarded off (e.g. edit mode)
                     }
                     const toolbarContainer = top.document.createElement('td');
                     toolbarContainer.id = config.markerId;
+                    // Polarion's own toolbar cells carry vertical-align: middle inline — match them
+                    // so injected buttons line up with the native ones.
+                    toolbarContainer.style.verticalAlign = 'middle';
                     toolbarContainer.innerHTML = config.alternateHtml;
+                    applyDisabled(toolbarContainer, params && params.disabled);
                     const spacer = toolbarParent.querySelector('td[width="100%"]');
                     if (!spacer) {
                         // Polarion DOM changed (e.g. after an upgrade) — fall back to appending at the
@@ -106,7 +328,7 @@
                     }
                     toolbarParent.insertBefore(toolbarContainer, reference);
                 } else {
-                    const documentFrame = top.document.querySelector(RICH_TEXT_AREA_SELECTOR);
+                    const documentFrame = top.document.querySelector(target.richTextAreaSelector);
                     if (!documentFrame) {
                         return;
                     }
@@ -115,24 +337,61 @@
                     toolbarContainer.classList.add("dleToolBarContainer");
                     toolbarContainer.style.marginRight = "14px";
                     toolbarContainer.innerHTML = config.defaultHtml;
+                    applyDisabled(toolbarContainer, params && params.disabled);
                     documentFrame.parentNode.parentNode.prepend(toolbarContainer);
                 }
             }
 
             let observerSetUp = false;
+            let destroyed = false;
             // The observer re-injects with the params of the latest injectToolbar() call.
             let lastParams;
 
+            // Claim ownership of this markerId. If a newer starter is created for the same markerId
+            // (e.g. two create() calls in one context), the older one becomes "superseded" and its
+            // async callbacks (a late permission result) must not touch the shared button — the newer
+            // owner is the source of truth. Prevents a stale instance from overwriting current state.
+            const instanceToken = {};
+            const ownerRegistry = top.__genericDleToolbarOwners || (top.__genericDleToolbarOwners = {});
+            ownerRegistry[config.markerId] = instanceToken;
+            const isCurrentOwner = () => ownerRegistry[config.markerId] === instanceToken;
+
+            // Toggle the button's disabled state on the live element and for future (re-)injects.
+            function setDisabled(disabled) {
+                if (!isCurrentOwner()) {
+                    return; // a newer starter instance owns this markerId — don't fight it
+                }
+                lastParams = Object.assign({}, lastParams, { disabled: disabled });
+                applyDisabled(top.document.getElementById(config.markerId), disabled);
+            }
+
             return {
                 injectToolbar: function (params) {
-                    lastParams = params;
-                    inject(params);
+                    // When a permission check is configured, inject disabled first (no
+                    // enabled→disabled flicker) and resolve the real state asynchronously.
+                    if (hasPermissionCheck && !permissionCheckStarted) {
+                        params = Object.assign({}, params, { disabled: true });
+                    }
+                    // Merge onto the previous params (don't replace) so a disabled state set via
+                    // setDisabled() or the pending permission check isn't dropped by a later
+                    // injectToolbar() that omits `disabled`. Self-heal re-injects with the merged set.
+                    lastParams = Object.assign({}, lastParams, params);
+                    inject(lastParams);
+
+                    // Kick off the global permission check once; on error keep it disabled
+                    // (fail-closed — a check that can't confirm access denies it).
+                    if (hasPermissionCheck && !permissionCheckStarted) {
+                        permissionCheckStarted = true;
+                        runPermissionCheck()
+                            .then(permitted => { if (!destroyed) setDisabled(!permitted); })
+                            .catch(() => { if (!destroyed) setDisabled(true); });
+                    }
 
                     // Set up the self-healing observer once per starter instance.
                     if (observerSetUp) {
                         return;
                     }
-                    const anchor = top.document.querySelector(STABLE_ANCESTOR_SELECTOR) || top.document.body;
+                    const anchor = top.document.querySelector(target.stableAncestorSelector) || top.document.body;
                     if (!anchor) {
                         return;
                     }
@@ -151,7 +410,7 @@
                         });
                     });
                     // Disconnect any observer left over from a previous editor open for this markerId
-                    // so observers don't accumulate across the SPA's editor open/close cycles.
+                    // so observers don't accumulate across editor open/close cycles.
                     if (observerRegistry[config.markerId]) {
                         observerRegistry[config.markerId].disconnect();
                     }
@@ -159,15 +418,75 @@
                     observer.observe(anchor, { childList: true, subtree: true });
                 },
 
+                setDisabled: setDisabled,
+
                 // Stop self-healing and release the observer (for callers that have a teardown hook).
                 destroy: function () {
+                    // Mark destroyed so a still-pending permission check doesn't apply its result
+                    // (setDisabled) after teardown.
+                    destroyed = true;
                     if (observerRegistry[config.markerId]) {
                         observerRegistry[config.markerId].disconnect();
                         delete observerRegistry[config.markerId];
                     }
+                    // Clear the disabled state (and its capture-phase click blocker) from our
+                    // element so a torn-down button left in the DOM doesn't keep swallowing clicks.
+                    applyDisabled(top.document.getElementById(config.markerId), false);
                     observerSetUp = false;
                 }
             };
+        },
+
+        /**
+         * Keep the Rich Page (Live Report) tools toolbar always expanded. Polarion renders it
+         * collapsed behind an "Expand Tools" handle on every page open and does not persist the
+         * expanded state, so this clicks the handle whenever it (re-)appears — on the initial page
+         * load and on SPA navigation between pages.
+         *
+         * Idempotent across callers: a single shared observer per top window (several extensions
+         * calling this results in one observer). There is no opposite-direction fighting to worry
+         * about — Polarion offers no collapse control once the toolbar is expanded.
+         */
+        autoExpandRichPageTools: function () {
+            if (top.__genericRpeAutoExpandObserver) {
+                return;
+            }
+            function expand() {
+                // Several handles can coexist during an SPA transition (a stale, inline-hidden
+                // Rich Page panel next to the active one) — click only the visible one.
+                for (const handle of top.document.querySelectorAll(EXPAND_TOOLS_SELECTOR)) {
+                    if (isInlineVisible(handle)) {
+                        handle.click();
+                    }
+                }
+            }
+            let scheduled = false;
+            const observer = new MutationObserver(function () {
+                if (scheduled) {
+                    return;
+                }
+                scheduled = true;
+                // Coalesce the burst of mutations during a page render into a single check.
+                requestAnimationFrame(function () {
+                    scheduled = false;
+                    expand();
+                });
+            });
+            top.__genericRpeAutoExpandObserver = observer;
+            // A head-injected script can run before <body> exists — defer until it does.
+            function start() {
+                observer.observe(top.document.body, { childList: true, subtree: true });
+                expand();
+            }
+            if (top.document.body) {
+                start();
+            } else {
+                top.document.addEventListener('DOMContentLoaded', start, { once: true });
+            }
         }
     };
+
+    // Ship the shared toolbar-button styles the moment the engine loads (currentScript is still
+    // available here), so consumers don't each carry their own copy of the CSS.
+    injectOwnStyles();
 })();

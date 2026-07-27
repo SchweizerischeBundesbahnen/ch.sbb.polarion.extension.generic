@@ -395,7 +395,12 @@ export default class SearchableDropdown {
         // panels, scrollable modals) and its width is driven in JS from the trigger, so it always
         // shows in full. Hidden until opened.
         this.portal = document.createElement('div');
-        this.portal.className = 'sd-portal';
+        // The portal lives under <body> (below), outside the trigger's scoped wrapper, so it would
+        // otherwise read --sbb-* tokens from :root — clobber-prone on a page where several extensions
+        // load their own generic at different versions. `.sbb-ui` is a token scope, so tagging the
+        // portal with it keeps the popup on the same design tokens as the control that opened it,
+        // mirroring the trigger's own scoped wrapper.
+        this.portal.className = 'sd-portal sbb-ui';
         this.portal.style.display = 'none';
         this.portal.appendChild(this.optionsEl);
         document.body.appendChild(this.portal);
@@ -653,7 +658,19 @@ export default class SearchableDropdown {
                 // selectItem() may re-render the list (multi-select), detaching this option, after
                 // which portal.contains(e.target) would be false and wrongly close the popup.
                 e.stopPropagation();
+                // Capture what holds focus BEFORE the pick hides the popup — the trigger for a plain
+                // select, or the search input (inside the portal) for a searchable one.
+                const heldFocus = document.activeElement;
                 this.selectItem(item);
+                // A mouse pick should leave the combo at rest — no lingering focus ring on the trigger
+                // and no focus stranded in the now-hidden popup. Blur whatever inside this dropdown held
+                // focus, but only when the pick closed the popup (single-select); a multi-select stays
+                // open for more picks. Keyboard selection (Enter) goes through a different handler and
+                // intentionally keeps focus on the trigger for continued nav.
+                if (!this.isOpen && heldFocus
+                        && (heldFocus === this.trigger || this.portal.contains(heldFocus))) {
+                    heldFocus.blur();
+                }
             });
 
             this.itemsEl.appendChild(option);
@@ -939,6 +956,18 @@ export default class SearchableDropdown {
         selected.forEach(item => {
             const chip = document.createElement('span');
             chip.className = 'sd-chip';
+
+            // Mirror the option's icon (and optional coloured tile) onto the chip, rendered
+            // smaller than the popup/trigger icon (see .sd-chip-icon). Reuses _applyIconBg so the
+            // tile handling matches the options list and single-select trigger.
+            if (item.icon) {
+                const icon = document.createElement('img');
+                icon.className = 'sd-chip-icon';
+                icon.src = item.icon;
+                icon.alt = '';
+                this._applyIconBg(icon, item.iconBg);
+                chip.appendChild(icon);
+            }
 
             const label = document.createElement('span');
             label.className = 'sd-chip-label';

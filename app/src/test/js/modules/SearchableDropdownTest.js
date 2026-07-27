@@ -2,6 +2,7 @@ import SearchableDropdown from '../../../main/resources/js/modules/SearchableDro
 import { expect } from 'chai';
 import { JSDOM } from 'jsdom';
 import sinon from 'sinon';
+import { readFileSync } from 'node:fs';
 
 // MutationObserver callbacks fire as microtasks — let them run.
 const flush = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -306,6 +307,19 @@ describe('SearchableDropdown', function () {
         expect(document.querySelectorAll('.sd-portal').length).to.equal(0);
     });
 
+    it('scopes the body-level portal with .sbb-ui so its tokens match the trigger', function () {
+        // The popup is appended to <body>, outside the trigger's scoped wrapper; without .sbb-ui it
+        // would inherit --sbb-* from :root and could render with a foreign extension's tokens on a
+        // shared multi-version page. .sbb-ui keeps it on the same design tokens as the control.
+        const dropdown = new SearchableDropdown({
+            selectContainer: document.getElementById('build-container'),
+            rememberSelection: false
+        });
+        const portal = document.querySelector('.sd-portal');
+        expect(portal.classList.contains('sbb-ui'), '.sd-portal must carry .sbb-ui').to.be.true;
+        dropdown.destroy();
+    });
+
     describe('constructor validation', function () {
         it('throws when neither element nor selectContainer is given', function () {
             expect(() => new SearchableDropdown({})).to.throw('element or selectContainer is required');
@@ -450,6 +464,18 @@ describe('SearchableDropdown', function () {
             expect(label.htmlFor).to.equal('my-build_sd-trigger');
             dropdown.destroy();
         });
+
+        it('id returns undefined in build mode when the container is absent (defensive fallback)', function () {
+            const container = document.createElement('div');
+            container.id = 'my-build';
+            document.body.appendChild(container);
+            const dropdown = new SearchableDropdown({ selectContainer: container, rememberSelection: false });
+            expect(dropdown.id).to.equal('my-build');
+            dropdown.container = null; // simulate a missing container
+            expect(dropdown.id).to.equal(undefined);
+            dropdown.container = container; // restore so destroy() can clean up
+            dropdown.destroy();
+        });
     });
 
     describe('open/close via pointer + outside click', function () {
@@ -494,6 +520,49 @@ describe('SearchableDropdown', function () {
             dropdown._open();
             expect(dropdown.isOpen).to.be.false;
             dropdown.destroy();
+        });
+    });
+
+    describe('focus handling on selection (no lingering focus ring)', function () {
+        it('blurs the trigger after a mouse pick that closes the popup (single-select)', function () {
+            const dropdown = new SearchableDropdown({ element: document.getElementById('single'), searchable: false, rememberSelection: false });
+            dropdown._open();
+            expect(document.activeElement, 'trigger focused on open (no search box)').to.equal(dropdown.trigger);
+            mousedown(dropdown.itemsEl.children[0]); // pick option A with the mouse
+            expect(dropdown.isOpen).to.be.false;
+            expect(document.activeElement, 'trigger blurred → no lingering focus ring').to.not.equal(dropdown.trigger);
+            dropdown.destroy();
+        });
+
+        it('keeps focus on the trigger after a keyboard pick (Enter)', function () {
+            const dropdown = new SearchableDropdown({ element: document.getElementById('single'), searchable: false, rememberSelection: false });
+            dropdown._open();
+            keydown(dropdown.trigger, 'ArrowDown'); // highlight option B
+            keydown(dropdown.trigger, 'Enter');     // select via keyboard
+            expect(dropdown.isOpen).to.be.false;
+            expect(document.activeElement, 'focus kept for continued keyboard nav').to.equal(dropdown.trigger);
+            dropdown.destroy();
+        });
+
+        it('does not strand focus in the hidden popup on a mouse pick (searchable single-select)', function () {
+            // A searchable dropdown focuses the popup search input on open, not the trigger, so the blur
+            // must target whatever holds focus — here the search input inside the portal — not just the
+            // trigger, or focus would be stranded in the now-hidden popup.
+            const dropdown = new SearchableDropdown({ element: document.getElementById('single'), rememberSelection: false });
+            dropdown._open();
+            expect(document.activeElement, 'searchable → focus on the popup search box').to.equal(dropdown.searchInput);
+            mousedown(dropdown.itemsEl.children[0]);
+            expect(dropdown.isOpen).to.be.false;
+            expect(document.activeElement, 'focus not left inside the hidden popup').to.not.equal(dropdown.searchInput);
+            dropdown.destroy();
+        });
+
+        // jsdom does not apply stylesheet :focus rules to getComputedStyle, so the CSS side of the fix
+        // (no browser default outline on a focused readonly trigger) is guarded at the source instead.
+        it('the trigger focus rule covers readonly triggers too (searchable-dropdown.css)', function () {
+            const css = readFileSync(new URL('../../../main/resources/css/searchable-dropdown.css', import.meta.url), 'utf8');
+            expect(css, 'a .sd-trigger:focus rule must exist').to.match(/\.sd-trigger:focus\s*\{/);
+            expect(css, 'the focus rule must not exclude readonly triggers').to.not.match(/sd-trigger:not\(\[readonly\]\):focus/);
         });
     });
 
@@ -820,6 +889,49 @@ describe('SearchableDropdown', function () {
             dropdown.selectItem(dropdown.items.find(i => i.value === 'a'));
             dropdown.selectItem(dropdown.items.find(i => i.value === 'c'));
             expect(dropdown.getSelectedText()).to.deep.equal(['A', 'C']);
+            dropdown.destroy();
+        });
+
+        it('renders the option icon inside a selected chip', function () {
+            const dropdown = new SearchableDropdown({
+                selectContainer: document.getElementById('build-container'),
+                multiselect: true,
+                rememberSelection: false
+            });
+            dropdown.addOption('a', 'A', '/i/a.svg');
+            dropdown.selectValue('a');
+            const icon = dropdown.trigger.querySelector('.sd-chip img.sd-chip-icon');
+            expect(icon).to.exist;
+            expect(icon.getAttribute('src')).to.equal('/i/a.svg');
+            dropdown.destroy();
+        });
+
+        it('applies the icon-bg tile on a chip icon', function () {
+            const dropdown = new SearchableDropdown({
+                selectContainer: document.getElementById('build-container'),
+                multiselect: true,
+                rememberSelection: false
+            });
+            dropdown.addOption('a', 'A', '/i/a.svg', '#1a3a5c');
+            dropdown.selectValue('a');
+            const icon = dropdown.trigger.querySelector('.sd-chip img.sd-chip-icon');
+            expect(icon.classList.contains('has-icon-bg')).to.be.true;
+            expect(icon.style.backgroundColor).to.not.equal('');
+            dropdown.destroy();
+        });
+
+        it('renders no chip icon when the option has no icon', function () {
+            const dropdown = new SearchableDropdown({
+                selectContainer: document.getElementById('build-container'),
+                multiselect: true,
+                rememberSelection: false
+            });
+            dropdown.addOption('a', 'A');
+            dropdown.selectValue('a');
+            const chip = dropdown.trigger.querySelector('.sd-chip');
+            expect(chip).to.exist;
+            expect(chip.querySelector('img.sd-chip-icon')).to.be.null;
+            expect(chip.querySelector('.sd-chip-label').textContent).to.equal('A');
             dropdown.destroy();
         });
     });

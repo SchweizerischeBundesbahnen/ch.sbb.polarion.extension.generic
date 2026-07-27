@@ -210,6 +210,32 @@ Bundle-Name: PDF Exporter Extension for Polarion ALM
 Bundle-Activator: ch.sbb.polarion.extension.pdf_exporter.ExtensionBundleActivator
 ```
 
+  Subclass `GenericBundleActivator` and return your form extensions from `getExtensions()`:
+
+  ```java
+  public class ExtensionBundleActivator extends GenericBundleActivator {
+      @Override
+      protected Map<String, IFormExtension> getExtensions() {
+          return Map.of(MyFormExtension.ID, new MyFormExtension());
+      }
+  }
+  ```
+
+  > **Deferred registration (why it is not done inline in `start()`).**
+  > Polarion's `FormExtensionsRegistry` is a lazily-initialized singleton: on its first
+  > `getInstance()` it injects Polarion's own Guice-bound form extensions (`velocity_form`, `oslc`,
+  > `execute-test`, `linkedResources`, workflow-signatures widget, `gitlab`, …). If that first touch
+  > happens during OSGi bundle activation — before Polarion has built its global Guice injector —
+  > `GuicePlatform.tryInjectMembers` injects nothing, the singleton is created **empty of all core
+  > contributions**, and every Polarion-provided form extension is lost for the whole server
+  > lifetime (typical symptom: *"Form extension 'velocity_form' was not found"* on a document/work
+  > item form). To avoid poisoning the registry, `GenericBundleActivator` runs its startup on a daemon
+  > thread that first waits for the global Guice injector to become available; Polarion then loads its
+  > core extensions first and ours are added on top. The `onStart(BundleContext)` hook runs on that
+  > same deferred thread (after the injector is ready, not synchronously during activation), so a
+  > subclass hook may safely touch Polarion's platform. This is transparent to subclasses — just
+  > implement `getExtensions()` and, if needed, override `onStart()`.
+
 * `Export-Package` — if the extension exports packages for use by other bundles:
 
 ```properties
@@ -490,13 +516,27 @@ wrapper class on your surface.
 
 #### Design tokens & reuse in React SPAs (`control-tokens.css`)
 
-The 2606 control look is defined once as CSS custom properties in `css/control-tokens.css`
-(`:root { --sbb-* }`: border / focus colors, control height, radius, the soft hover/active
-elevation shadows, checkbox images, radio dot, combobox chevron, popup border, option hover tint,
-chips, and typography). `common.css` `@import`s it, and the class-based stylesheets above consume it
-via `var(--sbb-*, <literal fallback>)` — so restyling every native control across the ecosystem is a
-one-file edit, and each fallback equals the previous literal so the stylesheets still render if the
-token file is ever missing.
+The 2606 control look is defined once as CSS custom properties in `css/control-tokens.css` (border /
+focus colors, control height, radius, the soft hover/active elevation shadows, checkbox images, radio
+dot, combobox chevron, popup border, option hover tint, chips, typography, and the button tokens).
+`common.css` `@import`s it, and the class-based stylesheets above consume it via `var(--sbb-*)` — so
+restyling every native control across the ecosystem is a one-file edit.
+
+The tokens are declared on the shared UI scopes (`:root, .modal__container, .standard-admin-page,
+.form-wrapper, .sbb-ui`), not only `:root`, so that on a page where several extensions load their own
+bundled generic at **different versions** each extension's controls read the tokens from the closest
+scoped ancestor — its own bundle's copy — rather than whichever `:root` loaded last. A consumer's UI
+root must therefore carry one of those wrapper classes (`.sbb-ui` for the React SPAs).
+
+**Icon tokens are generated from `.svg` files at build time.** The 17 icon tokens
+(checkbox states, combobox chevron / erase, info, revert, warning / error triangles, table +/−) live
+only as `.svg` files under `images/` — the single source of truth. In the source stylesheet each is a
+placeholder, `--sbb-x: url(inline:images/x.svg)`; the Maven build (`npm run build:css` →
+`scripts/inline-svg-tokens.mjs`, wired into `frontend-maven-plugin` at `process-classes`) rewrites the
+copy in `target/classes`, replacing each placeholder with the base64 of that `.svg`. The **shipped**
+stylesheet is thus fully self-contained — no runtime icon requests (required for the React SPAs, which
+link it directly and must render even when `/polarion/*` 404s). **To change an icon, edit its `.svg`
+and rebuild — never hand-edit a base64 blob.**
 
 This is also the **reuse path for extensions whose UI is not built from our class-based CSS** — the
 React SPAs (Vite / Next), which render their own markup (custom components, native `<select>`,
@@ -632,9 +672,9 @@ breadcrumb shape:
 
 Polarion renders that breadcrumb in the shell window, but an extension topic runs in a frame, so the
 topic page injects this **classic** script into the shell (it needs `document.currentScript` to read
-its config, so it is deliberately *not* an ES module). It is the single shared implementation of what
-used to be a copy-pasted `<ext>-breadcrumb-bridge.js` per extension. It **never** activates on
-Polarion's own Administration pages (`#/administration/…`), which render their breadcrumb correctly.
+its config, so it is deliberately *not* an ES module). It is the single shared breadcrumb-bridge
+implementation for every extension. It **never** activates on Polarion's own Administration pages
+(`#/administration/…`), which render their breadcrumb correctly.
 
 Inject it into the shell and configure it via `data-*` attributes (auto-install), or — once loaded —
 call `install()` directly so a sub-topic can re-label without re-loading the module:
@@ -761,7 +801,11 @@ of writing the injection logic in every extension. The engine knows the toolbar 
 user clicks *Save* — so the button does not disappear (a one-time injection otherwise would).
 
 The engine is served to each extension at `/polarion/<extension>/ui/generic/js/dle-toolbar-starter.js`
-and exposes `window.GenericDleToolbarStarter.create({ markerId, alternateHtml, defaultHtml, order })`.
+and exposes `window.GenericDleToolbarStarter.create({ markerId, alternateHtml, defaultHtml, target,
+order, permissionCheckUrl, permissionCheck })`, which returns `{ injectToolbar, setDisabled, destroy }`.
+The same engine also drives the **Live Report** (Rich Page) toolbar — pass `target: 'richPagePreview'`
+(see below); everything here, including disabling, works for both toolbars. It also injects the shared
+toolbar-button stylesheet (`css/dle-toolbar.css`) itself, so you don't ship those `.dleToolBar*` rules.
 
 Add a thin `starter.js` to your extension's webapp that supplies only the extension-specific parts
 (button markup, a unique `markerId`, any css/js the button needs) and bootstraps the engine:
@@ -836,3 +880,59 @@ To change the order, reorder the `injectToolbar` lines in `dleEditorHead`. Note 
 **distinct** `order` values: buttons that share the same `order` (including any caller that omits it — it
 defaults to `0`) tie-break by observer-fire order, i.e. non-deterministically, exactly as before this
 mechanism existed.
+
+#### Disabling the button (permission-gated actions)
+
+When the button's action isn't always available — e.g. the user isn't permitted to export — inject it
+**disabled** instead of clickable. The disabled state is kept by the engine and re-applied on every
+self-healing re-injection (so it survives toolbar re-renders), and the click is blocked via a
+`pointer-events: none` class regardless of the `onclick` baked into your button markup. This works the
+same for the Live Doc (`dleEditor`) and Live Report (`richPagePreview`) toolbars.
+
+There are two ways to use it.
+
+**1. Let the engine run a permission check.** Pass either a URL or a function to `create(...)`. The
+engine treats the result as a plain boolean; **any context the check needs (project, document, …) is
+the extension's to supply** — the engine doesn't parse the page or know about projects. The extension
+knows the context (e.g. from its own `ExportContext`) and bakes it into the URL or the function:
+
+```js
+// The engine GETs the URL and expects JSON { "permitted": boolean }.
+// permitted !== true, a non-OK HTTP status, or an error → the button stays disabled (fail-closed).
+// Build the URL with whatever the check is scoped to — here a project-level permission:
+window.GenericDleToolbarStarter.create({
+    markerId: 'my-extension-toolbar-injected',
+    alternateHtml: ALTERNATE_TOOLBAR_HTML,
+    defaultHtml: TOOLBAR_HTML,
+    permissionCheckUrl: `/polarion/my-extension/rest/internal/permissions/export?projectId=${ctx.getProjectId()}`
+}).injectToolbar({ alternate: true });
+
+// ...or run the check yourself (custom headers, your own REST wrapper, extra context):
+window.GenericDleToolbarStarter.create({
+    markerId: 'my-extension-toolbar-injected',
+    alternateHtml: ALTERNATE_TOOLBAR_HTML,
+    defaultHtml: TOOLBAR_HTML,
+    permissionCheck: () => ctx.callAsync({
+        method: 'GET',
+        url: `/polarion/my-extension/rest/internal/permissions/export?projectId=${ctx.getProjectId()}`
+    }).then(r => r.response.permitted)
+}).injectToolbar({ alternate: true });
+```
+
+While the check is pending the button is shown **disabled**, so it never flickers enabled→disabled;
+it becomes clickable only once the check confirms access. `permissionCheck` (a function returning
+`boolean | Promise<boolean>`) takes precedence over `permissionCheckUrl` if both are given. If neither
+is configured the button is enabled, as before.
+
+**2. Toggle it yourself.** `create(...)` returns a `setDisabled(bool)` method, and `injectToolbar`
+accepts a `disabled` flag — use these if you resolve the permission on your own schedule:
+
+```js
+const starter = window.GenericDleToolbarStarter.create({ markerId: '…', alternateHtml: ALTERNATE_TOOLBAR_HTML, defaultHtml: TOOLBAR_HTML });
+starter.injectToolbar({ alternate: true, disabled: true });   // start disabled
+myPermissionCheck().then(allowed => starter.setDisabled(!allowed));   // enable/disable later
+```
+
+The backend endpoint (or whatever decides *whether* the action is permitted) is owned by your
+extension; the engine only renders and preserves the disabled look. The disabled styling lives in the
+shared `css/dle-toolbar.css` as `.dleToolBarDisabled`.
