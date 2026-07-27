@@ -164,6 +164,33 @@
         <!-- When bumping nodeVersion/npmVersion, keep app/package.json ("engines" and "packageManager") in sync. -->
         <frontend-maven-plugin.nodeVersion>v24.11.0</frontend-maven-plugin.nodeVersion>
         <frontend-maven-plugin.npmVersion>11.6.1</frontend-maven-plugin.npmVersion>
+
+        <!-- ==== React/Vite administration app (the `vite-ui` profile below) ====================
+             An extension gets the whole build by having a `ui/package.json`; there is nothing to
+             declare in its own pom. Override any of these to deviate. -->
+        <!-- Webapp context that receives a copy of generic.app.jar in its WEB-INF/lib (see the
+             maven-dependency-plugin `copy-generic-app-to-ui-webapp` execution). Defaults to the legacy
+             JSP admin webapp; the `vite-ui` profile points it at the React app webapp instead, so the
+             copy always lands in a context that actually exists. -->
+        <generic.app.ui.webapp>${web.app.name}-admin</generic.app.ui.webapp>
+
+        <vite.sources.root>${project.basedir}/ui</vite.sources.root>
+        <vite.destination.root>${project.basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-app</vite.destination.root>
+        <!-- Set -DskipJsTests to skip the ui/ Vitest run (and the Playwright install) that otherwise
+             happens in the `test` phase alongside the Java tests. -->
+        <skipJsTests>false</skipJsTests>
+        <!-- The npm invocation for the ui/ tests, run as `npm ${jsTestCommand} ${jsTestExtraArgs}`.
+             Two independent pieces so -DjsTestsNoDocker and -DskipVisualJsTests can each set their own
+             without clobbering the other:
+               jsTestCommand   - defaults to the dockerized full suite WITH the coverage gate;
+                                 -DjsTestsNoDocker switches it to the native equivalent. (The plain
+                                 test:docker variant would run the suite but never evaluate the
+                                 istanbul thresholds.)
+               jsTestExtraArgs - extra args forwarded to Vitest; -DskipVisualJsTests adds the exclude
+                                 that drops the visual-regression tests. Only takes effect on the
+                                 non-docker command (the test:docker wrapper forwards no extra args). -->
+        <jsTestCommand>run test:coverage:docker</jsTestCommand>
+        <jsTestExtraArgs> </jsTestExtraArgs>
     </properties>
 
     <profiles>
@@ -263,6 +290,264 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- ==== React/Vite administration app ======================================================
+             The whole build for an extension whose admin UI is a Vite/React app on
+             react-sbb-polarion: install node+npm, `npm ci`, `npm run build`, copy the bundle into the
+             extension's `<ext>-app` webapp resources, run the JS suite in the `test` phase, and clean
+             the generated bundle.
+
+             Activated by the presence of `ui/package.json`, NOT by a flag or a plugin declaration:
+               - an extension with a React app needs nothing in its own pom;
+               - an extension without one is completely unaffected;
+               - generic's own `app` module (which uses frontend-maven-plugin for a different, vanilla
+                 JS build) has no `ui/`, so its executions are never touched.
+             File activation is also immune to the `activeByDefault` rule that switches default profiles
+             off as soon as any -P profile is named. -->
+        <profile>
+            <id>vite-ui</id>
+            <activation>
+                <file>
+                    <exists>${project.basedir}/ui/package.json</exists>
+                </file>
+            </activation>
+            <properties>
+                <!-- The generated about.html / user-guide.html move under the app webapp together with
+                     the UI. The property name is historical (it predates the React apps); the Java side
+                     looks in `<ext>-app/html` first and falls back to `<ext>-admin/html`, so extensions
+                     still on the JSP admin UI are unaffected. -->
+                <markdown2html-maven-plugin.extensionContextAdminHtml>${vite.destination.root}/html</markdown2html-maven-plugin.extensionContextAdminHtml>
+                <!-- There is no -admin webapp in a converted extension; generic.app.jar belongs in the
+                     webapp that exists. Without this the copy lands in webapp/<ext>-admin/WEB-INF/lib,
+                     which nothing serves - 350+ KB of dead weight in every jar. -->
+                <generic.app.ui.webapp>${web.app.name}-app</generic.app.ui.webapp>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <configuration>
+                            <!-- combine.children="append" is required, not decoration: without it Maven
+                                 merges this fileset element-wise into the managed one (which deletes the
+                                 generated about.html), so the directory below would inherit that
+                                 <includes> and clean nothing - while also disabling that cleanup. -->
+                            <filesets combine.children="append">
+                                <fileset>
+                                    <directory>${vite.destination.root}/app</directory>
+                                    <followSymlinks>false</followSymlinks>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>${frontend-maven-plugin.version}</version>
+                        <configuration>
+                            <workingDirectory>${vite.sources.root}</workingDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>vite-install-node-and-npm</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>install-node-and-npm</goal>
+                                </goals>
+                                <configuration>
+                                    <nodeVersion>${frontend-maven-plugin.nodeVersion}</nodeVersion>
+                                    <npmVersion>${frontend-maven-plugin.npmVersion}</npmVersion>
+                                </configuration>
+                            </execution>
+                            <!-- `ci`, not the plugin default `install`: the shipped bundle must come from
+                                 the committed package-lock.json, the same graph the dockerized tests run
+                                 against (they `npm ci` too). With `install` the caret ranges could resolve
+                                 differently here than in the tests, so we would ship something we never
+                                 ran; it also turns a package.json/lock mismatch into a failed build
+                                 instead of a silent repair. -->
+                            <execution>
+                                <id>vite-npm-ci</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>ci</arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>vite-npm-build</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>run build</arguments>
+                                </configuration>
+                            </execution>
+                            <!-- The JS suite runs in the `test` phase next to the Java tests. By default
+                                 that is the full suite (behavior + visual regression) plus the coverage
+                                 gate inside the pinned Playwright Docker image, so the screenshots match
+                                 their committed references. On a host without Docker use
+                                 -DjsTestsNoDocker; to skip it entirely, -DskipJsTests. -->
+                            <execution>
+                                <id>vite-npm-test</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>${jsTestCommand} ${jsTestExtraArgs}</arguments>
+                                    <skip>${skipJsTests}</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Copy the Vite bundle (ui/dist) into the <ext>-app webapp resources so it is
+                         packaged into the jar and served by the extension's app servlet. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-vite-build</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${vite.destination.root}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${vite.sources.root}/dist</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <include>**/*</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                    <overwrite>true</overwrite>
+                                    <includeEmptyDirs>true</includeEmptyDirs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Run the ui/ tests natively instead of in the pinned Playwright Docker image. Needed where
+             Docker is unavailable - notably the ESTA build agents, which have no docker-in-docker. The
+             Vitest suite runs in Playwright browser mode, so the browser must be present: add
+             -DinstallPlaywrightNoDeps (below). The visual suites detect they are not in the reference
+             image and skip themselves, so no pixel assertion runs. Sets only jsTestCommand, so it
+             composes with -DskipVisualJsTests. -->
+        <profile>
+            <id>js-tests-no-docker</id>
+            <activation>
+                <property>
+                    <name>jsTestsNoDocker</name>
+                </property>
+            </activation>
+            <properties>
+                <jsTestCommand>run test:coverage:full</jsTestCommand>
+            </properties>
+        </profile>
+
+        <!-- Drop the pixel-based visual-regression tests explicitly. Rarely needed since they skip
+             themselves outside the reference image; kept for a host where even loading them is
+             unwanted. Adds a Vitest exclude passed through `npm test`, so it only takes effect together
+             with -DjsTestsNoDocker (the test:docker wrapper forwards no extra args). Sets only
+             jsTestExtraArgs, so it never clobbers jsTestCommand. -->
+        <profile>
+            <id>skip-visual-js-tests</id>
+            <activation>
+                <property>
+                    <name>skipVisualJsTests</name>
+                </property>
+            </activation>
+            <properties>
+                <jsTestExtraArgs>-- --exclude **/*.visual.test.tsx</jsTestExtraArgs>
+            </properties>
+        </profile>
+
+        <!-- The Chromium build Vitest browser mode needs, installed before the tests run. Kept separate
+             from -DjsTestsNoDocker so a host with the browser already cached can skip it. Not needed for
+             the dockerized path - the pinned Playwright image ships the browser. Use exactly one:
+               -DinstallPlaywright        browser + its OS libraries. Needs a Debian/Ubuntu host with
+                                          apt-get and root/sudo.
+               -DinstallPlaywrightNoDeps  browser binary only, for hosts without apt-get/root; the host
+                                          must already provide Chromium's system libraries. -->
+        <profile>
+            <id>playwright-install</id>
+            <activation>
+                <property>
+                    <name>installPlaywright</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>${frontend-maven-plugin.version}</version>
+                        <configuration>
+                            <workingDirectory>${vite.sources.root}</workingDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>playwright-install-with-deps</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>npx</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>playwright install --with-deps chromium</arguments>
+                                    <skip>${skipJsTests}</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Browser binary only (no OS libraries). See the comment above the playwright-install profile. -->
+        <profile>
+            <id>playwright-install-no-deps</id>
+            <activation>
+                <property>
+                    <name>installPlaywrightNoDeps</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>${frontend-maven-plugin.version}</version>
+                        <configuration>
+                            <workingDirectory>${vite.sources.root}</workingDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>playwright-install-without-deps</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>npx</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>playwright install chromium</arguments>
+                                    <skip>${skipJsTests}</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -845,7 +1130,7 @@
                         </execution>
 
                         <execution>
-                            <id>copy-dependencies-admin</id>
+                            <id>copy-generic-app-to-ui-webapp</id>
                             <phase>prepare-package</phase>
                             <goals>
                                 <goal>copy</goal>
@@ -859,7 +1144,7 @@
                                         <type>jar</type>
                                     </artifactItem>
                                 </artifactItems>
-                                <outputDirectory>${basedir}/target/classes/webapp/${web.app.name}-admin/WEB-INF/lib</outputDirectory>
+                                <outputDirectory>${basedir}/target/classes/webapp/${generic.app.ui.webapp}/WEB-INF/lib</outputDirectory>
                             </configuration>
                         </execution>
                     </executions>
