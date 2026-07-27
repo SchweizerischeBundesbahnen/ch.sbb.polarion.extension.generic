@@ -162,8 +162,8 @@
 
         <frontend-maven-plugin.version>2.0.1</frontend-maven-plugin.version>
         <!-- When bumping nodeVersion/npmVersion, keep app/package.json ("engines" and "packageManager") in sync. -->
-        <frontend-maven-plugin.nodeVersion>v24.11.0</frontend-maven-plugin.nodeVersion>
-        <frontend-maven-plugin.npmVersion>11.6.1</frontend-maven-plugin.npmVersion>
+        <frontend-maven-plugin.nodeVersion>v24.18.0</frontend-maven-plugin.nodeVersion>
+        <frontend-maven-plugin.npmVersion>12.0.1</frontend-maven-plugin.npmVersion>
 
         <!-- ==== React/Vite administration app (the `vite-ui` profile below) ====================
              An extension gets the whole build by having a `ui/package.json`; there is nothing to
