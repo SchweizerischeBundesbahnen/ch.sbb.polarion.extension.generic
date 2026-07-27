@@ -1,5 +1,13 @@
 # Changelog
 
+## [15.8.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.8.0...v15.8.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.185 ([#608](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/608)) ([c2a1790](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/c2a179084305254c600ed0c1c1ab85ac151c84a4))
+* move jsdom to 30 and the undici override to 8.7.0 ([#606](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/606)) ([945a8ca](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/945a8ca2df11bb2ef30bebb2728a43b734435f09))
+
 ## [15.8.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.7.0...v15.8.0) (2026-07-27)
 
 
