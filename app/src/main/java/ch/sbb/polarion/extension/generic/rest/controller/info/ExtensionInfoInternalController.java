@@ -120,19 +120,29 @@ public class ExtensionInfoInternalController {
     }
 
     /**
+     * Webapp contexts searched for the build-generated HTML help articles, in order. Extensions whose
+     * administration UI is a React app keep them under {@code -app}; those still on the JSP admin UI
+     * keep them under {@code -admin}. Searching both lets a converted extension drop its {@code -admin}
+     * directory without any change here, and leaves every other extension working unchanged.
+     */
+    private static final List<String> HTML_WEBAPP_SUFFIXES = List.of("-app", "-admin");
+
+    /**
      * Reads a build-generated HTML file from the classpath under
-     * {@code /webapp/{extensionContext}-admin/html/}. Returns an empty string when the file is absent
-     * (the markdown sources are not packaged into the jar, so there is nothing to fall back to).
+     * {@code /webapp/{extensionContext}{-app|-admin}/html/}. Returns an empty string when the file is
+     * absent (the markdown sources are not packaged into the jar, so there is nothing to fall back to).
      */
     private String readHtmlFile(@NotNull String htmlFileName) {
         String extensionContext = ExtensionInfo.getInstance().getContext().getExtensionContext();
-        String resourcePath = "/webapp/" + extensionContext + "-admin/html/" + htmlFileName;
-        try (InputStream inputStream = ExtensionInfo.class.getResourceAsStream(resourcePath)) {
-            if (inputStream != null) {
-                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        for (String webappSuffix : HTML_WEBAPP_SUFFIXES) {
+            String resourcePath = "/webapp/" + extensionContext + webappSuffix + "/html/" + htmlFileName;
+            try (InputStream inputStream = ExtensionInfo.class.getResourceAsStream(resourcePath)) {
+                if (inputStream != null) {
+                    return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+                }
+            } catch (IOException e) {
+                logger.error("Could not read the HTML file from " + resourcePath, e);
             }
-        } catch (IOException e) {
-            logger.error("Could not read the HTML file from " + resourcePath, e);
         }
         return "";
     }
