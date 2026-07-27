@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.8.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.7.0...v15.8.0) (2026-07-27)
+
+
+### Features
+
+* share the Vite/React UI build and free extensions from the -admin webapp ([#601](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/601)) ([6c9d270](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6c9d270d429530509f5438b82f8ad3b3208b034f))
+
 ## [15.7.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.6.0...v15.7.0) (2026-07-24)
 
 
