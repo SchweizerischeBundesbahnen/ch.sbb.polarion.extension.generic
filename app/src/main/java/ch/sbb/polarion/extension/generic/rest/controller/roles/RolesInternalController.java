@@ -2,6 +2,7 @@ package ch.sbb.polarion.extension.generic.rest.controller.roles;
 
 import ch.sbb.polarion.extension.generic.rest.model.RolesInfo;
 import ch.sbb.polarion.extension.generic.service.PolarionService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
  * {@code getExtensionControllerClasses()}.
  */
 @Singleton
+@Hidden
 @Tag(name = "Roles")
 @Path("/internal")
 public class RolesInternalController {
