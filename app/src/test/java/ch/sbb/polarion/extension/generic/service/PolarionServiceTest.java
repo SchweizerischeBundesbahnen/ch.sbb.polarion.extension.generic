@@ -27,6 +27,7 @@ import com.polarion.platform.persistence.IEnumeration;
 import com.polarion.platform.persistence.model.IPObject;
 import com.polarion.platform.persistence.model.IPrototype;
 import com.polarion.platform.persistence.spi.EnumOption;
+import com.polarion.platform.security.ISecurityService;
 import com.polarion.subterra.base.data.identification.IContextId;
 import com.polarion.subterra.base.data.identification.IObjectId;
 import com.polarion.subterra.base.data.model.ICustomField;
@@ -70,6 +71,9 @@ public class PolarionServiceTest {
     private IProjectService projectService;
 
     @Mock
+    private ISecurityService securityService;
+
+    @Mock
     private ITrackerService trackerService;
 
     @Mock
@@ -85,7 +89,32 @@ public class PolarionServiceTest {
 
     @BeforeEach
     void init() {
-        polarionService = TestUtils.mockPolarionService(trackerService, projectService, null, platformService, null);
+        polarionService = TestUtils.mockPolarionService(trackerService, projectService, securityService, platformService, null);
+    }
+
+    @Test
+    void testGetGlobalRoles() {
+        when(securityService.getGlobalRoles()).thenReturn(List.of("admin", "user"));
+
+        assertEquals(List.of("admin", "user"), List.copyOf(polarionService.getGlobalRoles()));
+    }
+
+    @Test
+    void testGetProjectRoles() {
+        IProject project = mockProject(Boolean.TRUE);
+        IContextId contextId = mock(IContextId.class);
+        when(project.getContextId()).thenReturn(contextId);
+        when(securityService.getContextRoles(contextId)).thenReturn(Set.of("project_admin"));
+
+        assertEquals(Set.of("project_admin"), Set.copyOf(polarionService.getProjectRoles("project/" + PROJECT_ID + "/")));
+    }
+
+    @Test
+    void testGetProjectRolesWithoutProjectScope() {
+        // The global scope names no project, which is a normal state - not an error.
+        assertTrue(polarionService.getProjectRoles("").isEmpty());
+        assertTrue(polarionService.getProjectRoles(null).isEmpty());
+        assertTrue(polarionService.getProjectRoles("no-project-here").isEmpty());
     }
 
     @Test
