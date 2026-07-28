@@ -442,6 +442,43 @@
             </build>
         </profile>
 
+        <!-- Activate with -DnpmIgnoreUserConfig to run npm with an empty user config.
+             For CI agents whose npm configuration the build cannot fix and must not inherit: the ESTA
+             agents still carry the npm 6-era `email` and `always-auth` keys, which npm 12 rejects
+             outright (ERR_INVALID_AUTH) before it fetches anything, and each agent is a container
+             recreated per run, so there is nothing to repair in place.
+
+             Nothing is lost by ignoring it: every lockfile entry resolves from the public registry,
+             which is also what npm falls back to with no configuration, so no token and no scope
+             mapping applies. Never make this the default - on a developer machine it would silently
+             discard their own registry, proxy and auth settings. -->
+        <profile>
+            <id>npm-ignore-user-config</id>
+            <activation>
+                <property>
+                    <name>npmIgnoreUserConfig</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <configuration>
+                            <!-- On the plugin, not on one execution: every npm invocation validates the
+                                 user config, not just the ones that fetch. Set here rather than in the
+                                 base configuration so that a build without the flag does not touch the
+                                 environment at all - an NPM_CONFIG_USERCONFIG set outside Maven keeps
+                                 working, which an unconditional override would silently discard. -->
+                            <environmentVariables>
+                                <NPM_CONFIG_USERCONFIG>/dev/null</NPM_CONFIG_USERCONFIG>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Run the ui/ tests natively instead of in the pinned Playwright Docker image. Needed where
              Docker is unavailable - notably the ESTA build agents, which have no docker-in-docker. The
              Vitest suite runs in Playwright browser mode, so the browser must be present: add
