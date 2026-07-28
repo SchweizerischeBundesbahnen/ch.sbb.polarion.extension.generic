@@ -191,6 +191,9 @@
                                  non-docker command (the test:docker wrapper forwards no extra args). -->
         <jsTestCommand>run test:coverage:docker</jsTestCommand>
         <jsTestExtraArgs> </jsTestExtraArgs>
+        <!-- Which npm user config the build reads. The default is npm's own, so setting it changes
+             nothing; -DnpmIgnoreUserConfig (profile below) points it at an empty file instead. -->
+        <npm.userconfig>${user.home}/.npmrc</npm.userconfig>
     </properties>
 
     <profiles>
@@ -351,6 +354,11 @@
                         <version>${frontend-maven-plugin.version}</version>
                         <configuration>
                             <workingDirectory>${vite.sources.root}</workingDirectory>
+                            <!-- Every npm invocation validates the user config, not just the ones that
+                                 fetch, so this belongs on the plugin rather than on one execution. -->
+                            <environmentVariables>
+                                <NPM_CONFIG_USERCONFIG>${npm.userconfig}</NPM_CONFIG_USERCONFIG>
+                            </environmentVariables>
                         </configuration>
                         <executions>
                             <execution>
@@ -440,6 +448,28 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!-- Activate with -DnpmIgnoreUserConfig to run npm with an empty user config.
+             For CI agents whose npm configuration the build cannot fix and must not inherit: the ESTA
+             agents still carry the npm 6-era `email` and `always-auth` keys, which npm 12 rejects
+             outright (ERR_INVALID_AUTH) before it fetches anything, and each agent is a container
+             recreated per run, so there is nothing to repair in place.
+
+             Nothing is lost by ignoring it: every lockfile entry resolves from the public registry,
+             which is also what npm falls back to with no configuration, so no token and no scope
+             mapping applies. Never make this the default - on a developer machine it would silently
+             discard their own registry, proxy and auth settings. -->
+        <profile>
+            <id>npm-ignore-user-config</id>
+            <activation>
+                <property>
+                    <name>npmIgnoreUserConfig</name>
+                </property>
+            </activation>
+            <properties>
+                <npm.userconfig>/dev/null</npm.userconfig>
+            </properties>
         </profile>
 
         <!-- Run the ui/ tests natively instead of in the pinned Playwright Docker image. Needed where
