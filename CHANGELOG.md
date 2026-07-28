@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.10.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.9.0...v15.10.0) (2026-07-28)
+
+
+### Features
+
+* share the role-based authorization pieces ([#614](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/614)) ([55ecfb7](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/55ecfb7e1db5d05bb60d0451d832d8db84b2d37b))
+
 ## [15.9.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.8.1...v15.9.0) (2026-07-28)
 
 
