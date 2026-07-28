@@ -9,6 +9,7 @@ import ch.sbb.polarion.extension.generic.util.AssigneeUtils;
 import ch.sbb.polarion.extension.generic.util.EnumUtils;
 import ch.sbb.polarion.extension.generic.util.ObjectUtils;
 import ch.sbb.polarion.extension.generic.util.RequestContextUtil;
+import ch.sbb.polarion.extension.generic.util.ScopeUtils;
 import com.polarion.alm.projects.IProjectService;
 import com.polarion.alm.projects.model.IProject;
 import com.polarion.alm.shared.api.model.baselinecollection.BaselineCollectionReference;
@@ -282,6 +283,25 @@ public class PolarionService {
                     return null;
                 }
         );
+    }
+
+    /** Roles defined for the whole repository. */
+    @NotNull
+    public Collection<String> getGlobalRoles() {
+        return securityService.getGlobalRoles();
+    }
+
+    /**
+     * Roles defined for the project the scope points at. A scope naming no project - the global scope -
+     * has none, which is a normal state and not an error.
+     */
+    @NotNull
+    public Collection<String> getProjectRoles(@Nullable String scope) {
+        String projectId = ScopeUtils.getProjectFromScope(scope == null ? "" : scope);
+        if (projectId == null) {
+            return Set.of();
+        }
+        return securityService.getContextRoles(getProject(projectId).getContextId());
     }
 
     public String getPolarionProductName() {

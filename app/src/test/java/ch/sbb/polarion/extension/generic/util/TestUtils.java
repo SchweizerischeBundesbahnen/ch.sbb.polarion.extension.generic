@@ -49,6 +49,9 @@ public class TestUtils {
         lenient().doCallRealMethod().when(polarionService).setFieldValue(any(),any(), any());
         lenient().doCallRealMethod().when(polarionService).setFieldValue(any(),any(), any(), any());
 
+        lenient().when(polarionService.getGlobalRoles()).thenCallRealMethod();
+        lenient().when(polarionService.getProjectRoles(any())).thenCallRealMethod();
+
         lenient().when(polarionService.getPolarionProductName()).thenCallRealMethod();
         lenient().when(polarionService.getPolarionVersion()).thenCallRealMethod();
 
