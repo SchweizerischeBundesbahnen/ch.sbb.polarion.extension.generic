@@ -69,4 +69,17 @@ class AuthorizationModelTest {
         assertEquals(List.of("admin", "user"), model.getGlobalRoles());
         assertTrue(model.getProjectRoles().isEmpty());
     }
+
+    @Test
+    void testDeserializeMissingEntries() {
+        // A setting written before the roles existed, or edited by hand, has no such block at all; it
+        // must read as "nothing granted" rather than failing the whole load.
+        AuthorizationModel model = new AuthorizationModel();
+
+        model.deserialize(model.serializeEntry(SettingsModel.NAME, "Default"));
+
+        assertTrue(model.getGlobalRoles().isEmpty());
+        assertTrue(model.getProjectRoles().isEmpty());
+        assertTrue(model.getAllRoles().isEmpty());
+    }
 }

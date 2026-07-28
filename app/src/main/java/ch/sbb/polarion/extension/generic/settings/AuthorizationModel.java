@@ -60,7 +60,9 @@ public class AuthorizationModel extends SettingsModel {
 
     @NotNull
     protected List<String> deserializeRoles(@NotNull String what, @NotNull String serializedString) {
-        final String roles = deserializeEntry(what, serializedString);
+        // Default to empty: the two-argument overload answers null when the block is absent, which a
+        // legacy or hand-edited setting may well be, and splitting that would fail the whole load.
+        final String roles = deserializeEntry(what, serializedString, "");
         // Trim first, then drop the blanks: filtering before trimming let an entry of spaces through
         // as an empty string, which is not a role and can never match one.
         return Arrays.stream(roles.split(",")).map(String::trim).filter(s -> !StringUtils.isEmpty(s)).toList();
