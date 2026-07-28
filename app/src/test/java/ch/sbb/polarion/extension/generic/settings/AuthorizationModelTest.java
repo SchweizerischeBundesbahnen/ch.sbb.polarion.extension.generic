@@ -82,4 +82,16 @@ class AuthorizationModelTest {
         assertTrue(model.getProjectRoles().isEmpty());
         assertTrue(model.getAllRoles().isEmpty());
     }
+
+    @Test
+    void testGetAllRolesWhenNeverPopulated() {
+        // A model straight from the constructor, or built from JSON that omitted a list, has nulls;
+        // aggregating them must grant nothing rather than throw.
+        assertTrue(new AuthorizationModel().getAllRoles().isEmpty());
+
+        AuthorizationModel onlyGlobal = new AuthorizationModel();
+        onlyGlobal.setGlobalRoles("admin");
+
+        assertEquals(List.of("admin"), onlyGlobal.getAllRoles());
+    }
 }

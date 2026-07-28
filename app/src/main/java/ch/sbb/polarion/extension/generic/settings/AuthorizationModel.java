@@ -68,12 +68,16 @@ public class AuthorizationModel extends SettingsModel {
         return Arrays.stream(roles.split(",")).map(String::trim).filter(s -> !StringUtils.isEmpty(s)).toList();
     }
 
-    /** Every granted role, global and project, in one list - what a permission check usually wants. */
+    /**
+     * Every granted role, global and project, in one list - what a permission check usually wants.
+     * Either list is null on a model that was never populated, or built from JSON that omitted it; an
+     * omitted list grants nothing rather than failing the check.
+     */
     @JsonIgnore
     public List<String> getAllRoles() {
         List<String> roles = new ArrayList<>();
-        roles.addAll(getGlobalRoles());
-        roles.addAll(getProjectRoles());
+        roles.addAll(globalRoles == null ? List.of() : globalRoles);
+        roles.addAll(projectRoles == null ? List.of() : projectRoles);
         return roles;
     }
 }
