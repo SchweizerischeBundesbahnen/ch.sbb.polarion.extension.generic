@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.9.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.8.1...v15.9.0) (2026-07-28)
+
+
+### Features
+
+* let a build ignore an npm user config it cannot fix ([#611](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/611)) ([1ec01d0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/1ec01d0463f58dee55c9c7d76a92933aaf0803c2))
+
 ## [15.8.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.8.0...v15.8.1) (2026-07-27)
 
 
