@@ -61,7 +61,9 @@ public class AuthorizationModel extends SettingsModel {
     @NotNull
     protected List<String> deserializeRoles(@NotNull String what, @NotNull String serializedString) {
         final String roles = deserializeEntry(what, serializedString);
-        return Arrays.stream(roles.split(",")).filter(s -> !StringUtils.isEmpty(s)).map(String::trim).toList();
+        // Trim first, then drop the blanks: filtering before trimming let an entry of spaces through
+        // as an empty string, which is not a role and can never match one.
+        return Arrays.stream(roles.split(",")).map(String::trim).filter(s -> !StringUtils.isEmpty(s)).toList();
     }
 
     /** Every granted role, global and project, in one list - what a permission check usually wants. */

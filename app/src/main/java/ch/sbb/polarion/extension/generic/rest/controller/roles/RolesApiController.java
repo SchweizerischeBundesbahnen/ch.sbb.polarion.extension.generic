@@ -2,6 +2,7 @@ package ch.sbb.polarion.extension.generic.rest.controller.roles;
 
 import ch.sbb.polarion.extension.generic.rest.filter.Secured;
 import ch.sbb.polarion.extension.generic.rest.model.RolesInfo;
+import ch.sbb.polarion.extension.generic.service.PolarionService;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.Path;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +17,14 @@ import org.jetbrains.annotations.Nullable;
 @Secured
 @Path("/api")
 public class RolesApiController extends RolesInternalController {
+
+    public RolesApiController() {
+        super();
+    }
+
+    public RolesApiController(PolarionService polarionService) {
+        super(polarionService);
+    }
 
     @Override
     public @NotNull RolesInfo getRoles(@Nullable String scope) {
