@@ -1,5 +1,12 @@
 # Changelog
 
+## [15.10.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.10.0...v15.10.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* hide internal roles endpoint from the OpenAPI spec ([#617](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/617)) ([a043137](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/a043137389d3a1cfb1ef554324043f32b7cd9f9e))
+
 ## [15.10.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.9.0...v15.10.0) (2026-07-28)
 
 
