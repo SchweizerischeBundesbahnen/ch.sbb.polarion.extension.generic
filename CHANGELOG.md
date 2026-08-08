@@ -1,5 +1,13 @@
 # Changelog
 
+## [15.10.2](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.10.1...v15.10.2) (2026-08-08)
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.186 ([#625](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/625)) ([d98494e](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d98494e38c6d92cc52b4df6ea8962c7a4257b69c))
+* **deps:** update swagger.version to v2.2.53 ([#637](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/637)) ([89aa877](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/89aa877e83d0b19a6e1c8e5151e46f0ca11b7de8))
+
 ## [15.10.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.10.0...v15.10.1) (2026-07-30)
 
 
