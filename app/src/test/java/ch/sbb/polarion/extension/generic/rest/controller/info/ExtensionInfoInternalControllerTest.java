@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 /**
- * The help articles (about.html / user-guide.html) are generated at build time into an extension's
+ * The help articles (about.html / user-guide.html / disclaimer.html) are generated at build time into an extension's
  * webapp resources and read back from the classpath. Extensions with a React administration UI keep
  * them under {@code <ext>-app}, the ones still on the JSP admin UI under {@code <ext>-admin}; both
  * must work. The fixtures live in src/test/resources/webapp/.
@@ -53,6 +53,20 @@ class ExtensionInfoInternalControllerTest {
     void readsTheUserGuideTheSameWay() {
         try (MockedStatic<ExtensionInfo> ignored = mockExtensionContext("react-ext")) {
             assertThat(controller.getUserGuide()).contains("react app user guide");
+        }
+    }
+
+    @Test
+    void readsTheDisclaimerTheSameWay() {
+        try (MockedStatic<ExtensionInfo> ignored = mockExtensionContext("react-ext")) {
+            assertThat(controller.getDisclaimer()).contains("react app disclaimer");
+        }
+    }
+
+    @Test
+    void returnsEmptyWhenTheExtensionHasNoDisclaimer() {
+        try (MockedStatic<ExtensionInfo> ignored = mockExtensionContext("legacy-ext")) {
+            assertThat(controller.getDisclaimer()).isEmpty();
         }
     }
 

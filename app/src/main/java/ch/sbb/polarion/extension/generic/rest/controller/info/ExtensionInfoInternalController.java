@@ -119,6 +119,15 @@ public class ExtensionInfoInternalController {
         return readHtmlFile("user-guide.html");
     }
 
+    @GET
+    @Path("/disclaimer")
+    @Produces(MediaType.TEXT_HTML)
+    @Operation(summary = "Returns the build-generated DISCLAIMER help article shown on the Usage Disclaimer page",
+            responses = @ApiResponse(description = "HTML help article"))
+    public String getDisclaimer() {
+        return readHtmlFile("disclaimer.html");
+    }
+
     /**
      * Webapp contexts searched for the build-generated HTML help articles, in order. Extensions whose
      * administration UI is a React app keep them under {@code -app}; those still on the JSP admin UI
