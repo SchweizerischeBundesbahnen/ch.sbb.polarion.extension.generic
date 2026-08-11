@@ -4,7 +4,7 @@
 
     <groupId>ch.sbb.polarion.extensions</groupId>
     <artifactId>ch.sbb.polarion.extension.generic</artifactId>
-    <version>15.10.1-SNAPSHOT</version>
+    <version>15.10.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Versatile extension for developing additional extensions within Polarion ALM: parent POM</name>
@@ -74,9 +74,8 @@
         <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
         <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
-        <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
         <pre-commit-run-maven-plugin.version>1.0.0</pre-commit-run-maven-plugin.version>
-        <swagger-maven-plugin.version>2.2.52</swagger-maven-plugin.version>
+        <swagger-maven-plugin.version>2.2.53</swagger-maven-plugin.version>
         <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
 
         <!-- Test dependencies -->
@@ -108,9 +107,9 @@
         <gwt-servlet.version>2.9.0</gwt-servlet.version>
         <jsp-api.version>2.2</jsp-api.version>
         <re2j.version>1.8</re2j.version>
-        <classgraph.version>4.8.185</classgraph.version>
+        <classgraph.version>4.8.186</classgraph.version>
         <org.osgi.framework.version>1.10.0</org.osgi.framework.version>
-        <swagger.version>2.2.52</swagger.version>
+        <swagger.version>2.2.53</swagger.version>
         <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
         <commons-logging.version>1.3.6</commons-logging.version>
 
@@ -170,7 +169,7 @@
         <!-- exclude rest controllers from coverage report -->
         <sonar.coverage.exclusions>**/rest/controller/**</sonar.coverage.exclusions>
 
-        <frontend-maven-plugin.version>2.0.1</frontend-maven-plugin.version>
+        <frontend-maven-plugin.version>2.0.2</frontend-maven-plugin.version>
         <!-- When bumping nodeVersion/npmVersion, keep app/package.json ("engines" and "packageManager") in sync. -->
         <frontend-maven-plugin.nodeVersion>v24.18.0</frontend-maven-plugin.nodeVersion>
         <frontend-maven-plugin.npmVersion>12.0.1</frontend-maven-plugin.npmVersion>
