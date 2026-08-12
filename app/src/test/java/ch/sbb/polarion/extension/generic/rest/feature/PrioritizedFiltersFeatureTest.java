@@ -157,8 +157,6 @@ class PrioritizedFiltersFeatureTest {
 
     @Test
     void priorityOfInheritsPriorityFromAnnotatedSuperclass() {
-        // Since @Priority is not @Inherited, a plain getAnnotation(...) lookup would return USER here;
-        // this pins the superclass walk in priorityOf.
         assertEquals(Priorities.AUTHENTICATION, PrioritizedFiltersFeature.priorityOf(SubclassWithoutOwnPriority.class));
     }
 
