@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic.fields.model;
 
+import ch.sbb.polarion.extension.generic.fields.FieldType;
 import com.polarion.platform.persistence.model.IPrototype;
 import com.polarion.subterra.base.data.model.ICustomField;
 import com.polarion.subterra.base.data.model.IType;
@@ -58,6 +59,33 @@ public class FieldMetadata implements Comparable<FieldMetadata>{
                 .required(customField.isRequired())
                 .multi(customField.isMulti())
                 .build();
+    }
+
+    /**
+     * Tells whether Polarion treats this field as a rich text field.
+     * <p>
+     * Polarion regards a Text field as rich text unless it is a custom field which doesn't declare the 'html' subtype.
+     * Built-in Text fields like 'description' declare no subtype at all, so they are rich text too. This mirrors
+     * {@code com.polarion.alm.tracker.internal.TypeHelper#isRichText(IType)} for built-in fields and
+     * {@code #isRichTextCustomField(IType)} for custom ones, which Polarion dispatches by {@code isKeyDefined(fieldId)},
+     * the same predicate {@link #fromPrototype(IPrototype, String)} uses to set {@link #custom}.
+     * </p>
+     * Written as plain text, such a field looks unchanged in Polarion but loses its formatting in follow-up operations
+     * like a ReqIF export.
+     *
+     * @return true if a value of this field must be stored as {@code text/html}, false if as {@code text/plain}
+     */
+    public boolean isRichText() {
+        return FieldType.RICH.getType().equals(type) || (FieldType.TEXT.getType().equals(type) && !custom);
+    }
+
+    /**
+     * Tells whether this field holds a text value, no matter whether it is rich text or plain text.
+     *
+     * @return true if a value of this field must be stored as a {@link com.polarion.core.util.types.Text} instance
+     */
+    public boolean isTextType() {
+        return FieldType.TEXT.getType().equals(type) || FieldType.RICH.getType().equals(type);
     }
 
     @Override
