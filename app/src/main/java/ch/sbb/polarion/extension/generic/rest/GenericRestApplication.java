@@ -20,6 +20,7 @@ import ch.sbb.polarion.extension.generic.rest.exception.mapper.ObjectNotFoundExc
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotAuthorizedExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.UncaughtExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.feature.LifecycleBindingFeature;
+import ch.sbb.polarion.extension.generic.rest.feature.PrioritizedFiltersFeature;
 import ch.sbb.polarion.extension.generic.rest.filter.AuthenticationFilter;
 import ch.sbb.polarion.extension.generic.rest.filter.CorsFilter;
 import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
@@ -44,7 +45,10 @@ public class GenericRestApplication extends Application {
         singletons.add(JacksonFeature.withoutExceptionMappers());
         singletons.add(LifecycleBindingFeature.bindFrom(getClasses()));
         singletons.addAll(getAllExceptionMapperSingletons());
-        singletons.addAll(getAllFilterSingletons());
+        // Register filters with explicit, @Priority-derived binding priorities instead of adding them as bare
+        // singletons. This guarantees distinct, deterministic filter ranks and avoids the non-deterministic
+        // ordering caused by Jersey's RankedComparator tie-handling over the HashSet iteration order.
+        singletons.add(PrioritizedFiltersFeature.of(getAllFilterSingletons()));
         singletons.addAll(getAllControllerSingletons());
         return singletons;
     }
