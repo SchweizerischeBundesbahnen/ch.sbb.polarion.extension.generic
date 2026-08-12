@@ -106,6 +106,10 @@ public class GenericRestApplication extends Application {
      * subject) must carry a strictly larger priority - annotate it {@code @Priority(Priorities.AUTHORIZATION)}.
      * A filter with no {@code @Priority} falls back to {@link jakarta.ws.rs.Priorities#USER} and would then run
      * after authentication by accident rather than by contract.
+     * <p>
+     * {@link jakarta.annotation.Priority} is not {@link java.lang.annotation.Inherited}: a filter that extends an
+     * annotated one does <em>not</em> inherit its priority and falls back to {@link jakarta.ws.rs.Priorities#USER}.
+     * Annotate the subclass itself.
      */
     @NotNull
     protected Set<Object> getExtensionFilterSingletons() {
