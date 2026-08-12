@@ -3,6 +3,7 @@ package ch.sbb.polarion.extension.generic.rest;
 import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiController;
 import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsInternalController;
 import ch.sbb.polarion.extension.generic.rest.feature.LifecycleBindingFeature;
+import ch.sbb.polarion.extension.generic.rest.feature.PrioritizedFiltersFeature;
 import ch.sbb.polarion.extension.generic.settings.GenericNamedSettings;
 import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
 import ch.sbb.polarion.extension.generic.test_extensions.PlatformContextMockExtension;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerResponseFilter;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +41,22 @@ class GenericRestApplicationTest {
     void getSingletonsContainsLifecycleBindingFeature() {
         GenericRestApplication app = new GenericRestApplication();
         assertTrue(app.getSingletons().stream().anyMatch(LifecycleBindingFeature.class::isInstance));
+    }
+
+    @Test
+    void getSingletonsContainsPrioritizedFiltersFeature() {
+        GenericRestApplication app = new GenericRestApplication();
+        assertTrue(app.getSingletons().stream().anyMatch(PrioritizedFiltersFeature.class::isInstance));
+    }
+
+    @Test
+    void getSingletonsRegistersFiltersThroughFeatureNotAsBareSingletons() {
+        GenericRestApplication app = new GenericRestApplication();
+        // Filters must be registered with explicit priorities via PrioritizedFiltersFeature, so no filter
+        // instance (request or response) should leak into the singleton set directly — that path loses the
+        // @Priority ordering.
+        assertFalse(app.getSingletons().stream()
+                .anyMatch(s -> s instanceof ContainerRequestFilter || s instanceof ContainerResponseFilter));
     }
 
     @Test

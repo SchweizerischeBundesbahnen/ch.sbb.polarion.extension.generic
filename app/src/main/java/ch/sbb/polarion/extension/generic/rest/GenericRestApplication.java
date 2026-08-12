@@ -20,6 +20,7 @@ import ch.sbb.polarion.extension.generic.rest.exception.mapper.ObjectNotFoundExc
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotAuthorizedExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.UncaughtExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.feature.LifecycleBindingFeature;
+import ch.sbb.polarion.extension.generic.rest.feature.PrioritizedFiltersFeature;
 import ch.sbb.polarion.extension.generic.rest.filter.AuthenticationFilter;
 import ch.sbb.polarion.extension.generic.rest.filter.CorsFilter;
 import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
@@ -44,7 +45,11 @@ public class GenericRestApplication extends Application {
         singletons.add(JacksonFeature.withoutExceptionMappers());
         singletons.add(LifecycleBindingFeature.bindFrom(getClasses()));
         singletons.addAll(getAllExceptionMapperSingletons());
-        singletons.addAll(getAllFilterSingletons());
+        // Register filter singletons with explicit, @Priority-derived binding priorities instead of adding
+        // them as bare singletons, so filters with distinct priorities order deterministically instead of
+        // by HashSet iteration order. See PrioritizedFiltersFeature for the full rationale and the
+        // downstream @Priority contract.
+        singletons.add(PrioritizedFiltersFeature.of(getAllFilterSingletons()));
         singletons.addAll(getAllControllerSingletons());
         return singletons;
     }
@@ -95,6 +100,16 @@ public class GenericRestApplication extends Application {
         return Set.of();
     }
 
+    /**
+     * Request/response filter instances contributed by the extension. These are registered with an explicit,
+     * {@code @Priority}-derived binding priority (see {@link ch.sbb.polarion.extension.generic.rest.feature.PrioritizedFiltersFeature}).
+     * <p>
+     * Ordering contract: the generic {@code AuthenticationFilter} runs at {@link jakarta.ws.rs.Priorities#AUTHENTICATION}.
+     * A filter that must run <em>after</em> authentication (e.g. an authorization filter that reads the request
+     * subject) must carry a strictly larger priority — annotate it {@code @Priority(Priorities.AUTHORIZATION)}.
+     * Annotating such a filter {@code @Priority(Priorities.AUTHENTICATION)} ties it with {@code AuthenticationFilter}
+     * and makes their relative order non-deterministic.
+     */
     @NotNull
     protected Set<Object> getExtensionFilterSingletons() {
         return Set.of();

@@ -7,6 +7,8 @@ import com.polarion.platform.core.PlatformContext;
 import com.polarion.platform.security.AuthenticationFailedException;
 import com.polarion.platform.security.ISecurityService;
 import com.polarion.platform.session.PolarionSingleSignOn;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.Priorities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +25,7 @@ import java.io.IOException;
 
 @Secured
 @Provider
+@Priority(Priorities.AUTHENTICATION)
 public class AuthenticationFilter implements ContainerRequestFilter {
     public static final String BEARER = "Bearer";
     public static final String USER_SUBJECT = "user_subject";
