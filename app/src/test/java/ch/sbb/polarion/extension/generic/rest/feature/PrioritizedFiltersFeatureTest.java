@@ -15,6 +15,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 class PrioritizedFiltersFeatureTest {
 
@@ -70,17 +71,25 @@ class PrioritizedFiltersFeatureTest {
         Object authentication = new AuthenticationLikeFilter();
         Object authorization = new AuthorizationLikeFilter();
         Object user = new UnannotatedFilter();
-        // Intentionally supply them in a non-priority order.
-        PrioritizedFiltersFeature feature = PrioritizedFiltersFeature.of(
-                new java.util.LinkedHashSet<>(List.of(user, authorization, authentication)));
-        FeatureContext context = mock(FeatureContext.class);
+        // Every permutation of the input order must yield the same ascending-by-priority registration order.
+        List<List<Object>> inputOrders = List.of(
+                List.of(authentication, authorization, user),
+                List.of(authentication, user, authorization),
+                List.of(authorization, authentication, user),
+                List.of(authorization, user, authentication),
+                List.of(user, authentication, authorization),
+                List.of(user, authorization, authentication));
 
-        feature.configure(context);
+        for (List<Object> inputOrder : inputOrders) {
+            FeatureContext context = mock(FeatureContext.class);
 
-        InOrder inOrder = inOrder(context);
-        inOrder.verify(context).register(authentication, Priorities.AUTHENTICATION);
-        inOrder.verify(context).register(authorization, Priorities.AUTHORIZATION);
-        inOrder.verify(context).register(user, Priorities.USER);
+            PrioritizedFiltersFeature.of(new java.util.LinkedHashSet<>(inputOrder)).configure(context);
+
+            InOrder inOrder = inOrder(context);
+            inOrder.verify(context).register(authentication, Priorities.AUTHENTICATION);
+            inOrder.verify(context).register(authorization, Priorities.AUTHORIZATION);
+            inOrder.verify(context).register(user, Priorities.USER);
+        }
     }
 
     @Test
@@ -100,7 +109,7 @@ class PrioritizedFiltersFeatureTest {
     }
 
     @Test
-    void everyRegisteredFilterGetsItsOwnPositivePriority() {
+    void everyFilterIsRegisteredExactlyOnceWithItsPriority() {
         Object authentication = new AuthenticationLikeFilter();
         Object authorization = new AuthorizationLikeFilter();
         Object user = new UnannotatedFilter();
@@ -109,13 +118,11 @@ class PrioritizedFiltersFeatureTest {
 
         feature.configure(context);
 
-        // Each filter is registered exactly once with its own positive, distinct rank.
         verify(context).register(authentication, Priorities.AUTHENTICATION);
         verify(context).register(authorization, Priorities.AUTHORIZATION);
         verify(context).register(user, Priorities.USER);
-        assertTrue(Priorities.AUTHENTICATION > 0 && Priorities.AUTHORIZATION > 0 && Priorities.USER > 0);
-        // Distinct ranks are what make the final filter order deterministic.
-        assertEquals(3, Set.of(Priorities.AUTHENTICATION, Priorities.AUTHORIZATION, Priorities.USER).size());
+        // Nothing dropped, nothing registered twice: the three calls above are the only interactions.
+        verifyNoMoreInteractions(context);
     }
 
     @Test

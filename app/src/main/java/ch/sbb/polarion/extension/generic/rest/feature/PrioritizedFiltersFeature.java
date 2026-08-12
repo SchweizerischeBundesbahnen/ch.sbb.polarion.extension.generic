@@ -11,21 +11,35 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Registers request/response filters with an <em>explicit</em> binding priority read from each filter's
- * {@link Priority} annotation (defaulting to {@link Priorities#USER} when absent).
+ * Registers the request/response filter <em>instances</em> returned from {@code getSingletons()} with an
+ * explicit, {@link Priority}-derived binding priority (defaulting to {@link Priorities#USER} when the
+ * annotation is absent), via {@link FeatureContext#register(Object, int)}.
  * <p>
- * Why this is needed. When filters are registered as instances via {@code Application.getSingletons()},
- * Jersey does not reliably capture their {@code @Priority} into the provider model, so several name-bound
- * filters can end up sharing the same default rank. Jersey's {@code RankedComparator} does <b>not</b>
- * return {@code 0} for equal ranks (it returns {@code ±ordering}), so ties are resolved by the iteration
- * order of the {@link java.util.HashSet} backing {@code getSingletons()} — which differs per application
- * instance and per JVM start. The practical effect was a non-deterministic order between
- * {@code AuthenticationFilter} (authentication) and an authorization filter: sometimes authorization ran
- * first, found no authenticated subject, and failed.
+ * Why this is needed. When a filter is added as a bare instance to {@code Application.getSingletons()},
+ * its {@code @Priority} is not reliably reflected in the Jersey provider model, so several name-bound
+ * filters can end up with the same default rank. Filters that share a rank are <em>not</em> ordered by
+ * priority: in the Jersey shipped with Polarion (jersey-common 3.1.8) {@code RankedComparator} returns
+ * {@code ±ordering} rather than {@code 0} for equal ranks, and even if it returned {@code 0} the sort
+ * would merely be stable — either way ties fall back to the iteration order of the {@link java.util.HashSet}
+ * backing {@code getSingletons()}, which varies per application instance and JVM start. The observed effect
+ * was a non-deterministic order between {@code AuthenticationFilter} and a downstream authorization filter:
+ * sometimes authorization ran first, found no authenticated subject, and failed.
  * <p>
- * Passing an explicit priority through {@link FeatureContext#register(Object, int)} bypasses the fragile
- * annotation capture and guarantees distinct, deterministic ranks, so {@code RankedComparator} orders the
- * filters correctly regardless of registration/iteration order.
+ * Registering with an explicit priority makes each filter's rank <em>annotation-derived and reproducible</em>,
+ * so {@code RankedComparator} orders any two filters that carry <em>different</em> {@code @Priority} values
+ * deterministically, regardless of registration/iteration order. The guarantee is between distinct
+ * priorities only: filters without {@code @Priority} (e.g. {@code CorsFilter}, {@code LogoutFilter}) all
+ * resolve to {@link Priorities#USER} and still tie among themselves — harmless as long as their relative
+ * order does not matter (both are outside the authentication→authorization request path).
+ * <p>
+ * Scope: this only covers filters registered as <em>singletons</em>. Filters contributed as classes
+ * ({@code getClasses()}) go through Jersey's standard class-model registration and are not touched here.
+ * <p>
+ * Downstream contract: {@code AuthenticationFilter} runs at {@link Priorities#AUTHENTICATION}. An extension
+ * filter that must run <em>after</em> authentication (e.g. an authorization filter that reads the request
+ * subject) must therefore carry a strictly larger priority — annotate it {@code @Priority(Priorities.AUTHORIZATION)}.
+ * Do not annotate an authorization filter {@code @Priority(Priorities.AUTHENTICATION)}: that ties with
+ * {@code AuthenticationFilter} and reintroduces the non-deterministic ordering this class prevents.
  */
 public class PrioritizedFiltersFeature implements Feature {
 

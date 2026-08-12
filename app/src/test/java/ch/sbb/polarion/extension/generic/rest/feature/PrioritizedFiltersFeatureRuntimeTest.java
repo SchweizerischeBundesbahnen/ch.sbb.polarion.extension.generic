@@ -68,8 +68,8 @@ class PrioritizedFiltersFeatureRuntimeTest {
         providers.sort(new RankedComparator<>(RankedComparator.Order.ASCENDING));
 
         List<Class<?>> orderedTypes = providers.stream()
-                .map(p -> p.getProvider().getClass())
-                .collect(java.util.stream.Collectors.toList());
+                .<Class<?>>map(p -> p.getProvider().getClass())
+                .toList();
         assertEquals(List.of(AuthenticationFilterStub.class, AuthorizationFilterStub.class), orderedTypes,
                 "Jersey's RankedComparator must order the AUTHENTICATION filter before the AUTHORIZATION filter");
     }
