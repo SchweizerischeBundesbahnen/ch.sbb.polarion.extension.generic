@@ -174,7 +174,7 @@ The following entries are **managed by the parent POM** via `<manifestEntries>` 
 | `Require-Bundle` | `maven-jar-plugin.Require-Bundle` | 17 common bundles (see below) |
 | `Support-Email` | `maven-jar-plugin.Support-Email` | `polarion-opensource@sbb.ch` |
 | `Bundle-ActivationPolicy` | `maven-jar-plugin.Bundle-ActivationPolicy` | `lazy` |
-| `Import-Package` | `maven-jar-plugin.Import-Package` | `org.osgi.framework` |
+| `Import-Package` | `maven-jar-plugin.Import-Package` + `maven-jar-plugin.Import-Package.required` | `org.osgi.framework` plus the always-appended `jakarta.annotation` pin |
 
 Common `Require-Bundle` bundles defined in the parent POM (`maven-jar-plugin.Require-Bundle.common`):
 `com.polarion.portal.tomcat`, `com.polarion.alm.ui`, `javax.inject`, `javax.annotation-api`, `org.glassfish.jersey`, `com.fasterxml.jackson.core`, `com.fasterxml.jackson.databind`, `com.fasterxml.jackson.annotations`, `com.fasterxml.jackson.module.jaxb.annotations`, `org.apache.commons.logging`, `slf4j.api`, `org.springframework.spring-core`, `org.springframework.spring-web`, `com.polarion.alm.tracker`, `com.polarion.platform.guice`
@@ -195,6 +195,12 @@ To override `Import-Package` (e.g. to add `org.osgi.util.tracker`), set `maven-j
 ```xml
 <maven-jar-plugin.Import-Package>org.osgi.framework,org.osgi.util.tracker</maven-jar-plugin.Import-Package>
 ```
+
+The parent POM always appends `maven-jar-plugin.Import-Package.required` to the generated entry, so
+overriding the property above cannot drop it. It currently pins `jakarta.annotation` to the
+`jakarta.annotation-api` bundle: Tomcat exports the same package unversioned, and binding to Tomcat's
+copy makes Jersey miss `@Priority` on request filters, which leaves the authentication and
+authorization filters in a per-JVM-start order. Do not override this property.
 
 The static `MANIFEST.MF` should only contain:
 
