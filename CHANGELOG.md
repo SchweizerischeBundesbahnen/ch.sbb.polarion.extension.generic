@@ -1,5 +1,24 @@
 # Changelog
 
+## [15.11.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.10.1...v15.11.0) (2026-08-12)
+
+
+### Features
+
+* add /internal/disclaimer endpoint ([#640](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/640)) ([b3db990](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/b3db99009c057f37c68876cc5e68dbacf2be83af))
+* expose rich text detection on FieldMetadata ([#644](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/644)) ([9b9d3ea](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/9b9d3eacc4cdd466aba2c929980c7c054fae8f12)), closes [#643](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/643)
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.186 ([#625](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/625)) ([d98494e](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d98494e38c6d92cc52b4df6ea8962c7a4257b69c))
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.189 ([#645](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/645)) ([6eb61f4](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6eb61f4a0a99bc4f3a8caaeb391387f1c4bbff23))
+* **deps:** update swagger.version to v2.2.53 ([#637](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/637)) ([89aa877](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/89aa877e83d0b19a6e1c8e5151e46f0ca11b7de8))
+* ensure deterministic authentication-before-authorization filter … ([#647](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/647)) ([30d4254](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/30d42547b86cf190a6e7c58f9a847f08cb212ba0)), closes [#646](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/646)
+* GenericUiServlet returns 500 instead of 404 for a missing generi… ([#649](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/649)) ([8318672](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/8318672f61e40c551db9360f8d7c200f041a6be4))
+* GenericUiServlet returns 500 instead of 404 for a missing generic resource ([8318672](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/8318672f61e40c551db9360f8d7c200f041a6be4)), closes [#648](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/648)
+* pin jakarta.annotation so filter @Priority takes effect ([#651](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/651)) ([fe223ed](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/fe223ed14db5811ab76812c6916c09a09cba2937))
+
 ## [15.10.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.10.0...v15.10.1) (2026-07-30)
 
 
