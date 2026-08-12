@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerResponseFilter;
 import java.util.List;
 import java.util.Set;
 
@@ -52,8 +53,10 @@ class GenericRestApplicationTest {
     void getSingletonsRegistersFiltersThroughFeatureNotAsBareSingletons() {
         GenericRestApplication app = new GenericRestApplication();
         // Filters must be registered with explicit priorities via PrioritizedFiltersFeature, so no filter
-        // instance should leak into the singleton set directly (that path loses the @Priority ordering).
-        assertFalse(app.getSingletons().stream().anyMatch(ContainerRequestFilter.class::isInstance));
+        // instance (request or response) should leak into the singleton set directly — that path loses the
+        // @Priority ordering.
+        assertFalse(app.getSingletons().stream()
+                .anyMatch(s -> s instanceof ContainerRequestFilter || s instanceof ContainerResponseFilter));
     }
 
     @Test

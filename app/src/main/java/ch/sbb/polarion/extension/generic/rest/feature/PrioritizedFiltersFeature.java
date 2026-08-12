@@ -74,11 +74,21 @@ public class PrioritizedFiltersFeature implements Feature {
     }
 
     /**
-     * Reads the {@link Priority} value declared on the filter class, or {@link Priorities#USER} when the
-     * annotation is absent (the JAX-RS default for providers without an explicit priority).
+     * Reads the {@link Priority} value for the filter class, or {@link Priorities#USER} when none is declared
+     * (the JAX-RS default for providers without an explicit priority).
+     * <p>
+     * {@link Priority} is <em>not</em> {@link java.lang.annotation.Inherited}, so a subclass of an annotated
+     * filter (e.g. a downstream subclass of {@code AuthenticationFilter}) would otherwise resolve to
+     * {@link Priorities#USER} and lose its intended ordering. We therefore walk the superclass chain and use
+     * the nearest declared {@code @Priority}, giving the annotation inheritance-like semantics for filters.
      */
     static int priorityOf(Class<?> filterClass) {
-        Priority priority = filterClass.getAnnotation(Priority.class);
-        return priority != null ? priority.value() : Priorities.USER;
+        for (Class<?> type = filterClass; type != null && type != Object.class; type = type.getSuperclass()) {
+            Priority priority = type.getDeclaredAnnotation(Priority.class);
+            if (priority != null) {
+                return priority.value();
+            }
+        }
+        return Priorities.USER;
     }
 }
