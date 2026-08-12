@@ -311,6 +311,29 @@ class GenericUiServletTest {
         verify(response, never()).sendError(anyInt());
     }
 
+    @Test
+    @SneakyThrows
+    void testServeGenericResourceSends404ForMissingEntry(@TempDir Path tempDir) {
+        // A path absent from the JAR must yield 404. ZipFile.getEntry returns null for it and
+        // ZipFile.getInputStream(null) throws NullPointerException, so the entry has to be checked
+        // before it is opened, otherwise the servlet answers 500.
+        Path jarPath = tempDir.resolve("fake-extension.jar");
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(jarPath))) {
+            zos.putNextEntry(new ZipEntry("genericUri/file.js"));
+            zos.write("console.log('hi');".getBytes());
+            zos.closeEntry();
+        }
+
+        TestServlet servlet = new TestServlet("testServletName", jarPath.toUri().toURL());
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        servlet.serveGenericResource(response, "genericUri/does-not-exist.js");
+
+        verify(response).sendError(HttpServletResponse.SC_NOT_FOUND);
+        verify(response, never()).setContentType(anyString());
+        verify(response, never()).getOutputStream();
+    }
+
     @SneakyThrows
     private TestServlet callServlet(String uri) {
         TestServlet spy = spy(new TestServlet("testServletName"));

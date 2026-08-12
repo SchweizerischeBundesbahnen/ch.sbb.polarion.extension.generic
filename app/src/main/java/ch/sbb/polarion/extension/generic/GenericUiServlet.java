@@ -140,6 +140,12 @@ public abstract class GenericUiServlet extends HttpServlet {
         File resolvedJarFile = resolveJarFile(getCodeLocation());
         try (ZipFile zipFile = new ZipFile(resolvedJarFile)) {
             final ZipEntry zipEntry = zipFile.getEntry(uri);
+            if (zipEntry == null) {
+                // A missing entry must be answered here: ZipFile.getInputStream(null) throws
+                // NullPointerException, which would surface as 500 instead of 404.
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
             try (InputStream inputStream = zipFile.getInputStream(zipEntry)) {
                 if (inputStream == null) {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
