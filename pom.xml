@@ -118,7 +118,18 @@
         <maven-jar-plugin.Project-URL>${project.scm.url}</maven-jar-plugin.Project-URL>
         <maven-jar-plugin.Support-Email>polarion-opensource@sbb.ch</maven-jar-plugin.Support-Email>
         <maven-jar-plugin.Bundle-ActivationPolicy>lazy</maven-jar-plugin.Bundle-ActivationPolicy>
-        <maven-jar-plugin.Import-Package>org.osgi.framework</maven-jar-plugin.Import-Package>
+        <!-- jakarta.annotation is exported by TWO bundles: com.polarion.portal.tomcat (Tomcat 11 embeds the
+             annotation API) and jakarta.annotation-api. Both export it unversioned, so only the exporting
+             bundle tells them apart. Require-Bundle is searched in declaration order and lists the Tomcat
+             bundle first, which used to bind our classes to Tomcat's copy - while Jersey requires
+             jakarta.annotation-api;bundle-version="3.0.0" and binds to the other one. Two distinct
+             jakarta.annotation.Priority classes then made Jersey's `annotation instanceof Priority` check in
+             ComponentBag.modelFor() fail, so @Priority never reached the provider model: every filter fell
+             back to Priorities.USER, ranks tied, and RankedComparator (which never returns 0) left the
+             filters in HashSet iteration order - a different authentication/authorization order per JVM start.
+             Import-Package is searched BEFORE Require-Bundle, so pinning the package to the API bundle here
+             gives us the same class Jersey uses. Keep this entry. -->
+        <maven-jar-plugin.Import-Package>org.osgi.framework,jakarta.annotation;bundle-symbolic-name="jakarta.annotation-api"</maven-jar-plugin.Import-Package>
         <!-- Common Require-Bundle:
             com.polarion.portal.tomcat
             com.polarion.alm.ui
