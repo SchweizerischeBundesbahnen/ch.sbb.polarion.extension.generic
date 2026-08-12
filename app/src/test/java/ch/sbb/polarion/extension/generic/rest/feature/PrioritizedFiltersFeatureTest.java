@@ -34,6 +34,16 @@ class PrioritizedFiltersFeatureTest {
     static class ExplicitUserFilter {
     }
 
+    // Declares no @Priority of its own — its value must be resolved from the annotated superclass.
+    // @Priority is not @Inherited, so this only works via priorityOf's superclass walk.
+    static class SubclassWithoutOwnPriority extends AuthenticationLikeFilter {
+    }
+
+    // Declares its own @Priority — the nearest declared annotation must win over the inherited one.
+    @Priority(Priorities.AUTHORIZATION)
+    static class SubclassWithOwnPriority extends AuthenticationLikeFilter {
+    }
+
     @Test
     void configureReturnsTrue() {
         PrioritizedFiltersFeature feature = PrioritizedFiltersFeature.of(Set.of(new AuthenticationLikeFilter()));
@@ -143,5 +153,17 @@ class PrioritizedFiltersFeatureTest {
     @Test
     void priorityOfDefaultsToUserWhenAnnotationAbsent() {
         assertEquals(Priorities.USER, PrioritizedFiltersFeature.priorityOf(UnannotatedFilter.class));
+    }
+
+    @Test
+    void priorityOfInheritsPriorityFromAnnotatedSuperclass() {
+        // Since @Priority is not @Inherited, a plain getAnnotation(...) lookup would return USER here;
+        // this pins the superclass walk in priorityOf.
+        assertEquals(Priorities.AUTHENTICATION, PrioritizedFiltersFeature.priorityOf(SubclassWithoutOwnPriority.class));
+    }
+
+    @Test
+    void priorityOfPrefersNearestDeclaredPriorityOverInherited() {
+        assertEquals(Priorities.AUTHORIZATION, PrioritizedFiltersFeature.priorityOf(SubclassWithOwnPriority.class));
     }
 }
