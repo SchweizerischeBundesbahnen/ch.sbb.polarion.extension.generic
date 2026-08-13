@@ -73,19 +73,19 @@
        size-less background consumers (diff-tool / docx / pdf) render it at 16px. */
     --sbb-info-icon: url(inline:images/info.svg);
     /* Revert-to-revision arrow (revisions table Actions) — green undo icon. Source: images/
-       revision-revert.svg. Consumed via common.css .revert-to-revision-icon (background-size: contain). */
+       revision-revert.svg. Consumed via the .revert-to-revision-icon rule (background-size: contain). */
     --sbb-revision-revert-icon: url(inline:images/revision-revert.svg);
     /* Notification alert icons — rounded warning/alert triangles. Sources: images/
        notification-warning.svg (caution), notification-error.svg (red-alert). Consumed only via
-       common.css .alert-*::before (background-size: contain), so the non-square viewBox is fine. */
+       alerts.css .alert-*::before (background-size: contain), so the non-square viewBox is fine. */
     --sbb-warning-icon: url(inline:images/notification-warning.svg);
     --sbb-error-icon: url(inline:images/notification-error.svg);
     /* Table add / remove controls — clean inline-SVG replacing raster /polarion/ria/images/control/
        tablePlus.png (green +) and tableMinus.png (magenta −). Use via the .sbb-icon-table-* classes. */
     --sbb-table-plus-icon: url(inline:images/control/table_plus.svg);
     --sbb-table-minus-icon: url(inline:images/control/table_minus.svg);
-    /* Action-button icons — self-made replacements for the last raster GIFs that buttons.jsp /
-       configurations.jsp pulled from Polarion's runtime (/polarion/ria/images/actions/*.gif). Sources
+    /* Action-button icons — self-made replacements for the last raster GIFs the legacy admin pages
+       pulled from Polarion's runtime (/polarion/ria/images/actions/*.gif). Sources
        under images/actions/. Use via the .sbb-icon-* classes below. --sbb-revert-icon is the Save-form
        "Default" (load default values) button — distinct from --sbb-revision-revert-icon (revisions
        table row action). */
@@ -174,7 +174,7 @@
 }
 
 /* Action-button icons (16x16) — CSS-background utilities replacing the legacy
-   <img class="button-image" src=".../actions/*.gif"> in buttons.jsp / configurations.jsp. Put on a
+   <img class="button-image" src=".../actions/*.gif"> of the legacy admin pages. Put on a
    <span> that also carries .button-image, so the button keeps its original icon spacing while the
    glyph comes from a self-contained token (control-tokens.css must be loaded). */
 .sbb-icon-save,

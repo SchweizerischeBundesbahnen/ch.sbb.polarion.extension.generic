@@ -16,3 +16,72 @@
 - **Logging**: Polarion logs: `<POLARION_HOME>/polarion/logs/main/*.log`
 - **Branch conventions**: Conventional commits enforced by commitizen (pre-commit hook). Feature branches: `feature/<name>`, bug fixes: `fix/<name>`, LTS branches: `release-v*` (e.g., `release-v6`).
 - **Pre-commit hooks block internal patterns**: some org-specific identifiers are treated as secrets. Run `pre-commit run -a` after implementation.
+
+## Migration to RSP
+
+Everything under `app/src/main/resources/{js,css,images}` is moving to **react-sbb-polarion** (RSP). RSP copies
+files from here verbatim into its `src/generic/` and bundles them, so extensions get them from npm
+instead of fetching them from this webapp. Every asset below eventually ends up owned by RSP and
+deleted here. Migrate them one at a time; the table is the running state.
+
+- **Do not add new shared UI assets here.** New components, styles and icons go straight to RSP.
+- **Edit the original here, then re-copy into RSP.** RSP excludes `src/generic/**` from its own
+  lint, format and coverage, and forbids hand-edits there. Those copies carry deliberate local
+  patches (shadow-root portal via `getRootNode()`, `composedPath()` outside-clicks, `url(../images/…)`
+  icon paths, a no-op `ensureSharedStyles`, Selawik `@font-face`), so a by-the-book re-copy silently
+  deletes them. Check RSP's `.greptile/rules.md` before copying.
+- **A file is removable from here only when nothing fetches it at runtime.** Downstream React apps
+  pull some of these directly with `<link>` or `injectStyles(...)`, which no grep for an import
+  finds. Verify against the extension repos, not against RSP.
+
+### Already vendored in RSP, still fetched from here
+
+| Asset | Fetched by |
+|---|---|
+| `js/modules/SearchableDropdown.js`, `searchableSelect.js`, `ensureSharedStyles.js`, `generic-build-info.js` | diff-tool's own `ui/src/components/SearchableSelect.jsx` dynamically imports `searchableSelect.js` at runtime |
+| `css/control-tokens.css`, `checkboxes.css`, `radios.css`, `inputs.css`, `searchable-dropdown.css`, `buttons.css`, `alerts.css` | `ensureSharedStyles.js` injects all seven, so the diff-tool chain above pulls them; diff-tool also links two of them in `ui/*.html` |
+| all 24 SVGs under `images/` | resolve `control-tokens.css`'s `url(inline:…)` placeholders at build time, so they move with it |
+
+`css/tabs.css` completed this route: RSP owns it, nothing fetched it from here, so it was deleted.
+That is the pattern to repeat for each row above.
+
+**diff-tool is now the single gate on both rows.** The exporters mount their React surfaces in shadow
+roots and inject react-sbb-polarion's bundled stylesheet inside (`?inline`), which a page-level
+`<link>` cannot reach anyway, so none of them fetches control CSS any more. Finishing the diff-tool
+migration therefore frees the seven sheets, the 24 SVGs and the four JS modules in one step.
+
+**Third-party libraries are fully off this webapp**, verified against all 23 extensions: nothing
+loads `micromodal.min.js`, `prism.js` or `code-input.min.js`, and nothing renders micromodal's
+`.modal__*` markup, so all six files including `css/micromodal.css` were deleted. React apps use
+RSP's own `Modal` (a `<dialog>` with `.rsp-modal*` classes, not a Micromodal wrapper) and its
+`CodeEditor` (npm `refractor`).
+
+Watch the trap that hid this: a downstream `injectStyles(...)` or `<link>` does **not** prove a sheet
+is live. `micromodal.css` was still being fetched by an exporter's `starter.js` long after that
+popup had moved to RSP's `Modal`, so the sheet matched no rendered markup at all. Check that a
+sheet's selectors match markup something still renders, not just that a fetch exists.
+
+### Not in RSP yet
+
+| Asset | Note |
+|---|---|
+| `css/tables.css` | `.sbb-table` is used by api-extender, xml-repair and integrity-scanner, none of which links the sheet, so those tables render unstyled today. Moving it into RSP's bundle fixes that. |
+| `css/configurations.css` | linked by diff-tool and excel-importer; belongs with RSP's `ConfigurationsPane` |
+| `css/github-markdown-light.css` | linked by all 23 extensions |
+| `js/dle-toolbar-starter.js`, `css/dle-toolbar.css` | plain `<script>` loaded into the Polarion document editor by the pdf / docx / strictdoc exporters, outside any React app; probably stays here |
+| `js/modules/BreadcrumbBridge.js` | deliberately fetched at runtime by RSP's `BreadcrumbInjector` and run in `window.top`, outside the React bundle; probably stays here |
+
+### The npm toolchain is scaffolding for these assets
+
+`app/package.json`, `app/src/test/js/` and the `frontend-maven-plugin` executions in `app/pom.xml`
+exist only to test and build the files above. Nothing in the Java build needs them. Retire each part
+as its subject leaves:
+
+- `npm run build:css` and its two tests (`inlineSvgTokensTest.js`, `controlTokensScopeTest.js`) go
+  with `control-tokens.css` and `images/`.
+- The `generic-build-info.js` timestamp filtering in the **root** `pom.xml` goes with
+  `ensureSharedStyles.js`.
+- The whole node/npm setup, `app/package.json` and the JS test suite go once the last JS file does.
+
+`js/modules/BreadcrumbBridge.js` and `js/dle-toolbar-starter.js` are what keep it alive, so the JS
+tests outlive the asset migration unless those two move as well.

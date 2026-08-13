@@ -446,8 +446,13 @@ and behaves the same. They are served by the extension's `GenericUiServlet` at
 
 ```js
 import SearchableDropdown from '../ui/generic/js/modules/SearchableDropdown.js';
-import ExtensionContext from '../ui/generic/js/modules/ExtensionContext.js';
+import { createSearchableSelect } from '../ui/generic/js/modules/searchableSelect.js';
 ```
+
+Extension UIs are React apps built on the shared
+[react-sbb-polarion](https://github.com/grigoriev/react-sbb-polarion) library (npm
+`@grigoriev/react-sbb-polarion`), which vendors these modules and this CSS. Generic stays the
+upstream source of truth: change a component here, then re-copy it into the library.
 
 #### `SearchableDropdown` — the standard dropdown
 
@@ -461,9 +466,8 @@ multi-select. Prefer it over a raw `<select>` or any bespoke widget.
   new SearchableDropdown({ element: document.getElementById('paper-size'), rememberSelection: false });
   ```
 
-- **Build mode** — render into a `<div>` and populate programmatically. It exposes the same API as
-  the (now deprecated) `CustomSelect` (`addOption`, `empty`, `selectValue`, `selectMultipleValues`,
-  `getSelectedValue`, `getSelectedText`, `containsOption`), so it is a drop-in replacement:
+- **Build mode** — render into a `<div>` and populate programmatically (`addOption`, `empty`,
+  `selectValue`, `selectMultipleValues`, `getSelectedValue`, `getSelectedText`, `containsOption`):
 
   ```js
   const dd = new SearchableDropdown({ selectContainer: document.getElementById('css-select'), label });
@@ -499,8 +503,8 @@ it as the fourth argument, `addOption(value, text, icon, iconBg)`; the colour is
 icon in both the list and the trigger.
 
 The popup is portalled into `document.body` so it is never clipped by an ancestor's `overflow`
-(narrow side panels, scrollable modals). It integrates with `ExtensionContext` (`setSelector` /
-`setValueById` / `displayIf`) and auto-refreshes when its `<select>` options are repopulated; it also
+(narrow side panels, scrollable modals). It auto-refreshes when its `<select>` options are
+repopulated; it also
 mirrors the wrapped `<select>`'s `disabled` state (setting `select.disabled` dims the control and
 makes it non-interactive), its `<option disabled>` options (dimmed, non-selectable), and its `title`
 tooltip. It exposes
@@ -513,20 +517,20 @@ automatically, so a pane that re-initialises its dropdowns won't stack duplicate
 
 #### Shared control styling
 
-`css/common.css` (`@import` it, or link it from admin JSPs) pulls in the neutral, Polarion-matched
-styles for `checkboxes.css`, `radios.css`, `inputs.css`, `searchable-dropdown.css` and `tables.css`, plus the
-`.toolbar-button` styling. The checkbox / radio / input rules are intentionally **scoped** to the
-UI wrappers `.modal__container` (popups), `.standard-admin-page` (admin pages) and `.form-wrapper`
-(document-properties side panels) so they never restyle Polarion's own controls — put the matching
-wrapper class on your surface.
+Link the neutral, Polarion-matched sheets you need: `checkboxes.css`, `radios.css`, `inputs.css`,
+`searchable-dropdown.css`, `tables.css`, `buttons.css` and `alerts.css`. React apps normally
+get them through react-sbb-polarion's bundled `style.css` instead. The checkbox / radio / input rules
+are intentionally **scoped** to the UI wrappers `.modal__container` (popups), `.standard-admin-page`
+(admin pages) and `.form-wrapper` (document-properties side panels) so they never restyle Polarion's
+own controls — put the matching wrapper class on your surface.
 
 #### Design tokens & reuse in React SPAs (`control-tokens.css`)
 
 The 2606 control look is defined once as CSS custom properties in `css/control-tokens.css` (border /
 focus colors, control height, radius, the soft hover/active elevation shadows, checkbox images, radio
 dot, combobox chevron, popup border, option hover tint, chips, typography, and the button tokens).
-`common.css` `@import`s it, and the class-based stylesheets above consume it via `var(--sbb-*)` — so
-restyling every native control across the ecosystem is a one-file edit.
+The class-based stylesheets above consume it via `var(--sbb-*)` — so restyling every native control
+across the ecosystem is a one-file edit. Load it before any of them.
 
 The tokens are declared on the shared UI scopes (`:root, .modal__container, .standard-admin-page,
 .form-wrapper, .sbb-ui`), not only `:root`, so that on a page where several extensions load their own
@@ -591,8 +595,8 @@ Bootstrap classes) and cannot link `checkboxes.css` / `searchable-dropdown.css`.
    `.sbb-spinner` class instead of hardcoding `/polarion/ria/images/progressWheel48.svg`, so the asset
    is swappable in one place (both are defined in `control-tokens.css`).
 
-4. **Data tables**: give a results/list `<table>` the `sbb-table` class (`css/tables.css`, also
-   `@import`ed by `common.css`) for the shared Polarion look — outer frame, tinted header, row
+4. **Data tables**: give a results/list `<table>` the `sbb-table` class (`css/tables.css`) for the
+   shared Polarion look — outer frame, tinted header, row
    separators and a hover tint, all driven by the `--sbb-table-*` tokens. Add `sbb-table--grid` for
    full spreadsheet cell borders or `sbb-table--compact` for denser rows; the extension keeps only its
    own column widths and row-state highlights. React SPAs link it at runtime like the other sheets:
@@ -601,27 +605,34 @@ Bootstrap classes) and cannot link `checkboxes.css` / `searchable-dropdown.css`.
    <link rel="stylesheet" href="/polarion/<ext>-app/ui/generic/css/tables.css" />
    ```
 
-Because both the tokens and the dropdown module are consumed **at runtime**, `generic` stays the
-single source of truth — there is no JS package to publish and no build-time coupling. Always ship
-the literal fallback in the SPA's `var()` calls so it still renders in a dev server running outside
-Polarion (where `/polarion/*` 404s).
+`generic` is the upstream for these assets, but extensions no longer fetch the control CSS from here:
+react-sbb-polarion copies it into its own bundle and ships it over npm. What still reads from
+`/polarion/<ext>/ui/generic/` is a page that links a sheet directly, and `ensureSharedStyles.js` when
+the vanilla `SearchableDropdown` is loaded at runtime. Always ship the literal fallback in the SPA's
+`var()` calls so it still renders in a dev server running outside Polarion (where `/polarion/*` 404s).
 
 #### Shared control CSS is self-provided by `SearchableDropdown` (versioned)
 
-The shared control CSS reaches a page as global `<link>`s. Historically that only happened via an
-exporter's `scriptInjection.*Head` → `starter.js` → `injectStyles(...)`. That path is **shared and
-optional**: the component classes are global, so one installed exporter styles every surface — but if
-no exporter's `starter.js` runs (unconfigured `scriptInjection`, or the injecting extension removed),
-a document-properties side panel renders its controls **unstyled** even though its JS already wrapped
-them. (A panel cannot fix this from its own HTML fragment: Polarion inserts it via `HtmlFragmentBuilder`,
-which honors an inline `<style>` but **not** external `<link>`/`<script>` — which is also why panels
-bootstrap their JS through a `<link onload>` hook.)
+This applies to the **vanilla** runtime path only. A React surface gets the control CSS from
+react-sbb-polarion's bundle, typically injected as a `<style>` inside its own shadow root, which a
+page-level `<link>` could not reach in any case.
+
+For the vanilla path the shared control CSS reaches a page as global `<link>`s. Historically that
+only happened via an exporter's `scriptInjection.*Head` → `starter.js` → `injectStyles(...)`. That
+path was **shared and optional**: the component classes are global, so one installed exporter styled
+every surface — but if no exporter's `starter.js` ran (unconfigured `scriptInjection`, or the
+injecting extension removed), a document-properties side panel rendered its controls **unstyled**
+even though its JS had already wrapped them. (A panel cannot fix this from its own HTML fragment:
+Polarion inserts it via `HtmlFragmentBuilder`, which honors an inline `<style>` but **not** external
+`<link>`/`<script>` — which is also why panels bootstrap their JS through a `<link onload>` hook.)
 
 So the component provides its own styling: the `SearchableDropdown` constructor calls
 `ensureSharedStyles()` (`js/modules/ensureSharedStyles.js`), which injects the shared CSS
 (`checkboxes` / `radios` / `inputs` / `searchable-dropdown`) as `<link>`s into `<head>`. Any surface
 that renders a dropdown — side panel, export popup, admin page — is therefore styled on its own, with
-**no per-extension wiring**: an extension just consumes the generic version that ships it.
+**no per-extension wiring**: an extension just consumes the generic version that ships it. This is
+the runtime path; a React app gets the same CSS bundled from react-sbb-polarion instead, and
+RSP's vendored `ensureSharedStyles` is a deliberate no-op there.
 
 **Versioning.** Each injected `<link>` carries `data-generic-version` = the generic bundle build
 timestamp (baked into `generic-build-info.js` via `resources-filtered`). The `<link>` ids match the
@@ -631,40 +642,21 @@ lowest — so across a page assembled from extensions on **different generic ver
 generic's CSS always wins, deterministically and regardless of load order. `starter.js` needs no
 change: its unversioned injection is simply superseded once a versioned copy is present.
 
-#### `ConfigurationsPane`
+#### Configuration pane styling
 
-`js/modules/ConfigurationsPane.js` renders the admin "choose a configuration" pane (backed by a
-native `<select id="configurations-select">` wrapped by `SearchableDropdown`), including the
-italic `global` marker for configurations inherited from a broader scope.
+`css/configurations.css` carries the look of the admin "choose a configuration" pane. The pane
+itself is a React component in react-sbb-polarion (`ConfigurationsPane`); generic ships only the
+stylesheet, served at `/polarion/<ext>/ui/generic/css/configurations.css`.
 
-#### Modal dialogs (`micromodal`)
+#### Modal dialogs
 
-The [Micromodal](https://micromodal.vercel.app/) library (`js/micromodal.min.js`) and its styling
-(`css/micromodal.css`) ship with generic and are served at
-`/polarion/<ext>/ui/generic/js/micromodal.min.js` and `.../css/micromodal.css`. Link/inject them from
-there — do **not** vendor a per-extension copy. Build the standard micromodal markup
-(`.modal.micromodal-slide` → `.modal__overlay` → `.modal__container` → `.modal__header` /
-`.modal__content` / `.modal__footer`) and open it with `MicroModal.show('<id>')`.
+Generic ships no dialog CSS. Use react-sbb-polarion's `Modal`, which renders a `<dialog>` styled by
+its own bundled `Modal.css` (`.rsp-modal*` classes). The [Micromodal](https://micromodal.vercel.app/)
+library and the `micromodal.css` that styled its `.modal__*` markup were both removed in 16.0.0.
 
-For a simple, polished message / confirmation dialog — full-width dark header flush to the top, teal
-outline (secondary) / filled (primary) buttons — add **`standard-dialog`** to the `.modal__container`:
-
-```html
-<div class="modal__container standard-dialog" role="dialog" aria-modal="true" ...>
-  <header class="modal__header">
-    <h2 class="modal__title">Title</h2>
-    <button class="modal__close" data-micromodal-close></button>
-  </header>
-  <main class="modal__content">…</main>
-  <footer class="modal__footer">
-    <button class="modal__btn" data-micromodal-close>Cancel</button>
-    <button class="modal__btn modal__btn-primary" data-micromodal-close>OK</button>
-  </footer>
-</div>
-```
-
-The `.standard-dialog` rules live in `css/micromodal.css` and are **opt-in**, so exporter popups —
-which scope their own look under `.modal__container.<ext>` (e.g. `.pdf-exporter`) — are unaffected.
+`.modal__container` survives only as one of the wrapper scopes on which `control-tokens.css` declares
+the `--sbb-*` custom properties, alongside `.standard-admin-page`, `.form-wrapper` and `.sbb-ui`. It
+no longer carries any dialog styling of its own.
 
 #### `BreadcrumbBridge` — app-header breadcrumb for topic extensions
 
@@ -686,7 +678,7 @@ Inject it into the shell and configure it via `data-*` attributes (auto-install)
 call `install()` directly so a sub-topic can re-label without re-loading the module:
 
 ```js
-// From the topic page (React effect in the SPA, or an inline script in a topic JSP):
+// From the topic page (React effect in the SPA):
 const shell = window.top;
 const cfg = { marker: '<ext>', title: 'My Extension',
               // parent: 'My Extension',                 // set for a sub-topic → "Parent › title"
@@ -725,8 +717,9 @@ The visuals live in two files:
   `--sbb-checkbox-checked`, `--sbb-checkbox-indeterminate-focus`).
 - **`css/checkboxes.css`** — the rules, scoped to our own wrappers (`.modal__container`,
   `.standard-admin-page`, `.form-wrapper`) so injecting it into a Polarion page never restyles
-  Polarion's own checkboxes. It also repeats the token values as fallbacks, because the side panel
-  loads `checkboxes.css` without `control-tokens.css`.
+  Polarion's own checkboxes. It carries no literal fallbacks: it consumes the tokens through
+  `var(--sbb-checkbox-*)`, and every load path puts `control-tokens.css` alongside it
+  (`ensureSharedStyles` injects that one first).
 
 **Why the images are inlined as base64 `data:` URIs (not linked `.svg`/`.png` files).**
 A relative `url()` inside a CSS *custom property* resolves against the stylesheet that **uses** the
@@ -737,11 +730,13 @@ the per-consumer mount. A `data:` URI is self-contained — no URL resolution ha
 token renders identically in generic's own CSS, in an injected side panel, and in any SPA bundle.
 (Polarion pages set no CSP that blocks `data:` in CSS backgrounds.)
 
-The human-readable SVG sources are kept under **`images/checkbox/*.svg`**; the base64 in the two CSS
-files is generated from them. To change the look, edit the SVG and re-encode it
-(`base64 < images/checkbox/checked.svg`) into the matching token in **both** files.
+The SVG sources under **`images/checkbox/*.svg`** are the single source of truth. The source
+stylesheet holds only `url(inline:images/checkbox/x.svg)` placeholders; the Maven build resolves each
+one to base64 in `target/classes`. **To change the look, edit the `.svg` and rebuild.** Never
+hand-edit a base64 blob and never write one back into the source CSS: `inlineSvgTokensTest.js` fails
+the build if you do.
 
-**Injected / admin / popup context** — link `checkboxes.css` (or `common.css`, which `@import`s it)
+**Injected / admin / popup context** — link `checkboxes.css`
 and use a native checkbox inside one of the scoped wrappers; `:indeterminate`, `:disabled` and
 `:focus-visible` are handled automatically:
 
@@ -771,14 +766,6 @@ Because these are inline data URIs, no relative or absolute `url()` path is ever
 can drop the old per-mount work-arounds for the indeterminate image. The **indeterminate** state has
 no HTML attribute, so set it from JS (e.g. a React ref):
 `ref={(el) => { if (el) el.indeterminate = someButNotAll; }}`.
-
-#### Deprecated components
-
-The following are kept only for backward compatibility and should not be used in new code:
-
-- `js/modules/CustomSelect.js` — superseded by `SearchableDropdown` (build mode).
-- `js/custom-select.js` (non-module `SbbCustomSelect`) — superseded by `SearchableDropdown`.
-- `js/configurations.js` (non-module `Configurations`) — superseded by the `ConfigurationsPane` module.
 
 ### Custom extension configuration
 
