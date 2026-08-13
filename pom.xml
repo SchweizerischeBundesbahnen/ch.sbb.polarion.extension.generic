@@ -173,7 +173,10 @@
         <markdown2html-maven-plugin.outputFileName>about.html</markdown2html-maven-plugin.outputFileName>
         <markdown2html-maven-plugin.outputFile>${markdown2html-maven-plugin.extensionContextAdminHtml}/${markdown2html-maven-plugin.outputFileName}</markdown2html-maven-plugin.outputFile>
         <markdown2html-maven-plugin.tokenEnvVarName>GITHUB_TOKEN</markdown2html-maven-plugin.tokenEnvVarName>
-        <markdown2html-maven-plugin.failOnError>false</markdown2html-maven-plugin.failOnError>
+        <!-- A broken README.md -> about.html conversion fails the build instead of shipping an empty
+             About page. The default was lenient while the conversion called the GitHub API and failed
+             without a token; markdown2html renders locally since 1.7.x, so strictness costs nothing. -->
+        <markdown2html-maven-plugin.failOnError>true</markdown2html-maven-plugin.failOnError>
         <markdown2html-maven-plugin.generateHeadingIds>true</markdown2html-maven-plugin.generateHeadingIds>
 
         <!-- exclude rest controllers from coverage report -->
