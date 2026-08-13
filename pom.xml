@@ -100,7 +100,6 @@
         <lombok.version>1.18.30</lombok.version>
         <jetbrains.api.version>24.0.1</jetbrains.api.version>
         <gwt-servlet.version>2.9.0</gwt-servlet.version>
-        <jsp-api.version>2.2</jsp-api.version>
         <jersey.version>3.1.8</jersey.version>
         <re2j.version>1.8</re2j.version>
         <classgraph.version>4.8.189</classgraph.version>
@@ -170,11 +169,20 @@
 
         <markdown2html-maven-plugin.version>1.7.1</markdown2html-maven-plugin.version>
         <markdown2html-maven-plugin.inputFile>${project.basedir}/README.md</markdown2html-maven-plugin.inputFile>
-        <markdown2html-maven-plugin.extensionContextAdminHtml>${project.basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-admin/html</markdown2html-maven-plugin.extensionContextAdminHtml>
+        <!-- The property name is historical: it predates the React apps and is kept so downstream poms
+             that reference it keep working. The path mirrors ExtensionInfoInternalController.readHtmlFile,
+             which composes `/webapp/` + the Extension-Context manifest attribute + `-app/html/` and reads
+             nowhere else. Spelled out rather than derived from vite.destination.root, so relocating the
+             React bundle does not silently move the help articles out of the one directory the reader
+             looks in (a missing article yields an empty About page, not an error). -->
+        <markdown2html-maven-plugin.extensionContextAdminHtml>${project.basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-app/html</markdown2html-maven-plugin.extensionContextAdminHtml>
         <markdown2html-maven-plugin.outputFileName>about.html</markdown2html-maven-plugin.outputFileName>
         <markdown2html-maven-plugin.outputFile>${markdown2html-maven-plugin.extensionContextAdminHtml}/${markdown2html-maven-plugin.outputFileName}</markdown2html-maven-plugin.outputFile>
         <markdown2html-maven-plugin.tokenEnvVarName>GITHUB_TOKEN</markdown2html-maven-plugin.tokenEnvVarName>
-        <markdown2html-maven-plugin.failOnError>false</markdown2html-maven-plugin.failOnError>
+        <!-- A broken README.md -> about.html conversion fails the build instead of shipping an empty
+             About page. The default was lenient while the conversion called the GitHub API and failed
+             without a token; markdown2html renders locally since 1.7.x, so strictness costs nothing. -->
+        <markdown2html-maven-plugin.failOnError>true</markdown2html-maven-plugin.failOnError>
         <markdown2html-maven-plugin.generateHeadingIds>true</markdown2html-maven-plugin.generateHeadingIds>
 
         <!-- exclude rest controllers from coverage report -->
@@ -189,10 +197,12 @@
              An extension gets the whole build by having a `ui/package.json`; there is nothing to
              declare in its own pom. Override any of these to deviate. -->
         <!-- Webapp context that receives a copy of generic.app.jar in its WEB-INF/lib (see the
-             maven-dependency-plugin `copy-generic-app-to-ui-webapp` execution). Defaults to the legacy
-             JSP admin webapp; the `vite-ui` profile points it at the React app webapp instead, so the
-             copy always lands in a context that actually exists. -->
-        <generic.app.ui.webapp>${web.app.name}-admin</generic.app.ui.webapp>
+             maven-dependency-plugin `copy-generic-app-to-ui-webapp` execution). `-app` is the only
+             context an extension serves, so the copy lands where something reads it; a wrong value
+             here is 350+ KB of dead weight in every jar rather than a build failure. Based on
+             web.app.name to match the other WEB-INF/lib paths below, which every extension defines as
+             ${maven-jar-plugin.Extension-Context} — keep the two in step if you override either. -->
+        <generic.app.ui.webapp>${web.app.name}-app</generic.app.ui.webapp>
 
         <vite.sources.root>${project.basedir}/ui</vite.sources.root>
         <vite.destination.root>${project.basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-app</vite.destination.root>
@@ -318,15 +328,9 @@
                 </file>
             </activation>
             <properties>
-                <!-- The generated about.html / user-guide.html move under the app webapp together with
-                     the UI. The property name is historical (it predates the React apps); the Java side
-                     looks in `<ext>-app/html` first and falls back to `<ext>-admin/html`, so extensions
-                     still on the JSP admin UI are unaffected. -->
-                <markdown2html-maven-plugin.extensionContextAdminHtml>${vite.destination.root}/html</markdown2html-maven-plugin.extensionContextAdminHtml>
-                <!-- There is no -admin webapp in a converted extension; generic.app.jar belongs in the
-                     webapp that exists. Without this the copy lands in webapp/<ext>-admin/WEB-INF/lib,
-                     which nothing serves - 350+ KB of dead weight in every jar. -->
-                <generic.app.ui.webapp>${web.app.name}-app</generic.app.ui.webapp>
+                <!-- markdown2html-maven-plugin.extensionContextAdminHtml and generic.app.ui.webapp both
+                     already default to the `-app` webapp, so this profile no longer has to override
+                     them. -->
             </properties>
             <build>
                 <plugins>
@@ -1015,12 +1019,6 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.framework</artifactId>
             <version>${org.osgi.framework.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>jsp-api</artifactId>
-            <version>${jsp-api.version}</version>
             <scope>provided</scope>
         </dependency>
 

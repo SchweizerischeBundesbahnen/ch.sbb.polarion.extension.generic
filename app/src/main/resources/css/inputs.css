@@ -8,8 +8,8 @@
  * Polarion's own inputs. The combobox's own inputs (.sd-trigger / .search-box)
  * are excluded — they have their dedicated styling in searchable-dropdown.css.
  *
- * Loaded by: common.css (@import) for admin pages; injected/linked by each
- * extension's popup/side-panel for the document-view contexts.
+ * Loaded by: react-sbb-polarion's bundled style.css for admin pages; injected/linked by
+ * each extension's popup/side-panel for the document-view contexts.
  */
 .modal__container input[type="text"]:not(.sd-trigger):not(.search-box),
 .modal__container input[type="number"],
@@ -139,7 +139,7 @@
  * Number input with a custom 2606 spinner. The browser's ::-webkit-inner-spin-button can't be
  * restyled to match our look, so it is hidden and replaced by two stacked caret buttons (the SAME
  * triangle as the combobox chevron — up = flipped, down = as-is). Structure is added by
- * js/modules/NumericSpinner.js (vanilla) or a consumer's React component; both use these classes.
+ * the consumer's React component (react-sbb-polarion's NumericSpinner), which uses these classes.
  * Self-contained (base input look + 2606 focus) so it works regardless of the surrounding scope.
  */
 /* Block so the wrapped input keeps the width it had before (e.g. a width:100% field stays full-width);

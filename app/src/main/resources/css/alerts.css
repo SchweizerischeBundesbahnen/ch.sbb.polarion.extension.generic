@@ -1,14 +1,12 @@
 /*
  * Shared alert styles — coloured status text, notification boxes, and the warning/error triangle
- * icons. Split out of common.css so surfaces that assemble their CSS from the individually injected
+ * icons. A standalone sheet, so surfaces that assemble their CSS from the individually injected
  * control sheets (exporter export dialogs via starter.js / ensureSharedStyles.js, the Bulk PDF Export
- * widget's inlined CSS) can render alerts correctly without pulling the whole common.css.
- *
- * common.css @imports this, so admin pages and everything already on common.css are unchanged.
+ * widget's inlined CSS) can render alerts correctly on their own.
  *
  * Tokens: the ::before icons consume --sbb-warning-icon / --sbb-error-icon from control-tokens.css.
  * Every injection path guarantees control-tokens.css alongside this sheet (ensureSharedStyles lists it
- * first; common.css @imports it first; standalone pages link it explicitly).
+ * first; standalone pages link it explicitly).
  */
 
 /* Inline text alerts — coloured status text (no box). Two entry points, unified here so consumers

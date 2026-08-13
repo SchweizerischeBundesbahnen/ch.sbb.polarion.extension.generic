@@ -12,9 +12,9 @@ import static org.mockito.Mockito.when;
 
 /**
  * The help articles (about.html / user-guide.html / disclaimer.html) are generated at build time into an extension's
- * webapp resources and read back from the classpath. Extensions with a React administration UI keep
- * them under {@code <ext>-app}, the ones still on the JSP admin UI under {@code <ext>-admin}; both
- * must work. The fixtures live in src/test/resources/webapp/.
+ * webapp resources and read back from the classpath. Every administration UI is a React app, so only
+ * {@code <ext>-app} is searched; the legacy {@code <ext>-admin} JSP webapp was dropped in 16.0.0 and
+ * the fixtures for it are kept here to prove it is ignored. The fixtures live in src/test/resources/webapp/.
  */
 class ExtensionInfoInternalControllerTest {
 
@@ -36,14 +36,14 @@ class ExtensionInfoInternalControllerTest {
     }
 
     @Test
-    void readsTheArticleFromTheLegacyAdminWebapp() {
+    void ignoresTheLegacyAdminWebapp() {
         try (MockedStatic<ExtensionInfo> ignored = mockExtensionContext("legacy-ext")) {
-            assertThat(controller.getDocumentation()).contains("legacy admin about");
+            assertThat(controller.getDocumentation()).isEmpty();
         }
     }
 
     @Test
-    void prefersTheReactAppWebappWhenBothArePresent() {
+    void readsOnlyTheReactAppWebappWhenBothArePresent() {
         try (MockedStatic<ExtensionInfo> ignored = mockExtensionContext("both-ext")) {
             assertThat(controller.getDocumentation()).contains("react app about");
         }
@@ -65,7 +65,8 @@ class ExtensionInfoInternalControllerTest {
 
     @Test
     void returnsEmptyWhenTheExtensionHasNoDisclaimer() {
-        try (MockedStatic<ExtensionInfo> ignored = mockExtensionContext("legacy-ext")) {
+        // both-ext has an -app webapp with about.html but no disclaimer.html
+        try (MockedStatic<ExtensionInfo> ignored = mockExtensionContext("both-ext")) {
             assertThat(controller.getDisclaimer()).isEmpty();
         }
     }

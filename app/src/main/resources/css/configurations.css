@@ -11,19 +11,6 @@
 .input-group input {
     width: 284px;
 }
-.checkboxes label.parent {
-    color: #333;
-}
-.checkboxes label.parent::after {
-    content: "global";
-    float: right;
-    font-size: 10px;
-    font-style: italic;
-    margin-top: 2px;
-}
-.checkboxes label:not(.parent) {
-    font-weight: bolder;
-}
 .action-buttons {
     display: inline-block;
     margin-left: 2em;

@@ -73,11 +73,11 @@
        size-less background consumers (diff-tool / docx / pdf) render it at 16px. */
     --sbb-info-icon: url(inline:images/info.svg);
     /* Revert-to-revision arrow (revisions table Actions) — green undo icon. Source: images/
-       revision-revert.svg. Consumed via common.css .revert-to-revision-icon (background-size: contain). */
+       revision-revert.svg. Consumed via the .revert-to-revision-icon rule (background-size: contain). */
     --sbb-revision-revert-icon: url(inline:images/revision-revert.svg);
     /* Notification alert icons — rounded warning/alert triangles. Sources: images/
        notification-warning.svg (caution), notification-error.svg (red-alert). Consumed only via
-       common.css .alert-*::before (background-size: contain), so the non-square viewBox is fine. */
+       alerts.css .alert-*::before (background-size: contain), so the non-square viewBox is fine. */
     --sbb-warning-icon: url(inline:images/notification-warning.svg);
     --sbb-error-icon: url(inline:images/notification-error.svg);
     /* Table add / remove controls — clean inline-SVG replacing raster /polarion/ria/images/control/
