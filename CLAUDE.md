@@ -38,11 +38,27 @@ deleted here. Migrate them one at a time; the table is the running state.
 | Asset | Fetched by |
 |---|---|
 | `js/modules/SearchableDropdown.js`, `searchableSelect.js`, `ensureSharedStyles.js`, `generic-build-info.js` | diff-tool's own `ui/src/components/SearchableSelect.jsx` dynamically imports `searchableSelect.js` at runtime |
-| `css/control-tokens.css`, `checkboxes.css`, `radios.css`, `inputs.css`, `searchable-dropdown.css`, `buttons.css`, `alerts.css` | `ensureSharedStyles.js` injects all seven, so the diff-tool chain above pulls them; strictdoc-exporter's `starter.js` injects them too; diff-tool links two of them in `ui/*.html` |
+| `css/control-tokens.css`, `checkboxes.css`, `radios.css`, `inputs.css`, `searchable-dropdown.css`, `buttons.css`, `alerts.css` | `ensureSharedStyles.js` injects all seven, so the diff-tool chain above pulls them; diff-tool also links two of them in `ui/*.html` |
 | all 24 SVGs under `images/` | resolve `control-tokens.css`'s `url(inline:…)` placeholders at build time, so they move with it |
 
 `css/tabs.css` completed this route: RSP owns it, nothing fetched it from here, so it was deleted.
 That is the pattern to repeat for each row above.
+
+**diff-tool is now the single gate on both rows.** The exporters mount their React surfaces in shadow
+roots and inject react-sbb-polarion's bundled stylesheet inside (`?inline`), which a page-level
+`<link>` cannot reach anyway, so none of them fetches control CSS any more. Finishing the diff-tool
+migration therefore frees the seven sheets, the 24 SVGs and the four JS modules in one step.
+
+**Third-party libraries are fully off this webapp**, verified against all 23 extensions: nothing
+loads `micromodal.min.js`, `prism.js` or `code-input.min.js`, and nothing renders micromodal's
+`.modal__*` markup, so all six files including `css/micromodal.css` were deleted. React apps use
+RSP's own `Modal` (a `<dialog>` with `.rsp-modal*` classes, not a Micromodal wrapper) and its
+`CodeEditor` (npm `refractor`).
+
+Watch the trap that hid this: a downstream `injectStyles(...)` or `<link>` does **not** prove a sheet
+is live. `micromodal.css` was still being fetched by an exporter's `starter.js` long after that
+popup had moved to RSP's `Modal`, so the sheet matched no rendered markup at all. Check that a
+sheet's selectors match markup something still renders, not just that a fetch exists.
 
 ### Not in RSP yet
 
@@ -51,7 +67,6 @@ That is the pattern to repeat for each row above.
 | `css/tables.css` | `.sbb-table` is used by api-extender, xml-repair and integrity-scanner, none of which links the sheet, so those tables render unstyled today. Moving it into RSP's bundle fixes that. |
 | `css/configurations.css` | linked by diff-tool and excel-importer; belongs with RSP's `ConfigurationsPane` |
 | `css/github-markdown-light.css` | linked by all 23 extensions |
-| `css/micromodal.css` | injected by strictdoc-exporter's `starter.js`; overlaps RSP's `Modal.css` |
 | `js/dle-toolbar-starter.js`, `css/dle-toolbar.css` | plain `<script>` loaded into the Polarion document editor by the pdf / docx / strictdoc exporters, outside any React app; probably stays here |
 | `js/modules/BreadcrumbBridge.js` | deliberately fetched at runtime by RSP's `BreadcrumbInjector` and run in `window.top`, outside the React bundle; probably stays here |
 

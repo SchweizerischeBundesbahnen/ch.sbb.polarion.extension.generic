@@ -95,7 +95,6 @@
         <lombok.version>1.18.30</lombok.version>
         <jetbrains.api.version>24.0.1</jetbrains.api.version>
         <gwt-servlet.version>2.9.0</gwt-servlet.version>
-        <jsp-api.version>2.2</jsp-api.version>
         <re2j.version>1.8</re2j.version>
         <classgraph.version>4.8.189</classgraph.version>
         <org.osgi.framework.version>1.10.0</org.osgi.framework.version>
@@ -1026,12 +1025,6 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.framework</artifactId>
             <version>${org.osgi.framework.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>jsp-api</artifactId>
-            <version>${jsp-api.version}</version>
             <scope>provided</scope>
         </dependency>
 

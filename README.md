@@ -605,22 +605,26 @@ Bootstrap classes) and cannot link `checkboxes.css` / `searchable-dropdown.css`.
    <link rel="stylesheet" href="/polarion/<ext>-app/ui/generic/css/tables.css" />
    ```
 
-`generic` is the upstream for these assets, but most extensions no longer fetch them from here:
-react-sbb-polarion copies them into its own bundle and ships them over npm. Only the runtime paths
-still read them from `/polarion/<ext>/ui/generic/` — the exporters' `starter.js`, and pages that link
-a sheet directly. Always ship the literal fallback in the SPA's `var()` calls so it still renders in
-a dev server running outside Polarion (where `/polarion/*` 404s).
+`generic` is the upstream for these assets, but extensions no longer fetch the control CSS from here:
+react-sbb-polarion copies it into its own bundle and ships it over npm. What still reads from
+`/polarion/<ext>/ui/generic/` is a page that links a sheet directly, and `ensureSharedStyles.js` when
+the vanilla `SearchableDropdown` is loaded at runtime. Always ship the literal fallback in the SPA's
+`var()` calls so it still renders in a dev server running outside Polarion (where `/polarion/*` 404s).
 
 #### Shared control CSS is self-provided by `SearchableDropdown` (versioned)
 
-The shared control CSS reaches a page as global `<link>`s. Historically that only happened via an
-exporter's `scriptInjection.*Head` → `starter.js` → `injectStyles(...)`. That path is **shared and
-optional**: the component classes are global, so one installed exporter styles every surface — but if
-no exporter's `starter.js` runs (unconfigured `scriptInjection`, or the injecting extension removed),
-a document-properties side panel renders its controls **unstyled** even though its JS already wrapped
-them. (A panel cannot fix this from its own HTML fragment: Polarion inserts it via `HtmlFragmentBuilder`,
-which honors an inline `<style>` but **not** external `<link>`/`<script>` — which is also why panels
-bootstrap their JS through a `<link onload>` hook.)
+This applies to the **vanilla** runtime path only. A React surface gets the control CSS from
+react-sbb-polarion's bundle, typically injected as a `<style>` inside its own shadow root, which a
+page-level `<link>` could not reach in any case.
+
+For the vanilla path the shared control CSS reaches a page as global `<link>`s. Historically that
+only happened via an exporter's `scriptInjection.*Head` → `starter.js` → `injectStyles(...)`. That
+path was **shared and optional**: the component classes are global, so one installed exporter styled
+every surface — but if no exporter's `starter.js` ran (unconfigured `scriptInjection`, or the
+injecting extension removed), a document-properties side panel rendered its controls **unstyled**
+even though its JS had already wrapped them. (A panel cannot fix this from its own HTML fragment:
+Polarion inserts it via `HtmlFragmentBuilder`, which honors an inline `<style>` but **not** external
+`<link>`/`<script>` — which is also why panels bootstrap their JS through a `<link onload>` hook.)
 
 So the component provides its own styling: the `SearchableDropdown` constructor calls
 `ensureSharedStyles()` (`js/modules/ensureSharedStyles.js`), which injects the shared CSS
@@ -644,34 +648,15 @@ change: its unversioned injection is simply superseded once a versioned copy is 
 itself is a React component in react-sbb-polarion (`ConfigurationsPane`); generic ships only the
 stylesheet, served at `/polarion/<ext>/ui/generic/css/configurations.css`.
 
-#### Modal dialogs (`micromodal`)
+#### Modal dialogs
 
-The [Micromodal](https://micromodal.vercel.app/) styling (`css/micromodal.css`) ships with generic
-and is served at `/polarion/<ext>/ui/generic/css/micromodal.css`. Link/inject it from there — do
-**not** vendor a per-extension copy. The library itself comes from npm (react-sbb-polarion's `Modal`
-wraps it). Build the standard micromodal markup
-(`.modal.micromodal-slide` → `.modal__overlay` → `.modal__container` → `.modal__header` /
-`.modal__content` / `.modal__footer`) and open it with `MicroModal.show('<id>')`.
+Generic ships no dialog CSS. Use react-sbb-polarion's `Modal`, which renders a `<dialog>` styled by
+its own bundled `Modal.css` (`.rsp-modal*` classes). The [Micromodal](https://micromodal.vercel.app/)
+library and the `micromodal.css` that styled its `.modal__*` markup were both removed in 16.0.0.
 
-For a simple, polished message / confirmation dialog — full-width dark header flush to the top, teal
-outline (secondary) / filled (primary) buttons — add **`standard-dialog`** to the `.modal__container`:
-
-```html
-<div class="modal__container standard-dialog" role="dialog" aria-modal="true" ...>
-  <header class="modal__header">
-    <h2 class="modal__title">Title</h2>
-    <button class="modal__close" data-micromodal-close></button>
-  </header>
-  <main class="modal__content">…</main>
-  <footer class="modal__footer">
-    <button class="modal__btn" data-micromodal-close>Cancel</button>
-    <button class="modal__btn modal__btn-primary" data-micromodal-close>OK</button>
-  </footer>
-</div>
-```
-
-The `.standard-dialog` rules live in `css/micromodal.css` and are **opt-in**, so exporter popups —
-which scope their own look under `.modal__container.<ext>` (e.g. `.pdf-exporter`) — are unaffected.
+`.modal__container` survives only as one of the wrapper scopes on which `control-tokens.css` declares
+the `--sbb-*` custom properties, alongside `.standard-admin-page`, `.form-wrapper` and `.sbb-ui`. It
+no longer carries any dialog styling of its own.
 
 #### `BreadcrumbBridge` — app-header breadcrumb for topic extensions
 
