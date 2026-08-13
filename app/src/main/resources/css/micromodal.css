@@ -1,5 +1,5 @@
-/* Pull in the --sbb-* design tokens this sheet consumes. Self-declaring the dependency (as
-   common.css does) makes micromodal.css genuinely self-contained: a consumer can link it alone
+/* Pull in the --sbb-* design tokens this sheet consumes. Self-declaring the dependency
+   makes micromodal.css genuinely self-contained: a consumer can link it alone
    and the dialog-button tokens still resolve — no reliance on the page separately loading
    control-tokens.css, and no need for literal fallbacks. Identical @import URLs are de-duped by
    the browser, so this costs nothing where control-tokens.css is already present. */

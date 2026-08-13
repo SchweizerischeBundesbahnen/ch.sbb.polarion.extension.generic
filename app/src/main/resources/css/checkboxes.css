@@ -8,8 +8,8 @@
  * the Polarion document page (popups / side panels) without ever restyling
  * Polarion's own checkboxes.
  *
- * Loaded by: common.css (@import) for admin pages; injected by each extension's
- * popup/side-panel for the document-view contexts.
+ * Loaded by: react-sbb-polarion's bundled style.css for admin pages; injected by each
+ * extension's popup/side-panel for the document-view contexts.
  */
 .modal__container input[type="checkbox"],
 .standard-admin-page input[type="checkbox"],

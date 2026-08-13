@@ -446,8 +446,13 @@ and behaves the same. They are served by the extension's `GenericUiServlet` at
 
 ```js
 import SearchableDropdown from '../ui/generic/js/modules/SearchableDropdown.js';
-import ExtensionContext from '../ui/generic/js/modules/ExtensionContext.js';
+import { createSearchableSelect } from '../ui/generic/js/modules/searchableSelect.js';
 ```
+
+Extension UIs are React apps built on the shared
+[react-sbb-polarion](https://github.com/grigoriev/react-sbb-polarion) library (npm
+`@grigoriev/react-sbb-polarion`), which vendors these modules and this CSS. Generic stays the
+upstream source of truth: change a component here, then re-copy it into the library.
 
 #### `SearchableDropdown` — the standard dropdown
 
@@ -461,9 +466,8 @@ multi-select. Prefer it over a raw `<select>` or any bespoke widget.
   new SearchableDropdown({ element: document.getElementById('paper-size'), rememberSelection: false });
   ```
 
-- **Build mode** — render into a `<div>` and populate programmatically. It exposes the same API as
-  the (now deprecated) `CustomSelect` (`addOption`, `empty`, `selectValue`, `selectMultipleValues`,
-  `getSelectedValue`, `getSelectedText`, `containsOption`), so it is a drop-in replacement:
+- **Build mode** — render into a `<div>` and populate programmatically (`addOption`, `empty`,
+  `selectValue`, `selectMultipleValues`, `getSelectedValue`, `getSelectedText`, `containsOption`):
 
   ```js
   const dd = new SearchableDropdown({ selectContainer: document.getElementById('css-select'), label });
@@ -499,8 +503,8 @@ it as the fourth argument, `addOption(value, text, icon, iconBg)`; the colour is
 icon in both the list and the trigger.
 
 The popup is portalled into `document.body` so it is never clipped by an ancestor's `overflow`
-(narrow side panels, scrollable modals). It integrates with `ExtensionContext` (`setSelector` /
-`setValueById` / `displayIf`) and auto-refreshes when its `<select>` options are repopulated; it also
+(narrow side panels, scrollable modals). It auto-refreshes when its `<select>` options are
+repopulated; it also
 mirrors the wrapped `<select>`'s `disabled` state (setting `select.disabled` dims the control and
 makes it non-interactive), its `<option disabled>` options (dimmed, non-selectable), and its `title`
 tooltip. It exposes
@@ -513,20 +517,20 @@ automatically, so a pane that re-initialises its dropdowns won't stack duplicate
 
 #### Shared control styling
 
-`css/common.css` (`@import` it, or link it from admin JSPs) pulls in the neutral, Polarion-matched
-styles for `checkboxes.css`, `radios.css`, `inputs.css`, `searchable-dropdown.css` and `tables.css`, plus the
-`.toolbar-button` styling. The checkbox / radio / input rules are intentionally **scoped** to the
-UI wrappers `.modal__container` (popups), `.standard-admin-page` (admin pages) and `.form-wrapper`
-(document-properties side panels) so they never restyle Polarion's own controls — put the matching
-wrapper class on your surface.
+Link the neutral, Polarion-matched sheets you need: `checkboxes.css`, `radios.css`, `inputs.css`,
+`searchable-dropdown.css`, `tables.css`, `buttons.css` and `alerts.css`. React apps normally
+get them through react-sbb-polarion's bundled `style.css` instead. The checkbox / radio / input rules
+are intentionally **scoped** to the UI wrappers `.modal__container` (popups), `.standard-admin-page`
+(admin pages) and `.form-wrapper` (document-properties side panels) so they never restyle Polarion's
+own controls — put the matching wrapper class on your surface.
 
 #### Design tokens & reuse in React SPAs (`control-tokens.css`)
 
 The 2606 control look is defined once as CSS custom properties in `css/control-tokens.css` (border /
 focus colors, control height, radius, the soft hover/active elevation shadows, checkbox images, radio
 dot, combobox chevron, popup border, option hover tint, chips, typography, and the button tokens).
-`common.css` `@import`s it, and the class-based stylesheets above consume it via `var(--sbb-*)` — so
-restyling every native control across the ecosystem is a one-file edit.
+The class-based stylesheets above consume it via `var(--sbb-*)` — so restyling every native control
+across the ecosystem is a one-file edit. Load it before any of them.
 
 The tokens are declared on the shared UI scopes (`:root, .modal__container, .standard-admin-page,
 .form-wrapper, .sbb-ui`), not only `:root`, so that on a page where several extensions load their own
@@ -591,8 +595,8 @@ Bootstrap classes) and cannot link `checkboxes.css` / `searchable-dropdown.css`.
    `.sbb-spinner` class instead of hardcoding `/polarion/ria/images/progressWheel48.svg`, so the asset
    is swappable in one place (both are defined in `control-tokens.css`).
 
-4. **Data tables**: give a results/list `<table>` the `sbb-table` class (`css/tables.css`, also
-   `@import`ed by `common.css`) for the shared Polarion look — outer frame, tinted header, row
+4. **Data tables**: give a results/list `<table>` the `sbb-table` class (`css/tables.css`) for the
+   shared Polarion look — outer frame, tinted header, row
    separators and a hover tint, all driven by the `--sbb-table-*` tokens. Add `sbb-table--grid` for
    full spreadsheet cell borders or `sbb-table--compact` for denser rows; the extension keeps only its
    own column widths and row-state highlights. React SPAs link it at runtime like the other sheets:
@@ -631,18 +635,18 @@ lowest — so across a page assembled from extensions on **different generic ver
 generic's CSS always wins, deterministically and regardless of load order. `starter.js` needs no
 change: its unversioned injection is simply superseded once a versioned copy is present.
 
-#### `ConfigurationsPane`
+#### Configuration pane styling
 
-`js/modules/ConfigurationsPane.js` renders the admin "choose a configuration" pane (backed by a
-native `<select id="configurations-select">` wrapped by `SearchableDropdown`), including the
-italic `global` marker for configurations inherited from a broader scope.
+`css/configurations.css` carries the look of the admin "choose a configuration" pane. The pane
+itself is a React component in react-sbb-polarion (`ConfigurationsPane`); generic ships only the
+stylesheet, served at `/polarion/<ext>/ui/generic/css/configurations.css`.
 
 #### Modal dialogs (`micromodal`)
 
-The [Micromodal](https://micromodal.vercel.app/) library (`js/micromodal.min.js`) and its styling
-(`css/micromodal.css`) ship with generic and are served at
-`/polarion/<ext>/ui/generic/js/micromodal.min.js` and `.../css/micromodal.css`. Link/inject them from
-there — do **not** vendor a per-extension copy. Build the standard micromodal markup
+The [Micromodal](https://micromodal.vercel.app/) styling (`css/micromodal.css`) ships with generic
+and is served at `/polarion/<ext>/ui/generic/css/micromodal.css`. Link/inject it from there — do
+**not** vendor a per-extension copy. The library itself comes from npm (react-sbb-polarion's `Modal`
+wraps it). Build the standard micromodal markup
 (`.modal.micromodal-slide` → `.modal__overlay` → `.modal__container` → `.modal__header` /
 `.modal__content` / `.modal__footer`) and open it with `MicroModal.show('<id>')`.
 
@@ -686,7 +690,7 @@ Inject it into the shell and configure it via `data-*` attributes (auto-install)
 call `install()` directly so a sub-topic can re-label without re-loading the module:
 
 ```js
-// From the topic page (React effect in the SPA, or an inline script in a topic JSP):
+// From the topic page (React effect in the SPA):
 const shell = window.top;
 const cfg = { marker: '<ext>', title: 'My Extension',
               // parent: 'My Extension',                 // set for a sub-topic → "Parent › title"
@@ -741,7 +745,7 @@ The human-readable SVG sources are kept under **`images/checkbox/*.svg`**; the b
 files is generated from them. To change the look, edit the SVG and re-encode it
 (`base64 < images/checkbox/checked.svg`) into the matching token in **both** files.
 
-**Injected / admin / popup context** — link `checkboxes.css` (or `common.css`, which `@import`s it)
+**Injected / admin / popup context** — link `checkboxes.css`
 and use a native checkbox inside one of the scoped wrappers; `:indeterminate`, `:disabled` and
 `:focus-visible` are handled automatically:
 
@@ -771,14 +775,6 @@ Because these are inline data URIs, no relative or absolute `url()` path is ever
 can drop the old per-mount work-arounds for the indeterminate image. The **indeterminate** state has
 no HTML attribute, so set it from JS (e.g. a React ref):
 `ref={(el) => { if (el) el.indeterminate = someButNotAll; }}`.
-
-#### Deprecated components
-
-The following are kept only for backward compatibility and should not be used in new code:
-
-- `js/modules/CustomSelect.js` — superseded by `SearchableDropdown` (build mode).
-- `js/custom-select.js` (non-module `SbbCustomSelect`) — superseded by `SearchableDropdown`.
-- `js/configurations.js` (non-module `Configurations`) — superseded by the `ConfigurationsPane` module.
 
 ### Custom extension configuration
 

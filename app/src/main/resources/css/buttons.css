@@ -15,8 +15,8 @@
  *
  * Tokens: this sheet consumes the --sbb-* custom properties from control-tokens.css (no literal
  * fallbacks — single source). Every load path guarantees control-tokens.css alongside it:
- * ensureSharedStyles.js injects it first, common.css @imports it first, and standalone pages link
- * it explicitly. A new consumer must do the same (or @import control-tokens.css) before linking this.
+ * ensureSharedStyles.js injects it first, and standalone pages link it explicitly. A new consumer
+ * must do the same (or @import control-tokens.css) before linking this.
  */
 
 /* ==================================== Control (default) ==================================== */
