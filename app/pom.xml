@@ -5,7 +5,7 @@
     <parent>
         <groupId>ch.sbb.polarion.extensions</groupId>
         <artifactId>ch.sbb.polarion.extension.generic</artifactId>
-        <version>15.10.2-SNAPSHOT</version>
+        <version>15.11.1-SNAPSHOT</version>
     </parent>
 
     <name>Versatile extension for developing additional extensions within Polarion ALM: common code and resources</name>
@@ -30,6 +30,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <!-- combine.self="override" drops the parent's OSGi manifest entries on purpose: this jar is a
+                     plain library, not a bundle. It ships inside every extension's WEB-INF/lib and is listed on
+                     that extension's Bundle-ClassPath, so its classes are wired by the extension's bundle - which
+                     is where Import-Package (including the jakarta.annotation pin) belongs and is applied. -->
                 <configuration combine.self="override">
                     <excludes>
                         <exclude>**/*Test.class</exclude>

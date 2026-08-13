@@ -4,7 +4,7 @@
 
     <groupId>ch.sbb.polarion.extensions</groupId>
     <artifactId>ch.sbb.polarion.extension.generic</artifactId>
-    <version>15.10.2-SNAPSHOT</version>
+    <version>15.11.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Versatile extension for developing additional extensions within Polarion ALM: parent POM</name>
@@ -124,7 +124,21 @@
         <maven-jar-plugin.Project-URL>${project.scm.url}</maven-jar-plugin.Project-URL>
         <maven-jar-plugin.Support-Email>polarion-opensource@sbb.ch</maven-jar-plugin.Support-Email>
         <maven-jar-plugin.Bundle-ActivationPolicy>lazy</maven-jar-plugin.Bundle-ActivationPolicy>
+        <!-- Extension-specific OSGi imports. An extension may override this property wholesale. -->
         <maven-jar-plugin.Import-Package>org.osgi.framework</maven-jar-plugin.Import-Package>
+        <!-- Appended to Import-Package for every extension and NOT meant to be overridden.
+             jakarta.annotation is exported by TWO bundles: com.polarion.portal.tomcat (Tomcat 11 embeds the
+             annotation API) and jakarta.annotation-api. Both export it unversioned, so only the exporting
+             bundle tells them apart. Require-Bundle is searched in declaration order and lists the Tomcat
+             bundle first, which used to bind our classes to Tomcat's copy - while Jersey requires
+             jakarta.annotation-api;bundle-version="3.0.0" and binds to the other one. Two distinct
+             jakarta.annotation.Priority classes then made Jersey's `annotation instanceof Priority` check in
+             ComponentBag.modelFor() fail, so @Priority never reached the provider model: every filter fell
+             back to Priorities.USER, ranks tied, and RankedComparator (which never returns 0) left the
+             filters in HashSet iteration order - a different authentication/authorization order per JVM start.
+             Import-Package is searched BEFORE Require-Bundle, so pinning the package to the API bundle gives
+             us the same class Jersey uses. -->
+        <maven-jar-plugin.Import-Package.required>jakarta.annotation;bundle-symbolic-name="jakarta.annotation-api"</maven-jar-plugin.Import-Package.required>
         <!-- Common Require-Bundle:
             com.polarion.portal.tomcat
             com.polarion.alm.ui
@@ -1197,7 +1211,12 @@
                                 <Project-URL>${maven-jar-plugin.Project-URL}</Project-URL>
                                 <Support-Email>${maven-jar-plugin.Support-Email}</Support-Email>
                                 <Bundle-ActivationPolicy>${maven-jar-plugin.Bundle-ActivationPolicy}</Bundle-ActivationPolicy>
-                                <Import-Package>${maven-jar-plugin.Import-Package}</Import-Package>
+                                <!-- The jakarta.annotation pin is appended here rather than kept in the
+                                     property, because an extension that needs its own import overrides
+                                     maven-jar-plugin.Import-Package wholesale (interceptor-manager already
+                                     does) and would silently drop it - bringing the filter-ordering bug
+                                     back. See the property's comment for what the pin is for. -->
+                                <Import-Package>${maven-jar-plugin.Import-Package},${maven-jar-plugin.Import-Package.required}</Import-Package>
                                 <Require-Bundle>${maven-jar-plugin.Require-Bundle}</Require-Bundle>
                             </manifestEntries>
                         </archive>

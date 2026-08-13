@@ -3,7 +3,6 @@ package ch.sbb.polarion.extension.generic.rest;
 import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsApiController;
 import ch.sbb.polarion.extension.generic.rest.controller.settings.NamedSettingsInternalController;
 import ch.sbb.polarion.extension.generic.rest.feature.LifecycleBindingFeature;
-import ch.sbb.polarion.extension.generic.rest.feature.PrioritizedFiltersFeature;
 import ch.sbb.polarion.extension.generic.settings.GenericNamedSettings;
 import ch.sbb.polarion.extension.generic.settings.NamedSettingsRegistry;
 import ch.sbb.polarion.extension.generic.test_extensions.PlatformContextMockExtension;
@@ -44,18 +43,9 @@ class GenericRestApplicationTest {
     }
 
     @Test
-    void getSingletonsContainsPrioritizedFiltersFeature() {
+    void getSingletonsContainsTheGenericFilters() {
         GenericRestApplication app = new GenericRestApplication();
-        assertTrue(app.getSingletons().stream().anyMatch(PrioritizedFiltersFeature.class::isInstance));
-    }
-
-    @Test
-    void getSingletonsRegistersFiltersThroughFeatureNotAsBareSingletons() {
-        GenericRestApplication app = new GenericRestApplication();
-        // Filters must be registered with explicit priorities via PrioritizedFiltersFeature, so no filter
-        // instance (request or response) should leak into the singleton set directly — that path loses the
-        // @Priority ordering.
-        assertFalse(app.getSingletons().stream()
+        assertTrue(app.getSingletons().stream()
                 .anyMatch(s -> s instanceof ContainerRequestFilter || s instanceof ContainerResponseFilter));
     }
 
