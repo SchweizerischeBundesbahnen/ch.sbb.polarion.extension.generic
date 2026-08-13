@@ -781,7 +781,6 @@
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-entity-filtering</artifactId>
             <version>${jersey.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
