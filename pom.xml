@@ -127,20 +127,21 @@
         <!-- Extension-specific OSGi imports. An extension may override this property wholesale. -->
         <maven-jar-plugin.Import-Package>org.osgi.framework</maven-jar-plugin.Import-Package>
         <!-- Appended to Import-Package for every extension and NOT meant to be overridden.
-             jakarta.annotation is exported by TWO bundles: com.polarion.portal.tomcat (Tomcat 11 embeds the
-             annotation API) and jakarta.annotation-api. Both export it unversioned, so only the exporting
-             bundle tells them apart. Require-Bundle is searched in declaration order and lists the Tomcat
-             bundle first, which used to bind our classes to Tomcat's copy - while Jersey requires
-             jakarta.annotation-api;bundle-version="3.0.0" and binds to the other one. Two distinct
-             jakarta.annotation.Priority classes then made Jersey's `annotation instanceof Priority` check in
-             ComponentBag.modelFor() fail, so @Priority never reached the provider model: every filter fell
-             back to Priorities.USER, ranks tied, and RankedComparator (which never returns 0) left the
-             filters in HashSet iteration order - a different authentication/authorization order per JVM start.
-             Import-Package is searched BEFORE Require-Bundle, so pinning the package to the API bundle gives
-             us the same class Jersey uses. -->
+             jakarta.annotation used to arrive from TWO bundles: com.polarion.portal.tomcat (Tomcat 11 embeds
+             the annotation API) and jakarta.annotation-api. Both export it unversioned, so only the exporting
+             bundle told them apart, and Require-Bundle listed the Tomcat one first - which bound our classes
+             to Tomcat's copy while Jersey requires jakarta.annotation-api;bundle-version="3.0.0" and binds to
+             the other one. Two distinct jakarta.annotation.Priority classes then made Jersey's
+             `annotation instanceof Priority` check in ComponentBag.modelFor() fail, so @Priority never reached
+             the provider model: every filter fell back to Priorities.USER, ranks tied, and RankedComparator
+             (which never returns 0) left the filters in HashSet iteration order - a different
+             authentication/authorization order per JVM start.
+             The Tomcat bundle is gone from Require-Bundle now, so only one exporter is left. The pin stays as
+             the guard: Import-Package is searched BEFORE Require-Bundle, so it keeps us on Jersey's class no
+             matter what a future Require-Bundle entry drags in. -->
         <maven-jar-plugin.Import-Package.required>jakarta.annotation;bundle-symbolic-name="jakarta.annotation-api"</maven-jar-plugin.Import-Package.required>
         <!-- Common Require-Bundle:
-            com.polarion.portal.tomcat
+            jakarta.servlet-api
             com.polarion.alm.ui
             jakarta.inject-api
             jakarta.annotation-api
@@ -160,7 +161,7 @@
             com.polarion.alm.tracker
             com.polarion.platform.guice
         -->
-        <maven-jar-plugin.Require-Bundle.common>com.polarion.portal.tomcat,com.polarion.alm.ui,jakarta.inject-api,jakarta.annotation-api,jakarta.ws.rs-api,jakarta.xml.bind-api,jakarta.activation-api,org.glassfish.jersey,com.fasterxml.jackson.core,com.fasterxml.jackson.databind,com.fasterxml.jackson.annotations,com.fasterxml.jackson.module.jakarta.xmlbind.annotations,org.apache.commons.logging,commons-io,slf4j.api,org.springframework.spring-core,org.springframework.spring-web,com.polarion.alm.tracker,com.polarion.platform.guice</maven-jar-plugin.Require-Bundle.common>
+        <maven-jar-plugin.Require-Bundle.common>jakarta.servlet-api,com.polarion.alm.ui,jakarta.inject-api,jakarta.annotation-api,jakarta.ws.rs-api,jakarta.xml.bind-api,jakarta.activation-api,org.glassfish.jersey,com.fasterxml.jackson.core,com.fasterxml.jackson.databind,com.fasterxml.jackson.annotations,com.fasterxml.jackson.module.jakarta.xmlbind.annotations,org.apache.commons.logging,commons-io,slf4j.api,org.springframework.spring-core,org.springframework.spring-web,com.polarion.alm.tracker,com.polarion.platform.guice</maven-jar-plugin.Require-Bundle.common>
         <maven-jar-plugin.Require-Bundle.extension/>
         <maven-jar-plugin.Require-Bundle>${maven-jar-plugin.Require-Bundle.common}</maven-jar-plugin.Require-Bundle>
 
