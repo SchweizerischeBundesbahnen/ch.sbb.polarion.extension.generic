@@ -50,8 +50,13 @@
     </distributionManagement>
 
     <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+
+        <polarion.version>2606</polarion.version>
 
         <!-- Maven plugins -->
         <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
@@ -95,6 +100,7 @@
         <lombok.version>1.18.30</lombok.version>
         <jetbrains.api.version>24.0.1</jetbrains.api.version>
         <gwt-servlet.version>2.9.0</gwt-servlet.version>
+        <jersey.version>3.1.8</jersey.version>
         <re2j.version>1.8</re2j.version>
         <classgraph.version>4.8.189</classgraph.version>
         <org.osgi.framework.version>1.10.0</org.osgi.framework.version>
@@ -266,24 +272,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <profile>
-            <id>polarion2606</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <maven.compiler.source>21</maven.compiler.source>
-                <maven.compiler.target>21</maven.compiler.target>
-                <polarion.version>2606</polarion.version>
-
-                <jersey.version>3.1.8</jersey.version>
-                <jersey-osgi-bundle.version>3.1.8</jersey-osgi-bundle.version>
-
-                <slf4j-api.artifactId>slf4j.api_1.7.36</slf4j-api.artifactId>
-                <jaxb-core.artifactId>org.glassfish.jaxb-core_4.0.1</jaxb-core.artifactId>
-            </properties>
         </profile>
 
         <profile>
@@ -702,7 +690,7 @@
         <!-- Polarion OSGi bundles -->
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>org.glassfish.jersey_${jersey-osgi-bundle.version}</artifactId>
+            <artifactId>org.glassfish.jersey_3.1.8</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -842,7 +830,7 @@
 
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>${slf4j-api.artifactId}</artifactId>
+            <artifactId>slf4j.api_1.7.36</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -863,7 +851,7 @@
 
         <dependency>
             <groupId>com.polarion.thirdparty</groupId>
-            <artifactId>${jaxb-core.artifactId}</artifactId>
+            <artifactId>org.glassfish.jaxb-core_4.0.1</artifactId>
             <version>${polarion.version}</version>
             <scope>provided</scope>
         </dependency>
