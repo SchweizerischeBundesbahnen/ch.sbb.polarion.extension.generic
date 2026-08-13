@@ -100,7 +100,7 @@
         <lombok.version>1.18.30</lombok.version>
         <jetbrains.api.version>24.0.1</jetbrains.api.version>
         <gwt-servlet.version>2.9.0</gwt-servlet.version>
-        <jersey.version>3.1.12</jersey.version>
+        <jersey.version>4.0.2</jersey.version>
         <re2j.version>1.8</re2j.version>
         <classgraph.version>4.8.189</classgraph.version>
         <org.osgi.framework.version>1.10.0</org.osgi.framework.version>
