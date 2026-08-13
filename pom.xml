@@ -169,10 +169,12 @@
         <markdown2html-maven-plugin.version>1.7.1</markdown2html-maven-plugin.version>
         <markdown2html-maven-plugin.inputFile>${project.basedir}/README.md</markdown2html-maven-plugin.inputFile>
         <!-- The property name is historical: it predates the React apps and is kept so downstream poms
-             that reference it keep working. It points at the `-app` webapp, the only place
-             ExtensionInfoInternalController reads the generated help articles from. Derived from
-             vite.destination.root so the generator and the reader cannot drift apart. -->
-        <markdown2html-maven-plugin.extensionContextAdminHtml>${vite.destination.root}/html</markdown2html-maven-plugin.extensionContextAdminHtml>
+             that reference it keep working. The path mirrors ExtensionInfoInternalController.readHtmlFile,
+             which composes `/webapp/` + the Extension-Context manifest attribute + `-app/html/` and reads
+             nowhere else. Spelled out rather than derived from vite.destination.root, so relocating the
+             React bundle does not silently move the help articles out of the one directory the reader
+             looks in (a missing article yields an empty About page, not an error). -->
+        <markdown2html-maven-plugin.extensionContextAdminHtml>${project.basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-app/html</markdown2html-maven-plugin.extensionContextAdminHtml>
         <markdown2html-maven-plugin.outputFileName>about.html</markdown2html-maven-plugin.outputFileName>
         <markdown2html-maven-plugin.outputFile>${markdown2html-maven-plugin.extensionContextAdminHtml}/${markdown2html-maven-plugin.outputFileName}</markdown2html-maven-plugin.outputFile>
         <markdown2html-maven-plugin.tokenEnvVarName>GITHUB_TOKEN</markdown2html-maven-plugin.tokenEnvVarName>
@@ -191,8 +193,11 @@
              An extension gets the whole build by having a `ui/package.json`; there is nothing to
              declare in its own pom. Override any of these to deviate. -->
         <!-- Webapp context that receives a copy of generic.app.jar in its WEB-INF/lib (see the
-             maven-dependency-plugin `copy-generic-app-to-ui-webapp` execution). The React app webapp
-             is the only context an extension serves, so the copy always lands where something reads it. -->
+             maven-dependency-plugin `copy-generic-app-to-ui-webapp` execution). `-app` is the only
+             context an extension serves, so the copy lands where something reads it; a wrong value
+             here is 350+ KB of dead weight in every jar rather than a build failure. Based on
+             web.app.name to match the other WEB-INF/lib paths below, which every extension defines as
+             ${maven-jar-plugin.Extension-Context} — keep the two in step if you override either. -->
         <generic.app.ui.webapp>${web.app.name}-app</generic.app.ui.webapp>
 
         <vite.sources.root>${project.basedir}/ui</vite.sources.root>
