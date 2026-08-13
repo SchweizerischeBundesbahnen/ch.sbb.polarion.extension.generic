@@ -84,8 +84,8 @@
        tablePlus.png (green +) and tableMinus.png (magenta −). Use via the .sbb-icon-table-* classes. */
     --sbb-table-plus-icon: url(inline:images/control/table_plus.svg);
     --sbb-table-minus-icon: url(inline:images/control/table_minus.svg);
-    /* Action-button icons — self-made replacements for the last raster GIFs that buttons.jsp /
-       configurations.jsp pulled from Polarion's runtime (/polarion/ria/images/actions/*.gif). Sources
+    /* Action-button icons — self-made replacements for the last raster GIFs the Save-form and
+       configuration toolbars pulled from Polarion's runtime (/polarion/ria/images/actions/*.gif). Sources
        under images/actions/. Use via the .sbb-icon-* classes below. --sbb-revert-icon is the Save-form
        "Default" (load default values) button — distinct from --sbb-revision-revert-icon (revisions
        table row action). */
@@ -174,7 +174,7 @@
 }
 
 /* Action-button icons (16x16) — CSS-background utilities replacing the legacy
-   <img class="button-image" src=".../actions/*.gif"> in buttons.jsp / configurations.jsp. Put on a
+   <img class="button-image" src=".../actions/*.gif"> of the server-rendered toolbars. Put on a
    <span> that also carries .button-image, so the button keeps its original icon spacing while the
    glyph comes from a self-contained token (control-tokens.css must be loaded). */
 .sbb-icon-save,
