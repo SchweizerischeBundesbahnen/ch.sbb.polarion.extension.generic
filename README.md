@@ -427,13 +427,13 @@ If new extension will contain UI parts/pages/artifacts, UI servlet class should 
 simply specifying servlet name in constructor:
 
 ```java
-public class PdfExporterAdminUiServlet extends GenericUiServlet {
+public class PdfExporterAppServlet extends GenericUiServlet {
 
     @Serial
     private static final long serialVersionUID = -6337912330074718317L;
 
-    public PdfExporterAdminUiServlet() {
-        super("pdf-exporter-admin");
+    public PdfExporterAppServlet() {
+        super("pdf-exporter-app");
     }
 }
 ```
@@ -532,11 +532,13 @@ dot, combobox chevron, popup border, option hover tint, chips, typography, and t
 The class-based stylesheets above consume it via `var(--sbb-*)` — so restyling every native control
 across the ecosystem is a one-file edit. Load it before any of them.
 
-The tokens are declared on the shared UI scopes (`:root, .modal__container, .standard-admin-page,
-.form-wrapper, .sbb-ui`), not only `:root`, so that on a page where several extensions load their own
+The tokens are declared on the shared UI scopes (`.modal__container, .standard-admin-page,
+.form-wrapper, .sbb-ui`) and never on `:root`, so that on a page where several extensions load their own
 bundled generic at **different versions** each extension's controls read the tokens from the closest
-scoped ancestor — its own bundle's copy — rather than whichever `:root` loaded last. A consumer's UI
-root must therefore carry one of those wrapper classes (`.sbb-ui` for the React SPAs).
+scoped ancestor — its own bundle's copy — rather than whichever declaration loaded last. A consumer's UI
+root must therefore carry one of those wrapper classes (`.sbb-ui` for the React SPAs). `:root` was
+dropped in #535 and must not come back: a global declaration re-enables cross-version clobbering for
+any control outside a wrapper.
 
 **Icon tokens are generated from `.svg` files at build time.** The 17 icon tokens
 (checkbox states, combobox chevron / erase, info, revert, warning / error triangles, table +/−) live
@@ -682,7 +684,7 @@ call `install()` directly so a sub-topic can re-label without re-loading the mod
 const shell = window.top;
 const cfg = { marker: '<ext>', title: 'My Extension',
               // parent: 'My Extension',                 // set for a sub-topic → "Parent › title"
-              icon: '/polarion/<ext>-admin/ui/images/menu/30x30/_parent.svg' };
+              icon: '/polarion/<ext>-app/ui/images/menu/30x30/_parent.svg' };
 if (shell.SbbBreadcrumbBridge) {
   shell.SbbBreadcrumbBridge.install(cfg);                // already loaded → install/update in place
 } else {
