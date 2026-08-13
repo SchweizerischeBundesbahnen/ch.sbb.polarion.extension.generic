@@ -605,10 +605,11 @@ Bootstrap classes) and cannot link `checkboxes.css` / `searchable-dropdown.css`.
    <link rel="stylesheet" href="/polarion/<ext>-app/ui/generic/css/tables.css" />
    ```
 
-Because both the tokens and the dropdown module are consumed **at runtime**, `generic` stays the
-single source of truth — there is no JS package to publish and no build-time coupling. Always ship
-the literal fallback in the SPA's `var()` calls so it still renders in a dev server running outside
-Polarion (where `/polarion/*` 404s).
+`generic` is the upstream for these assets, but most extensions no longer fetch them from here:
+react-sbb-polarion copies them into its own bundle and ships them over npm. Only the runtime paths
+still read them from `/polarion/<ext>/ui/generic/` — the exporters' `starter.js`, and pages that link
+a sheet directly. Always ship the literal fallback in the SPA's `var()` calls so it still renders in
+a dev server running outside Polarion (where `/polarion/*` 404s).
 
 #### Shared control CSS is self-provided by `SearchableDropdown` (versioned)
 
@@ -625,7 +626,9 @@ So the component provides its own styling: the `SearchableDropdown` constructor 
 `ensureSharedStyles()` (`js/modules/ensureSharedStyles.js`), which injects the shared CSS
 (`checkboxes` / `radios` / `inputs` / `searchable-dropdown`) as `<link>`s into `<head>`. Any surface
 that renders a dropdown — side panel, export popup, admin page — is therefore styled on its own, with
-**no per-extension wiring**: an extension just consumes the generic version that ships it.
+**no per-extension wiring**: an extension just consumes the generic version that ships it. This is
+the runtime path; a React app gets the same CSS bundled from react-sbb-polarion instead, and
+RSP's vendored `ensureSharedStyles` is a deliberate no-op there.
 
 **Versioning.** Each injected `<link>` carries `data-generic-version` = the generic bundle build
 timestamp (baked into `generic-build-info.js` via `resources-filtered`). The `<link>` ids match the
@@ -729,8 +732,9 @@ The visuals live in two files:
   `--sbb-checkbox-checked`, `--sbb-checkbox-indeterminate-focus`).
 - **`css/checkboxes.css`** — the rules, scoped to our own wrappers (`.modal__container`,
   `.standard-admin-page`, `.form-wrapper`) so injecting it into a Polarion page never restyles
-  Polarion's own checkboxes. It also repeats the token values as fallbacks, because the side panel
-  loads `checkboxes.css` without `control-tokens.css`.
+  Polarion's own checkboxes. It carries no literal fallbacks: it consumes the tokens through
+  `var(--sbb-checkbox-*)`, and every load path puts `control-tokens.css` alongside it
+  (`ensureSharedStyles` injects that one first).
 
 **Why the images are inlined as base64 `data:` URIs (not linked `.svg`/`.png` files).**
 A relative `url()` inside a CSS *custom property* resolves against the stylesheet that **uses** the
@@ -741,9 +745,11 @@ the per-consumer mount. A `data:` URI is self-contained — no URL resolution ha
 token renders identically in generic's own CSS, in an injected side panel, and in any SPA bundle.
 (Polarion pages set no CSP that blocks `data:` in CSS backgrounds.)
 
-The human-readable SVG sources are kept under **`images/checkbox/*.svg`**; the base64 in the two CSS
-files is generated from them. To change the look, edit the SVG and re-encode it
-(`base64 < images/checkbox/checked.svg`) into the matching token in **both** files.
+The SVG sources under **`images/checkbox/*.svg`** are the single source of truth. The source
+stylesheet holds only `url(inline:images/checkbox/x.svg)` placeholders; the Maven build resolves each
+one to base64 in `target/classes`. **To change the look, edit the `.svg` and rebuild.** Never
+hand-edit a base64 blob and never write one back into the source CSS: `inlineSvgTokensTest.js` fails
+the build if you do.
 
 **Injected / admin / popup context** — link `checkboxes.css`
 and use a native checkbox inside one of the scoped wrappers; `:indeterminate`, `:disabled` and

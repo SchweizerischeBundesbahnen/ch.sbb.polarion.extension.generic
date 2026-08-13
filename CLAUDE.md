@@ -18,8 +18,7 @@
 
 ## Migration to RSP
 
-Everything under `app/src/main/resources/{js,css,images}` is moving to **react-sbb-polarion** (RSP,
-npm `@grigoriev/react-sbb-polarion`, repo `github.com/grigoriev/react-sbb-polarion`). RSP copies
+Everything under `app/src/main/resources/{js,css,images}` is moving to **react-sbb-polarion** (RSP). RSP copies
 files from here verbatim into its `src/generic/` and bundles them, so extensions get them from npm
 instead of fetching them from this webapp. Every asset below eventually ends up owned by RSP and
 deleted here. Migrate them one at a time; the table is the running state.
