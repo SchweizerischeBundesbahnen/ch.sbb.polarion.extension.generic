@@ -68,8 +68,6 @@ sheet's selectors match markup something still renders, not just that a fetch ex
 | `css/tables.css` | `.sbb-table` is used by api-extender, xml-repair and integrity-scanner, none of which links the sheet, so those tables render unstyled today. Moving it into RSP's bundle fixes that. |
 | `css/configurations.css` | linked by diff-tool and excel-importer; belongs with RSP's `ConfigurationsPane` |
 | `css/github-markdown-light.css` | linked by all 23 extensions |
-| `js/dle-toolbar-starter.js`, `css/dle-toolbar.css` | plain `<script>` loaded into the Polarion document editor by the pdf / docx / strictdoc exporters, outside any React app; probably stays here |
-| `js/modules/BreadcrumbBridge.js` | deliberately fetched at runtime by RSP's `BreadcrumbInjector` and run in `window.top`, outside the React bundle; probably stays here |
 
 ### The npm toolchain is scaffolding for these assets
 
@@ -83,5 +81,8 @@ as its subject leaves:
   `ensureSharedStyles.js`.
 - The whole node/npm setup, `app/package.json` and the JS test suite go once the last JS file does.
 
-`js/modules/BreadcrumbBridge.js` and `js/dle-toolbar-starter.js` are what keep it alive, so the JS
-tests outlive the asset migration unless those two move as well.
+The two files once expected to keep it alive forever, `js/modules/BreadcrumbBridge.js` and
+`js/dle-toolbar-starter.js`, are gone: RSP builds each as its own classic script that the consuming
+extension serves, so running outside the React bundle turned out not to require living here. What
+keeps the toolchain alive now is `js/modules/SearchableDropdown.js`, `searchableSelect.js`,
+`ensureSharedStyles.js` and `generic-build-info.js`.
