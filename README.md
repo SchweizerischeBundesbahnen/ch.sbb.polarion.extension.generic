@@ -645,7 +645,7 @@ change: its unversioned injection is simply superseded once a versioned copy is 
 
 The admin "choose a configuration" pane is `ConfigurationsPane` in react-sbb-polarion, and its styling
 now travels with it in that package's bundled `style.css`. Generic shipped `css/configurations.css`
-until 2.0.0 of the library bundled it; the file is gone, and a page that still links it 404s.
+until 16.0.0; from that version on the file is gone, and a page that still links it 404s.
 
 #### Modal dialogs
 
