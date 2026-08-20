@@ -113,7 +113,7 @@
     --sbb-spinner: url(/polarion/ria/images/progressWheel48.svg);
 
     /* Data tables — the shared list/results table look, which react-sbb-polarion's bundle now
-       carries (generic shipped tables.css until 2.0.0 of that package), so extensions stop
+       carries (generic shipped tables.css until 16.0.0), so extensions stop
        re-deriving the same header tint / border color for every results grid. */
     --sbb-table-header-bg: #e8e8e3;
     --sbb-table-header-text: #495057;
