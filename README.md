@@ -441,10 +441,11 @@ public class PdfExporterAppServlet extends GenericUiServlet {
 ### UI components (JavaScript / CSS)
 
 Moved to **react-sbb-polarion**. Generic shipped the vanilla `SearchableDropdown`, the
-`createSearchableSelect` factory, `ensureSharedStyles` and the shared control stylesheets
+`createSearchableSelect` factory, `ensureSharedStyles`, the shared control stylesheets
 (`control-tokens.css`, `checkboxes.css`, `radios.css`, `inputs.css`, `searchable-dropdown.css`,
-`buttons.css`, `alerts.css`) together with their 24 SVG icons until 16.0.0. From that version on they
-are gone, and a page that still fetches `/polarion/<extension>/ui/generic/{js,css}/…` gets a 404.
+`buttons.css`, `alerts.css`), their 24 SVG icons and `github-markdown-light.css` until 16.0.0. From
+that version on this webapp serves no JavaScript, CSS or images of its own, and a page that still
+fetches `/polarion/<extension>/ui/generic/{js,css}/…` gets a 404.
 
 Extension UIs are React apps built on
 [react-sbb-polarion](https://github.com/SchweizerischeBundesbahnen/react-sbb-polarion) (npm

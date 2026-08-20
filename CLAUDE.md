@@ -18,11 +18,11 @@
 
 ## Migration to RSP
 
-Done, except for one file. Everything under `app/src/main/resources/{js,css,images}` moved to
-**react-sbb-polarion** (RSP): the dropdown chain, the seven control stylesheets, the 24 SVG icons,
-`BreadcrumbBridge.js` and `js/dle-toolbar-starter.js`. Extensions get all of it from npm
-(`@sbb-polarion/react-sbb-polarion`), so nothing fetches shared JavaScript or CSS from this webapp.
-RSP owns those files outright now; there is no original here to re-copy from.
+Done. Everything under `app/src/main/resources/{js,css,images}` moved to **react-sbb-polarion**
+(RSP): the dropdown chain, the seven control stylesheets, the 24 SVG icons, `BreadcrumbBridge.js` and
+`js/dle-toolbar-starter.js`. Extensions get all of it from npm (`@sbb-polarion/react-sbb-polarion`).
+This repository now ships no JavaScript, CSS or images at all, and RSP owns those files outright;
+there is no original here to re-copy from.
 
 - **Do not add shared UI assets here.** New components, styles and icons go straight to RSP.
 - **The npm toolchain went with them.** `app/package.json`, `app/src/test/js/`, `app/scripts/` and the
@@ -34,11 +34,9 @@ RSP owns those files outright now; there is no original here to re-copy from.
   pull assets with `<link>` or `injectStyles(...)`, which no grep for an import finds. Verify against
   the extension repos, not against RSP.
 
-### Still served from here
-
-| Asset | Fetched by |
-|---|---|
-| `css/github-markdown-light.css` | linked by all 23 extensions |
+`css/github-markdown-light.css` went last. Its row here claimed all 23 extensions linked it, which
+no longer held: `markdown2html-maven-plugin` embeds its own vendored copy into every generated page
+(`StylesheetEmbedder`), and React pages get RSP's bundled copy, so no repository fetched this one.
 
 Watch the trap that hid a dead file for a long time: a downstream `injectStyles(...)` or `<link>` does
 **not** prove a sheet is live. `micromodal.css` was still fetched by an exporter's `starter.js` long
