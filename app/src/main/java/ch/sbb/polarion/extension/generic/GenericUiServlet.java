@@ -11,20 +11,14 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serial;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 public abstract class GenericUiServlet extends HttpServlet {
 
@@ -70,11 +64,7 @@ public abstract class GenericUiServlet extends HttpServlet {
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String resourceUri = getInternalResourcePath(request.getRequestURI());
         try {
-            if (resourceUri.startsWith("generic/")) {
-                serveGenericResource(response, resourceUri.substring("generic/".length()));
-            } else {
-                serveResource(response, "/" + resourceUri);
-            }
+            serveResource(response, "/" + resourceUri);
         } catch (IOException e) {
             logger.error("Cannot copy resource '" + resourceUri + "': " + e.getMessage(), e);
             throw e;
@@ -133,45 +123,6 @@ public abstract class GenericUiServlet extends HttpServlet {
             throw new IllegalArgumentException("Path traversal not allowed");
         }
         return RESOURCE_ROOT.relativize(resolved).toString().replace('\\', '/');
-    }
-
-    @VisibleForTesting
-    void serveGenericResource(@NotNull HttpServletResponse response, @NotNull String uri) throws IOException {
-        File resolvedJarFile = resolveJarFile(getCodeLocation());
-        try (ZipFile zipFile = new ZipFile(resolvedJarFile)) {
-            final ZipEntry zipEntry = zipFile.getEntry(uri);
-            if (zipEntry == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                return;
-            }
-            try (InputStream inputStream = zipFile.getInputStream(zipEntry)) {
-                if (inputStream == null) {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                } else {
-                    try (ServletOutputStream outputStream = response.getOutputStream()) {
-                        setContentType(uri, response);
-                        IOUtils.copy(inputStream, outputStream);
-                    }
-                }
-            }
-        }
-    }
-
-    @VisibleForTesting
-    @NotNull URL getCodeLocation() {
-        return GenericUiServlet.class.getProtectionDomain().getCodeSource().getLocation();
-    }
-
-    @VisibleForTesting
-    static @NotNull File resolveJarFile(@NotNull URL location) {
-        try {
-            return new File(location.toURI());
-        } catch (URISyntaxException e) {
-            // CodeSource.getLocation() may return a URL with unencoded characters
-            // (e.g. literal spaces from a Windows username). URI.toURI() rejects
-            // those, so fall back to decoding the raw path.
-            return new File(URLDecoder.decode(location.getPath(), StandardCharsets.UTF_8));
-        }
     }
 
     @VisibleForTesting
