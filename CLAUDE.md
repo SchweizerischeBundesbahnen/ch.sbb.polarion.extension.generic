@@ -65,8 +65,6 @@ sheet's selectors match markup something still renders, not just that a fetch ex
 
 | Asset | Note |
 |---|---|
-| `css/tables.css` | `.sbb-table` is used by api-extender, xml-repair and integrity-scanner, none of which links the sheet, so those tables render unstyled today. Moving it into RSP's bundle fixes that. |
-| `css/configurations.css` | linked by diff-tool and excel-importer; belongs with RSP's `ConfigurationsPane` |
 | `css/github-markdown-light.css` | linked by all 23 extensions |
 
 ### The npm toolchain is scaffolding for these assets

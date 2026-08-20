@@ -518,7 +518,7 @@ automatically, so a pane that re-initialises its dropdowns won't stack duplicate
 #### Shared control styling
 
 Link the neutral, Polarion-matched sheets you need: `checkboxes.css`, `radios.css`, `inputs.css`,
-`searchable-dropdown.css`, `tables.css`, `buttons.css` and `alerts.css`. React apps normally
+`searchable-dropdown.css`, `buttons.css` and `alerts.css`. React apps normally
 get them through react-sbb-polarion's bundled `style.css` instead. The checkbox / radio / input rules
 are intentionally **scoped** to the UI wrappers `.modal__container` (popups), `.standard-admin-page`
 (admin pages) and `.form-wrapper` (document-properties side panels) so they never restyle Polarion's
@@ -597,15 +597,12 @@ Bootstrap classes) and cannot link `checkboxes.css` / `searchable-dropdown.css`.
    `.sbb-spinner` class instead of hardcoding `/polarion/ria/images/progressWheel48.svg`, so the asset
    is swappable in one place (both are defined in `control-tokens.css`).
 
-4. **Data tables**: give a results/list `<table>` the `sbb-table` class (`css/tables.css`) for the
-   shared Polarion look — outer frame, tinted header, row
-   separators and a hover tint, all driven by the `--sbb-table-*` tokens. Add `sbb-table--grid` for
-   full spreadsheet cell borders or `sbb-table--compact` for denser rows; the extension keeps only its
-   own column widths and row-state highlights. React SPAs link it at runtime like the other sheets:
-
-   ```html
-   <link rel="stylesheet" href="/polarion/<ext>-app/ui/generic/css/tables.css" />
-   ```
+4. **Data tables**: give a results/list `<table>` the `sbb-table` class for the shared Polarion look —
+   outer frame, tinted header, row separators and a hover tint, all driven by the `--sbb-table-*`
+   tokens. Add `sbb-table--grid` for full spreadsheet cell borders or `sbb-table--compact` for denser
+   rows; the extension keeps only its own column widths and row-state highlights. The rules live in
+   react-sbb-polarion's bundled `style.css` since 2.0.0 and need no `<link>`; generic no longer ships
+   them.
 
 `generic` is the upstream for these assets, but extensions no longer fetch the control CSS from here:
 react-sbb-polarion copies it into its own bundle and ships it over npm. What still reads from
@@ -646,9 +643,9 @@ change: its unversioned injection is simply superseded once a versioned copy is 
 
 #### Configuration pane styling
 
-`css/configurations.css` carries the look of the admin "choose a configuration" pane. The pane
-itself is a React component in react-sbb-polarion (`ConfigurationsPane`); generic ships only the
-stylesheet, served at `/polarion/<ext>/ui/generic/css/configurations.css`.
+The admin "choose a configuration" pane is `ConfigurationsPane` in react-sbb-polarion, and its styling
+now travels with it in that package's bundled `style.css`. Generic shipped `css/configurations.css`
+until 16.0.0; from that version on the file is gone, and a page that still links it 404s.
 
 #### Modal dialogs
 
