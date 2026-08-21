@@ -464,10 +464,10 @@ Extension UIs are React apps built on
 style, all bundled in its `style.css`. An app imports that stylesheet once; nothing is fetched from
 this webapp at runtime.
 
-`GenericUiServlet` still serves `/polarion/<extension>/ui/…`, and the split is unchanged: a path under
-`generic/` is read as an entry of `generic.app.jar`, everything else from the extension's own webapp.
-What that jar no longer carries is shared JavaScript, CSS or images, so a `generic/{js,css,images}/…`
-request answers 404.
+`GenericUiServlet` serves `/polarion/<extension>/ui/…` from the extension's own webapp, and nothing
+else. Until 16.0.0 a path under `generic/` took a second route: the servlet read it as an entry of
+`generic.app.jar`, which is how the shared assets above were delivered. That route is gone with them,
+so such a request is now looked up in the extension's webapp like any other and answers 404.
 
 #### Configuration pane styling
 

@@ -3,30 +3,17 @@ package ch.sbb.polarion.extension.generic;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.Serial;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -94,15 +81,13 @@ class GenericUiServletTest {
         exception = assertThrows(IllegalArgumentException.class, () -> callServlet("/polarion/testServletName/ui/evil.exe"));
         assertEquals("Unsupported file type", exception.getMessage());
 
-        // generic resource
+        // the generic/ prefix is no longer a route: it is served from the extension's own webapp
         TestServlet servlet = callServlet("/polarion/testServletName/ui/generic/genericUri/someImage.gif");
-        verify(servlet, times(1)).serveGenericResource(any(), eq("genericUri/someImage.gif"));
-        verify(servlet, times(0)).serveResource(any(), any());
+        verify(servlet, times(1)).serveResource(any(), eq("/generic/genericUri/someImage.gif"));
 
         // regular resource
         servlet = callServlet("/polarion/testServletName/ui/regularUri/someStyle.css");
-        verify(servlet, times(0)).serveGenericResource(any(), any());
-        verify(servlet, times(1)).serveResource(any(), any());
+        verify(servlet, times(1)).serveResource(any(), eq("/regularUri/someStyle.css"));
     }
 
     @Test
@@ -140,7 +125,6 @@ class GenericUiServletTest {
         // and must be served normally.
         TestServlet servlet = callServlet("/polarion/testServletName/ui/_next/static/chunks/page..a1b2c3.js");
         verify(servlet, times(1)).serveResource(any(), eq("/_next/static/chunks/page..a1b2c3.js"));
-        verify(servlet, times(0)).serveGenericResource(any(), any());
 
         servlet = callServlet("/polarion/testServletName/ui/asset..v2.css");
         verify(servlet, times(1)).serveResource(any(), eq("/asset..v2.css"));
@@ -254,93 +238,12 @@ class GenericUiServletTest {
         assertEquals("bar.css", GenericUiServlet.sanitizeResourcePath("foo%2f..%2fbar.css"));
     }
 
-    @Test
-    @SneakyThrows
-    void testResolveJarFileWithRegularPath() {
-        URL location = URI.create("file:/tmp/some-extension.jar").toURL();
-        File resolved = GenericUiServlet.resolveJarFile(location);
-        assertEquals(new File("/tmp/some-extension.jar"), resolved);
-    }
-
-    @Test
-    @SneakyThrows
-    void testResolveJarFileWithPercentEncodedSpace() {
-        URL location = URI.create("file:/tmp/dir%20with%20space/some-extension.jar").toURL();
-        File resolved = GenericUiServlet.resolveJarFile(location);
-        assertEquals(new File("/tmp/dir with space/some-extension.jar"), resolved);
-    }
-
-    @Test
-    @SneakyThrows
-    @SuppressWarnings("deprecation") // URI.create rejects unencoded characters; the test
-    // intentionally constructs a URL like the one CodeSource.getLocation() returns on
-    // Windows when the username contains spaces — that is the bug being reproduced.
-    void testResolveJarFileWithLiteralSpace() {
-        URL location = new URL("file:/C:/Users/test folder with spaces/workspace/some-extension.jar");
-        File resolved = GenericUiServlet.resolveJarFile(location);
-        // Compare File objects rather than the raw path string: File.getPath() canonicalizes
-        // "/C:/..." differently per OS (Windows strips the leading slash before the drive letter,
-        // Unix keeps it). Both sides go through the same normalization, so this holds on either.
-        assertEquals(new File("/C:/Users/test folder with spaces/workspace/some-extension.jar"), resolved);
-    }
-
-    @Test
-    @SneakyThrows
-    void testServeGenericResourceServesEntryFromJar(@TempDir Path tempDir) {
-        // Test the full serveGenericResource flow against a real ZIP — covers the
-        // resolveJarFile(getCodeLocation()) wiring inside the try-with-resources.
-        // Includes a literal space in the path to mirror the original failure mode.
-        Path dirWithSpace = Files.createDirectory(tempDir.resolve("dir with space"));
-        Path jarPath = dirWithSpace.resolve("fake-extension.jar");
-        byte[] payload = "console.log('hi');".getBytes();
-        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(jarPath))) {
-            zos.putNextEntry(new ZipEntry("genericUri/file.js"));
-            zos.write(payload);
-            zos.closeEntry();
-        }
-
-        TestServlet servlet = new TestServlet("testServletName", jarPath.toUri().toURL());
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        ByteArrayOutputStream captured = new ByteArrayOutputStream();
-        when(response.getOutputStream()).thenReturn(new CapturingServletOutputStream(captured));
-
-        servlet.serveGenericResource(response, "genericUri/file.js");
-
-        verify(response).setContentType("text/javascript");
-        assertArrayEquals(payload, captured.toByteArray());
-        verify(response, never()).sendError(anyInt());
-    }
-
-    @Test
-    @SneakyThrows
-    void testServeGenericResourceSends404ForMissingEntry(@TempDir Path tempDir) {
-        // A path absent from the JAR must yield 404. ZipFile.getEntry returns null for it and
-        // ZipFile.getInputStream(null) throws NullPointerException, so the entry has to be checked
-        // before it is opened, otherwise the servlet answers 500.
-        Path jarPath = tempDir.resolve("fake-extension.jar");
-        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(jarPath))) {
-            zos.putNextEntry(new ZipEntry("genericUri/file.js"));
-            zos.write("console.log('hi');".getBytes());
-            zos.closeEntry();
-        }
-
-        TestServlet servlet = new TestServlet("testServletName", jarPath.toUri().toURL());
-        HttpServletResponse response = mock(HttpServletResponse.class);
-
-        servlet.serveGenericResource(response, "genericUri/does-not-exist.js");
-
-        verify(response).sendError(HttpServletResponse.SC_NOT_FOUND);
-        verify(response, never()).setContentType(anyString());
-        verify(response, never()).getOutputStream();
-    }
-
     @SneakyThrows
     private TestServlet callServlet(String uri) {
         TestServlet spy = spy(new TestServlet("testServletName"));
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         when(request.getRequestURI()).thenReturn(uri);
-        lenient().doNothing().when(spy).serveGenericResource(any(), any());
         lenient().doNothing().when(spy).serveResource(any(), any());
         spy.service(request, response);
         return spy;
@@ -351,43 +254,9 @@ class GenericUiServletTest {
         @Serial
         private static final long serialVersionUID = 7300367869059799910L;
 
-        private final URL codeLocationOverride;
-
         protected TestServlet(String webAppName) {
-            this(webAppName, null);
-        }
-
-        protected TestServlet(String webAppName, URL codeLocationOverride) {
             super(webAppName);
-            this.codeLocationOverride = codeLocationOverride;
-        }
-
-        @Override
-        URL getCodeLocation() {
-            return codeLocationOverride != null ? codeLocationOverride : super.getCodeLocation();
         }
     }
 
-    private static final class CapturingServletOutputStream extends ServletOutputStream {
-        private final ByteArrayOutputStream sink;
-
-        CapturingServletOutputStream(ByteArrayOutputStream sink) {
-            this.sink = sink;
-        }
-
-        @Override
-        public boolean isReady() {
-            return true;
-        }
-
-        @Override
-        public void setWriteListener(WriteListener writeListener) {
-            // not needed for blocking writes in tests
-        }
-
-        @Override
-        public void write(int b) {
-            sink.write(b);
-        }
-    }
 }
