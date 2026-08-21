@@ -34,9 +34,10 @@ there is no original here to re-copy from.
   pull assets with `<link>` or `injectStyles(...)`, which no grep for an import finds. Verify against
   the extension repos, not against RSP.
 
-`css/github-markdown-light.css` went last. Its row here claimed all 23 extensions linked it, which
-no longer held: `markdown2html-maven-plugin` embeds its own vendored copy into every generated page
-(`StylesheetEmbedder`), and React pages get RSP's bundled copy, so no repository fetched this one.
+`css/github-markdown-light.css` went last. Its row here claimed all 23 extensions linked it, which no
+longer held: markdown2html writes a bare HTML fragment, and RSP renders it - `About.tsx` and
+`UserGuide.tsx` wrap it in `.markdown-body`, whose styling is bundled in RSP's `style.css` (its
+`markdown.css` imports the vendored copy). No repository fetched the file from here.
 
 Watch the trap that hid a dead file for a long time: a downstream `injectStyles(...)` or `<link>` does
 **not** prove a sheet is live. `micromodal.css` was still fetched by an exporter's `starter.js` long
