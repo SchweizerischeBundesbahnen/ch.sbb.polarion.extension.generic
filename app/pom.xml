@@ -74,62 +74,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
-
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>${frontend-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>install-node-and-npm</id>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                        </goals>
-                        <configuration>
-                            <nodeVersion>${frontend-maven-plugin.nodeVersion}</nodeVersion>
-                            <npmVersion>${frontend-maven-plugin.npmVersion}</npmVersion>
-                        </configuration>
-                    </execution>
-
-                    <!-- Install JavaScript dependencies using npm -->
-                    <execution>
-                        <id>npm-install</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install</arguments>
-                        </configuration>
-                    </execution>
-
-                    <!-- Run JavaScript tests -->
-                    <execution>
-                        <id>npm-test</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run test</arguments>
-                        </configuration>
-                    </execution>
-
-                    <!-- Inline the control-icon SVGs into the built control-tokens.css:
-                         replace each url(inline:images/x.svg) placeholder with the base64 of the .svg,
-                         so the shipped stylesheet is self-contained and the .svg files stay the single
-                         source of truth. Bound to process-classes so it runs AFTER process-resources
-                         has copied css/ and images/ into target/classes, and before package. -->
-                    <execution>
-                        <id>npm-build-css</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <phase>process-classes</phase>
-                        <configuration>
-                            <arguments>run build:css</arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>

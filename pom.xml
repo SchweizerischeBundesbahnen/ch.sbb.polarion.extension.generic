@@ -188,7 +188,8 @@
         <sonar.coverage.exclusions>**/rest/controller/**</sonar.coverage.exclusions>
 
         <frontend-maven-plugin.version>2.0.2</frontend-maven-plugin.version>
-        <!-- When bumping nodeVersion/npmVersion, keep app/package.json ("engines" and "packageManager") in sync. -->
+        <!-- Used by the `vite-ui` profile below, which every extension with a `ui/package.json` inherits.
+             Generic itself no longer builds any JavaScript. -->
         <frontend-maven-plugin.nodeVersion>v24.18.0</frontend-maven-plugin.nodeVersion>
         <frontend-maven-plugin.npmVersion>12.0.1</frontend-maven-plugin.npmVersion>
 
@@ -315,8 +316,7 @@
              Activated by the presence of `ui/package.json`, NOT by a flag or a plugin declaration:
                - an extension with a React app needs nothing in its own pom;
                - an extension without one is completely unaffected;
-               - generic's own `app` module (which uses frontend-maven-plugin for a different, vanilla
-                 JS build) has no `ui/`, so its executions are never touched.
+               - generic's own `app` module has no `ui/`, so its build stays pure Java.
              File activation is also immune to the `activeByDefault` rule that switches default profiles
              off as soon as any -P profile is named. -->
         <profile>
@@ -1370,17 +1370,6 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
-                <!-- generic-build-info.js is filtered separately (below) to bake in the build timestamp -->
-                <excludes>
-                    <exclude>js/modules/generic-build-info.js</exclude>
-                </excludes>
-            </resource>
-            <resource> <!-- Bake ${maven.build.timestamp} into generic-build-info.js (it has no template literals, so default ${} filtering is safe) -->
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>js/modules/generic-build-info.js</include>
-                </includes>
             </resource>
             <resource> <!-- Below is a way to replace polarion version in generic.properties by version from a profile -->
                 <directory>src/main/resources-filtered</directory>
