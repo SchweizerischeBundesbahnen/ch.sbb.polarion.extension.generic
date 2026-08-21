@@ -28,6 +28,14 @@ An extension which inherits from this generic extension will automatically get f
 > Starting from version 8.0.0 only latest version of Polarion is supported.
 > Right now it is Polarion 2512.
 
+> [!IMPORTANT]
+> **This extension is Java and backend only.** Since 16.0.0 it ships no JavaScript, CSS or images at
+> all. The shared front end lives in
+> [react-sbb-polarion](https://github.com/SchweizerischeBundesbahnen/react-sbb-polarion) (npm
+> `@sbb-polarion/react-sbb-polarion`): components, the `--sbb-*` design tokens, every control style
+> and the control icons, bundled into one `style.css`. An extension takes it from npm and fetches
+> nothing from this webapp. See [UI components](#ui-components-javascript--css).
+
 ## How to use
 
 To properly inherit from this generic extension and to take advantage of all mentioned above functionality
