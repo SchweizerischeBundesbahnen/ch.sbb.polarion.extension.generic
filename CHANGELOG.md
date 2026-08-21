@@ -1,5 +1,46 @@
 # Changelog
 
+## [16.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.11.0...v16.0.0) (2026-08-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* /polarion/<extension>/ui/generic/* is no longer a route into generic.app.jar. Such a request is answered from the extension's own webapp, which is a 404 for these paths.
+* /ui/generic/{js,css}/* no longer serves the dropdown chain or the control stylesheets. A consumer that still fetches them gets a 404 at runtime, not a build failure.
+* css/tables.css and css/configurations.css are gone. A page that links either from /polarion/<ext>/ui/generic/css/ 404s; import react-sbb-polarion's style.css instead, which carries both.
+* an extension built against this version can no longer fetch /polarion/<ext>/ui/generic/js/dle-toolbar-starter.js, /ui/generic/css/dle-toolbar.css or /ui/generic/js/modules/BreadcrumbBridge.js. Deployed extensions are unaffected, since each serves the generic.app jar it was built with; only a rebuild against this version needs the RSP-based replacements.
+* the pages under /polarion/<ext>/common/jsp/ are gone.
+* remove deprecated UI components ([#655](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/655))
+* a consumer that does not override markdown2html-maven-plugin.failOnError starts failing its build on a conversion error that was silent before.
+* the polarion2606 profile no longer exists. Consumers should drop `-P polarion2606` from .mvn/maven.config; a leftover flag produces a Maven warning, not an error.
+
+### Features
+
+* drop the polarion2606 profile ([#623](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/623)) ([7894940](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/7894940a8e2ce8a716f876f715ea85910ae0d41a)), closes [#621](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/621)
+* remove breadcrumbs and toolbars ([#664](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/664)) ([a05c872](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/a05c8724525e23fe27e6636a9d55c2a0de520e30))
+* remove deprecated UI components ([#655](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/655)) ([8426869](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/8426869f0c756ff98f7177e7e19255993409c90a))
+* remove every front-end asset from the webapp ([#671](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/671)) ([d3892b3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d3892b380831449c17ef0dd3cf6ee44ebdda3591))
+* remove tables.css and configurations.css ([#670](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/670)) ([9351112](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/93511124ea37de13725800c1d2b75fb0aa069b71))
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.190 ([#665](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/665)) ([698d0a5](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/698d0a56c9d3bf008bb0adaf55a13d18a8446966))
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.191 ([#666](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/666)) ([2d48baa](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2d48baac369f7b76c9d3a9dbd47752f283c86fbc))
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.192 ([#668](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/668)) ([c9cf114](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/c9cf114d262b7aac8af516cbed4a46c949050920))
+* **deps:** update jersey monorepo to v3.1.12 ([#659](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/659)) ([d06bf85](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/d06bf8553298312395f5ad91097f24f0dcd964d3))
+* require bundle jakarta servlet api ([#660](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/660)) ([98a4194](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/98a4194960eba115b963319114ec847f19a23194)), closes [#650](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/650)
+
+
+### Miscellaneous Chores
+
+* default markdown2html failOnError to true ([#658](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/658)) ([300e5a5](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/300e5a54b0a866e15b3087def252aaab6ce435bb)), closes [#654](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/654)
+
+
+### Code Refactoring
+
+* drop the generic/ path from GenericUiServlet ([#676](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/676)) ([184c598](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/184c598367c832487859291624ba286fcabc6304))
+
 ## [15.11.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.10.1...v15.11.0) (2026-08-12)
 
 
