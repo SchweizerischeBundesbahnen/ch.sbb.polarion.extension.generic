@@ -3,19 +3,13 @@ package ch.sbb.polarion.extension.generic;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.Serial;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -265,26 +259,4 @@ class GenericUiServletTest {
         }
     }
 
-    private static final class CapturingServletOutputStream extends ServletOutputStream {
-        private final ByteArrayOutputStream sink;
-
-        CapturingServletOutputStream(ByteArrayOutputStream sink) {
-            this.sink = sink;
-        }
-
-        @Override
-        public boolean isReady() {
-            return true;
-        }
-
-        @Override
-        public void setWriteListener(WriteListener writeListener) {
-            // not needed for blocking writes in tests
-        }
-
-        @Override
-        public void write(int b) {
-            sink.write(b);
-        }
-    }
 }
