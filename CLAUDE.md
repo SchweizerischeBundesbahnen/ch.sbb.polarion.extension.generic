@@ -21,8 +21,9 @@
 Done. Everything under `app/src/main/resources/{js,css,images}` moved to **react-sbb-polarion**
 (RSP): the dropdown chain, the seven control stylesheets, the 24 SVG icons, `BreadcrumbBridge.js` and
 `js/dle-toolbar-starter.js`. Extensions get all of it from npm (`@sbb-polarion/react-sbb-polarion`).
-This repository now ships no JavaScript, CSS or images at all, and RSP owns those files outright;
-there is no original here to re-copy from.
+No `.js`, `.css` or image file is left in this repository - the only front-end that remains is the
+Swagger UI page, whose inline script loads Swagger's own bundle from Polarion. RSP owns the moved
+files outright; there is no original here to re-copy from.
 
 - **Do not add shared UI assets here.** New components, styles and icons go straight to RSP.
 - **The npm toolchain went with them.** `app/package.json`, `app/src/test/js/`, `app/scripts/` and the

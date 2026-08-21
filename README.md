@@ -29,8 +29,10 @@ An extension which inherits from this generic extension will automatically get f
 > Right now it is Polarion 2512.
 
 > [!IMPORTANT]
-> **This extension is Java and backend only.** Since 16.0.0 it ships no JavaScript, CSS or images at
-> all. The shared front end lives in
+> **This extension is Java and backend only.** Since 16.0.0 it ships no front-end asset of its own:
+> no `.js`, `.css` or image file anywhere in the tree. What is left is the Swagger UI page, which is
+> markup with an inline script that loads Swagger's own bundle from Polarion. The shared front end
+> lives in
 > [react-sbb-polarion](https://github.com/SchweizerischeBundesbahnen/react-sbb-polarion) (npm
 > `@sbb-polarion/react-sbb-polarion`): components, the `--sbb-*` design tokens, every control style
 > and the control icons, bundled into one `style.css`. An extension takes it from npm and fetches
