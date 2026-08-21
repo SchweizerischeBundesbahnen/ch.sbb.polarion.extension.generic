@@ -206,10 +206,10 @@
              here is 350+ KB of dead weight in every jar rather than a build failure. Based on
              web.app.name to match the other WEB-INF/lib paths below, which every extension defines as
              ${maven-jar-plugin.Extension-Context} — keep the two in step if you override either. -->
-        <ui.webapp.name>${web.app.name}-app</ui.webapp.name>
+        <ui.webapp.name>${generic.app.ui.webapp}</ui.webapp.name>
 
-        <ui.sources.root>${project.basedir}/ui</ui.sources.root>
-        <ui.destination.root>${project.basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-app</ui.destination.root>
+        <ui.sources.root>${vite.sources.root}</ui.sources.root>
+        <ui.destination.root>${vite.destination.root}</ui.destination.root>
         <!-- Set -DskipJsTests to skip the ui/ Vitest run (and the Playwright install) that otherwise
              happens in the `test` phase alongside the Java tests. -->
         <skipJsTests>false</skipJsTests>
@@ -234,13 +234,21 @@
              libraries and needs a Debian/Ubuntu host with apt-get and root. -->
         <ui.playwright.installArgs> </ui.playwright.installArgs>
 
-        <!-- Deprecated spellings, kept so a downstream pom that still reads one keeps building.
-             An unknown property in ${...} resolves to its own literal text instead of failing, so
-             dropping these without warning would silently break whatever reads them. They are
-             read-only aliases: overriding one no longer has any effect. Remove in the next major. -->
-        <generic.app.ui.webapp>${ui.webapp.name}</generic.app.ui.webapp>
-        <vite.sources.root>${ui.sources.root}</vite.sources.root>
-        <vite.destination.root>${ui.destination.root}</vite.destination.root>
+        <!-- Deprecated spellings, kept so a downstream pom that still reads or sets one keeps
+             working. An unknown property in ${...} resolves to its own literal text instead of
+             failing, so dropping these outright would break such a pom without any error at all.
+             Remove in the next major, moving the three values below back up to the new names.
+
+             The first three hold the value and the new name derives from it, which is what makes an
+             override work from either side: a pom that sets the old name feeds the new one through
+             the reference, and a pom that sets the new name simply replaces its definition here.
+
+             The last two are read-only aliases. Their value belongs to the new name, because
+             ui-tests-run-without-docker overrides ui.tests.npmCommand and a reversed alias would go
+             stale inside that profile. Nothing reads or sets either one downstream. -->
+        <generic.app.ui.webapp>${web.app.name}-app</generic.app.ui.webapp>
+        <vite.sources.root>${project.basedir}/ui</vite.sources.root>
+        <vite.destination.root>${project.basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-app</vite.destination.root>
         <jsTestCommand>${ui.tests.npmCommand}</jsTestCommand>
         <jsTestExtraArgs>${ui.tests.npmExtraArgs}</jsTestExtraArgs>
     </properties>
