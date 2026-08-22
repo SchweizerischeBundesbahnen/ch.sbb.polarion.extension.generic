@@ -172,7 +172,7 @@
         <!-- The property name is historical: it predates the React apps and is kept so downstream poms
              that reference it keep working. The path mirrors ExtensionInfoInternalController.readHtmlFile,
              which composes `/webapp/` + the Extension-Context manifest attribute + `-app/html/` and reads
-             nowhere else. Spelled out rather than derived from vite.destination.root, so relocating the
+             nowhere else. Spelled out rather than derived from ui.destination.root, so relocating the
              React bundle does not silently move the help articles out of the one directory the reader
              looks in (a missing article yields an empty About page, not an error). -->
         <markdown2html-maven-plugin.extensionContextAdminHtml>${project.basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-app/html</markdown2html-maven-plugin.extensionContextAdminHtml>
@@ -188,44 +188,79 @@
         <sonar.coverage.exclusions>**/rest/controller/**</sonar.coverage.exclusions>
 
         <frontend-maven-plugin.version>2.0.2</frontend-maven-plugin.version>
-        <!-- Used by the `vite-ui` profile below, which every extension with a `ui/package.json` inherits.
-             Generic itself no longer builds any JavaScript. -->
+        <!-- Used by the `ui-build-react-app` profile below, which every extension with a
+             `ui/package.json` inherits. Generic itself no longer builds any JavaScript. -->
         <frontend-maven-plugin.nodeVersion>v24.18.0</frontend-maven-plugin.nodeVersion>
         <frontend-maven-plugin.npmVersion>12.0.1</frontend-maven-plugin.npmVersion>
 
-        <!-- ==== React/Vite administration app (the `vite-ui` profile below) ====================
+        <!-- ==== React/Vite administration app (the `ui-*` profiles below) ========================
              An extension gets the whole build by having a `ui/package.json`; there is nothing to
-             declare in its own pom. Override any of these to deviate. -->
+             declare in its own pom. Override any of these to deviate.
+
+             The names follow the rule recorded in CLAUDE.md: a property is `ui.<subject>.<action>`
+             and the profile it activates is `ui-<what it does>`, so a flag and its profile read as
+             a pair. Deprecated spellings of the same properties are kept at the end of this block. -->
         <!-- Webapp context that receives a copy of generic.app.jar in its WEB-INF/lib (see the
              maven-dependency-plugin `copy-generic-app-to-ui-webapp` execution). `-app` is the only
              context an extension serves, so the copy lands where something reads it; a wrong value
              here is 350+ KB of dead weight in every jar rather than a build failure. Based on
              web.app.name to match the other WEB-INF/lib paths below, which every extension defines as
              ${maven-jar-plugin.Extension-Context} — keep the two in step if you override either. -->
-        <generic.app.ui.webapp>${web.app.name}-app</generic.app.ui.webapp>
+        <ui.webapp.name>${generic.app.ui.webapp}</ui.webapp.name>
 
+        <ui.sources.root>${vite.sources.root}</ui.sources.root>
+        <ui.destination.root>${vite.destination.root}</ui.destination.root>
+        <!-- Set -DskipJsTests to skip the ui/ Vitest run (and the Playwright install) that otherwise
+             happens in the `test` phase alongside the Java tests. The name breaks the ui.* scheme of
+             this block on purpose: 15 downstream workflows pass it on the command line, and Maven
+             does not warn on an unrecognised -D, so renaming it here would silently start running
+             the suite in the deploy jobs that mean to skip it. -->
+        <skipJsTests>false</skipJsTests>
+        <!-- The npm invocation for the ui/ tests, run as
+             `npm ${ui.tests.npmCommand} ${ui.tests.npmExtraArgs}`. Two independent pieces so that
+             setting one never clobbers the other:
+               ui.tests.npmCommand   - defaults to the dockerized full suite WITH the coverage gate;
+                                       -Dui.tests.withoutDocker switches it to the native equivalent.
+                                       (The plain test:docker variant would run the suite but never
+                                       evaluate the istanbul thresholds.)
+               ui.tests.npmExtraArgs - extra arguments forwarded to Vitest, none by default. Only
+                                       takes effect on the non-docker command, because the
+                                       test:docker wrapper forwards no extra arguments. Pass a
+                                       Vitest exclude of the *.visual.test.tsx files here, together
+                                       with -Dui.tests.withoutDocker, to drop the visual-regression
+                                       tests on a host that still loads them. They already skip
+                                       themselves outside the reference image. -->
+        <ui.tests.npmCommand>run test:coverage:docker</ui.tests.npmCommand>
+        <ui.tests.npmExtraArgs> </ui.tests.npmExtraArgs>
+        <!-- The Playwright browser install, see the `ui-install-playwright-browser` profile below.
+             Empty means the browser binary alone. Playwright's own with-deps flag adds its OS
+             libraries and needs a Debian/Ubuntu host with apt-get and root. -->
+        <ui.playwright.installArgs> </ui.playwright.installArgs>
+
+        <!-- Deprecated spellings, kept so a downstream pom that still reads or sets one keeps
+             working. An unknown property in ${...} resolves to its own literal text instead of
+             failing, so dropping these outright would break such a pom without any error at all.
+             Remove in the next major, moving the three values below back up to the new names.
+
+             The first three hold the value and the new name derives from it, which is what makes an
+             override work from either side: a pom that sets the old name feeds the new one through
+             the reference, and a pom that sets the new name simply replaces its definition here.
+
+             The last two are read-only aliases. Their value belongs to the new name, because
+             ui-tests-run-without-docker overrides ui.tests.npmCommand and a reversed alias would go
+             stale inside that profile. Nothing reads or sets either one downstream. -->
+        <generic.app.ui.webapp>${web.app.name}-app</generic.app.ui.webapp>
         <vite.sources.root>${project.basedir}/ui</vite.sources.root>
         <vite.destination.root>${project.basedir}/src/main/resources/webapp/${maven-jar-plugin.Extension-Context}-app</vite.destination.root>
-        <!-- Set -DskipJsTests to skip the ui/ Vitest run (and the Playwright install) that otherwise
-             happens in the `test` phase alongside the Java tests. -->
-        <skipJsTests>false</skipJsTests>
-        <!-- The npm invocation for the ui/ tests, run as `npm ${jsTestCommand} ${jsTestExtraArgs}`.
-             Two independent pieces so -DjsTestsNoDocker and -DskipVisualJsTests can each set their own
-             without clobbering the other:
-               jsTestCommand   - defaults to the dockerized full suite WITH the coverage gate;
-                                 -DjsTestsNoDocker switches it to the native equivalent. (The plain
-                                 test:docker variant would run the suite but never evaluate the
-                                 istanbul thresholds.)
-               jsTestExtraArgs - extra args forwarded to Vitest; -DskipVisualJsTests adds the exclude
-                                 that drops the visual-regression tests. Only takes effect on the
-                                 non-docker command (the test:docker wrapper forwards no extra args). -->
-        <jsTestCommand>run test:coverage:docker</jsTestCommand>
-        <jsTestExtraArgs> </jsTestExtraArgs>
+        <jsTestCommand>${ui.tests.npmCommand}</jsTestCommand>
+        <jsTestExtraArgs>${ui.tests.npmExtraArgs}</jsTestExtraArgs>
     </properties>
 
     <profiles>
+        <!-- Build the extension and drop the jar into the Polarion installation named by
+             $POLARION_HOME, replacing whatever copy is there. Developer machines only. -->
         <profile>
-            <id>install-to-local-polarion</id>
+            <id>local-install-into-polarion</id>
             <build>
                 <plugins>
                     <plugin>
@@ -320,14 +355,14 @@
              File activation is also immune to the `activeByDefault` rule that switches default profiles
              off as soon as any -P profile is named. -->
         <profile>
-            <id>vite-ui</id>
+            <id>ui-build-react-app</id>
             <activation>
                 <file>
                     <exists>${project.basedir}/ui/package.json</exists>
                 </file>
             </activation>
             <properties>
-                <!-- markdown2html-maven-plugin.extensionContextAdminHtml and generic.app.ui.webapp both
+                <!-- markdown2html-maven-plugin.extensionContextAdminHtml and ui.webapp.name both
                      already default to the `-app` webapp, so this profile no longer has to override
                      them. -->
             </properties>
@@ -343,7 +378,7 @@
                                  <includes> and clean nothing - while also disabling that cleanup. -->
                             <filesets combine.children="append">
                                 <fileset>
-                                    <directory>${vite.destination.root}/app</directory>
+                                    <directory>${ui.destination.root}/app</directory>
                                     <followSymlinks>false</followSymlinks>
                                 </fileset>
                             </filesets>
@@ -355,7 +390,7 @@
                         <artifactId>frontend-maven-plugin</artifactId>
                         <version>${frontend-maven-plugin.version}</version>
                         <configuration>
-                            <workingDirectory>${vite.sources.root}</workingDirectory>
+                            <workingDirectory>${ui.sources.root}</workingDirectory>
                         </configuration>
                         <executions>
                             <execution>
@@ -399,7 +434,7 @@
                                  that is the full suite (behavior + visual regression) plus the coverage
                                  gate inside the pinned Playwright Docker image, so the screenshots match
                                  their committed references. On a host without Docker use
-                                 -DjsTestsNoDocker; to skip it entirely, -DskipJsTests. -->
+                                 -Dui.tests.withoutDocker; to skip it entirely, -DskipJsTests. -->
                             <execution>
                                 <id>vite-npm-test</id>
                                 <phase>test</phase>
@@ -407,7 +442,7 @@
                                     <goal>npm</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>${jsTestCommand} ${jsTestExtraArgs}</arguments>
+                                    <arguments>${ui.tests.npmCommand} ${ui.tests.npmExtraArgs}</arguments>
                                     <skip>${skipJsTests}</skip>
                                 </configuration>
                             </execution>
@@ -427,10 +462,10 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${vite.destination.root}</outputDirectory>
+                                    <outputDirectory>${ui.destination.root}</outputDirectory>
                                     <resources>
                                         <resource>
-                                            <directory>${vite.sources.root}/dist</directory>
+                                            <directory>${ui.sources.root}/dist</directory>
                                             <filtering>false</filtering>
                                             <includes>
                                                 <include>**/*</include>
@@ -447,7 +482,7 @@
             </build>
         </profile>
 
-        <!-- Activate with -DnpmIgnoreUserConfig to run npm with an empty user config.
+        <!-- Activate with -Dui.npm.ignoreUserConfig to run npm with an empty user config.
              For CI agents whose npm configuration the build cannot fix and must not inherit: the ESTA
              agents still carry the npm 6-era `email` and `always-auth` keys, which npm 12 rejects
              outright (ERR_INVALID_AUTH) before it fetches anything, and each agent is a container
@@ -458,10 +493,10 @@
              mapping applies. Never make this the default - on a developer machine it would silently
              discard their own registry, proxy and auth settings. -->
         <profile>
-            <id>npm-ignore-user-config</id>
+            <id>ui-npm-ignore-user-config</id>
             <activation>
                 <property>
-                    <name>npmIgnoreUserConfig</name>
+                    <name>ui.npm.ignoreUserConfig</name>
                 </property>
             </activation>
             <build>
@@ -487,85 +522,34 @@
         <!-- Run the ui/ tests natively instead of in the pinned Playwright Docker image. Needed where
              Docker is unavailable - notably the ESTA build agents, which have no docker-in-docker. The
              Vitest suite runs in Playwright browser mode, so the browser must be present: add
-             -DinstallPlaywrightNoDeps (below). The visual suites detect they are not in the reference
-             image and skip themselves, so no pixel assertion runs. Sets only jsTestCommand, so it
-             composes with -DskipVisualJsTests. -->
+             -Dui.playwright.install (below). The visual suites detect they are not in the reference
+             image and skip themselves, so no pixel assertion runs. Sets only ui.tests.npmCommand, so
+             it composes with -Dui.tests.npmExtraArgs. -->
         <profile>
-            <id>js-tests-no-docker</id>
+            <id>ui-tests-run-without-docker</id>
             <activation>
                 <property>
-                    <name>jsTestsNoDocker</name>
+                    <name>ui.tests.withoutDocker</name>
                 </property>
             </activation>
             <properties>
-                <jsTestCommand>run test:coverage:full</jsTestCommand>
-            </properties>
-        </profile>
-
-        <!-- Drop the pixel-based visual-regression tests explicitly. Rarely needed since they skip
-             themselves outside the reference image; kept for a host where even loading them is
-             unwanted. Adds a Vitest exclude passed through `npm test`, so it only takes effect together
-             with -DjsTestsNoDocker (the test:docker wrapper forwards no extra args). Sets only
-             jsTestExtraArgs, so it never clobbers jsTestCommand. -->
-        <profile>
-            <id>skip-visual-js-tests</id>
-            <activation>
-                <property>
-                    <name>skipVisualJsTests</name>
-                </property>
-            </activation>
-            <properties>
-                <jsTestExtraArgs>-- --exclude **/*.visual.test.tsx</jsTestExtraArgs>
+                <ui.tests.npmCommand>run test:coverage:full</ui.tests.npmCommand>
             </properties>
         </profile>
 
         <!-- The Chromium build Vitest browser mode needs, installed before the tests run. Kept separate
-             from -DjsTestsNoDocker so a host with the browser already cached can skip it. Not needed for
-             the dockerized path - the pinned Playwright image ships the browser. Use exactly one:
-               -DinstallPlaywright        browser + its OS libraries. Needs a Debian/Ubuntu host with
-                                          apt-get and root/sudo.
-               -DinstallPlaywrightNoDeps  browser binary only, for hosts without apt-get/root; the host
-                                          must already provide Chromium's system libraries. -->
-        <profile>
-            <id>playwright-install</id>
-            <activation>
-                <property>
-                    <name>installPlaywright</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.github.eirslett</groupId>
-                        <artifactId>frontend-maven-plugin</artifactId>
-                        <version>${frontend-maven-plugin.version}</version>
-                        <configuration>
-                            <workingDirectory>${vite.sources.root}</workingDirectory>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>playwright-install-with-deps</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>npx</goal>
-                                </goals>
-                                <configuration>
-                                    <arguments>playwright install --with-deps chromium</arguments>
-                                    <skip>${skipJsTests}</skip>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+             from -Dui.tests.withoutDocker so a host with the browser already cached can skip it. Not
+             needed for the dockerized path - the pinned Playwright image ships the browser.
 
-        <!-- Browser binary only (no OS libraries). See the comment above the playwright-install profile. -->
+             -Dui.playwright.install alone fetches the browser binary only, which is what a host
+             without apt-get or root can take; that host must already provide Chromium's system
+             libraries. Set ui.playwright.installArgs to Playwright's own with-deps flag on a
+             Debian/Ubuntu host with root to have it install those libraries too. -->
         <profile>
-            <id>playwright-install-no-deps</id>
+            <id>ui-install-playwright-browser</id>
             <activation>
                 <property>
-                    <name>installPlaywrightNoDeps</name>
+                    <name>ui.playwright.install</name>
                 </property>
             </activation>
             <build>
@@ -575,17 +559,17 @@
                         <artifactId>frontend-maven-plugin</artifactId>
                         <version>${frontend-maven-plugin.version}</version>
                         <configuration>
-                            <workingDirectory>${vite.sources.root}</workingDirectory>
+                            <workingDirectory>${ui.sources.root}</workingDirectory>
                         </configuration>
                         <executions>
                             <execution>
-                                <id>playwright-install-without-deps</id>
+                                <id>ui-playwright-install-chromium</id>
                                 <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>npx</goal>
                                 </goals>
                                 <configuration>
-                                    <arguments>playwright install chromium</arguments>
+                                    <arguments>playwright install ${ui.playwright.installArgs} chromium</arguments>
                                     <skip>${skipJsTests}</skip>
                                 </configuration>
                             </execution>
@@ -1179,7 +1163,7 @@
                                         <type>jar</type>
                                     </artifactItem>
                                 </artifactItems>
-                                <outputDirectory>${basedir}/target/classes/webapp/${generic.app.ui.webapp}/WEB-INF/lib</outputDirectory>
+                                <outputDirectory>${basedir}/target/classes/webapp/${ui.webapp.name}/WEB-INF/lib</outputDirectory>
                             </configuration>
                         </execution>
                     </executions>
