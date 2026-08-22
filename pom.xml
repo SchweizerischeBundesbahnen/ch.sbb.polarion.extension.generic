@@ -211,7 +211,10 @@
         <ui.sources.root>${vite.sources.root}</ui.sources.root>
         <ui.destination.root>${vite.destination.root}</ui.destination.root>
         <!-- Set -DskipJsTests to skip the ui/ Vitest run (and the Playwright install) that otherwise
-             happens in the `test` phase alongside the Java tests. -->
+             happens in the `test` phase alongside the Java tests. The name breaks the ui.* scheme of
+             this block on purpose: 15 downstream workflows pass it on the command line, and Maven
+             does not warn on an unrecognised -D, so renaming it here would silently start running
+             the suite in the deploy jobs that mean to skip it. -->
         <skipJsTests>false</skipJsTests>
         <!-- The npm invocation for the ui/ tests, run as
              `npm ${ui.tests.npmCommand} ${ui.tests.npmExtraArgs}`. Two independent pieces so that
