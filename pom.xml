@@ -70,7 +70,7 @@
         <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
         <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
         <pre-commit-run-maven-plugin.version>1.0.0</pre-commit-run-maven-plugin.version>
-        <polarion-compatibility-maven-plugin.version>0.1.0</polarion-compatibility-maven-plugin.version>
+        <polarion-compatibility-maven-plugin.version>0.1.1</polarion-compatibility-maven-plugin.version>
         <swagger-maven-plugin.version>2.2.54</swagger-maven-plugin.version>
         <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
 
