@@ -70,6 +70,7 @@
         <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
         <maven-dependency-plugin.version>3.11.0</maven-dependency-plugin.version>
         <pre-commit-run-maven-plugin.version>1.0.0</pre-commit-run-maven-plugin.version>
+        <polarion-compatibility-maven-plugin.version>0.1.0</polarion-compatibility-maven-plugin.version>
         <swagger-maven-plugin.version>2.2.54</swagger-maven-plugin.version>
         <sonar-maven-plugin.version>5.7.0.6970</sonar-maven-plugin.version>
 
@@ -1112,6 +1113,23 @@
                                     <file>docs/openapi.json</file>
                                 </files>
                             </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Fails the build when the assembled bundle, or a jar nested inside it, refers to a
+                     package Polarion 2606 rejects. Declared here only; an extension opts in by naming
+                     the plugin in its own build section. -->
+                <plugin>
+                    <groupId>com.intechcore</groupId>
+                    <artifactId>polarion-compatibility-maven-plugin</artifactId>
+                    <version>${polarion-compatibility-maven-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>polarion-compatibility-check</id>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
                         </execution>
                     </executions>
                 </plugin>
