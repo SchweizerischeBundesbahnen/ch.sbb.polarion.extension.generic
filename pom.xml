@@ -103,7 +103,7 @@
         <gwt-servlet.version>2.9.0</gwt-servlet.version>
         <jersey.version>3.1.12</jersey.version>
         <re2j.version>1.8</re2j.version>
-        <classgraph.version>4.8.193</classgraph.version>
+        <classgraph.version>4.8.194</classgraph.version>
         <org.osgi.framework.version>1.10.0</org.osgi.framework.version>
         <swagger.version>2.2.54</swagger.version>
         <jakarta.ws.rs-api.version>3.1.0</jakarta.ws.rs-api.version>
