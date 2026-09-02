@@ -173,6 +173,38 @@ The `process-classes` phase runs right after `compile` phase where `swagger-mave
 
 This ensures consistent JSON formatting with proper key ordering (openapi, info, servers, paths, components) and line endings across all extensions.
 
+#### Polarion compatibility check
+
+Polarion 2606 refuses to start when an installed extension bundles a class, an OSGi manifest
+header or a deployment descriptor naming a `javax` package that moved to `jakarta`. Extension
+sources break at compile time against the new API, but a bundled dependency does not: a version
+bump can reintroduce such a package with no source change, and the failure then shows up on the
+server rather than in the build.
+
+Opt in by naming the plugin. Its version and execution come from the parent POM:
+
+```xml
+<plugin>
+    <groupId>com.intechcore</groupId>
+    <artifactId>polarion-compatibility-maven-plugin</artifactId>
+</plugin>
+```
+
+The goal binds to `verify` and scans the assembled bundle together with every jar nested inside
+it. When a dependency carries a forbidden reference, the build fails and names the jar, the class
+and the package:
+
+```
+[ERROR] Forbidden packages found in ch.sbb.polarion.extension.pdf-exporter-13.7.1-SNAPSHOT.jar
+[ERROR]   javax.annotation  ->  jakarta.annotation
+[ERROR]     in tika-core-4.0.0.jar
+[ERROR]       org.apache.tika.annotation.TikaComponentProcessor  (javax.annotation.processing.AbstractProcessor)
+```
+
+Use `<excludedJars>` for a jar whose reference is unreachable at runtime, or
+`-Dpolarion.compatibility.failOnViolation=false` to survey a project without breaking it. The
+plugin documents the remaining parameters through `mvn polarion-compatibility:help -Ddetail=true`.
+
 ### MANIFEST.MF
 
 File `MANIFEST.MF` should be created in `src/main/resources/META-INF/MANIFEST.MF` with **only extension-specific** entries.
