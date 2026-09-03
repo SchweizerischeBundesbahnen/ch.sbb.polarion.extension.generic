@@ -34,8 +34,21 @@ public class LuceneUtils {
     private static final String CHARACTERS_TO_ESCAPE = "\\+-!(){}[]^\"~:*?";
 
     /**
-     * Escapes a value for use as a term in a Lucene query. A value containing a space becomes a quoted
-     * phrase, which is how Polarion itself passes such a value to the index.
+     * The characters Lucene's query parser skips between tokens, as its grammar declares them in {@code SKIP}.
+     * Each of them ends an unquoted term, so a value containing any one of them has to become a phrase for the
+     * same reason a value containing a space does.
+     * <p>
+     * Polarion quotes on the plain space alone, so this set is the second place where this class is
+     * deliberately stricter than {@code LuceneQueryPart.escape}. Measured against a live index: with
+     * {@code id:X} matching one work item, {@code id:X<tab>Execute} matches two, and so do the newline and
+     * the ideographic space, because the trailing token becomes a term of the default field. Quoting the value
+     * confines it, and a quoted value still matches a stored value that genuinely contains the whitespace.
+     */
+    private static final char[] QUERY_WHITESPACE = {' ', '\t', '\n', '\r', '\u3000'};
+
+    /**
+     * Escapes a value for use as a term in a Lucene query. A value containing whitespace becomes a quoted
+     * phrase, which is how Polarion itself passes a value containing a space to the index.
      *
      * @param value the value to escape
      * @return the escaped value, ready to be concatenated after a field name and a colon
@@ -46,7 +59,16 @@ public class LuceneUtils {
             escaped = escaped.replace(String.valueOf(character), "\\" + character);
         }
         escaped = escaped.replace("&&", "\\&&").replace("||", "\\||");
-        return escaped.contains(" ") ? "\"" + escaped + "\"" : escaped;
+        return containsQueryWhitespace(escaped) ? "\"" + escaped + "\"" : escaped;
+    }
+
+    private static boolean containsQueryWhitespace(@NotNull String value) {
+        for (char whitespace : QUERY_WHITESPACE) {
+            if (value.indexOf(whitespace) >= 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

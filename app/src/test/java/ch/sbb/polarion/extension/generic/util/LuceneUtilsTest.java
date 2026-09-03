@@ -23,6 +23,16 @@ class LuceneUtilsTest {
     }
 
     @Test
+    void testEveryWhitespaceLuceneSkipsTurnsTheValueIntoAPhrase() {
+        // Each of these ends an unquoted term in Lucene's grammar, so each one has to quote the value. Left
+        // unquoted, the trailing token becomes a term of the default field and widens the query.
+        assertEquals("\"ABC\t123\"", LuceneUtils.escapeValue("ABC\t123"));
+        assertEquals("\"ABC\n123\"", LuceneUtils.escapeValue("ABC\n123"));
+        assertEquals("\"ABC\r123\"", LuceneUtils.escapeValue("ABC\r123"));
+        assertEquals("\"ABC　123\"", LuceneUtils.escapeValue("ABC　123"));
+    }
+
+    @Test
     void testMetaCharactersAreEscaped() {
         assertEquals("T\\-123", LuceneUtils.escapeValue("T-123"));
         assertEquals("\\+A", LuceneUtils.escapeValue("+A"));
