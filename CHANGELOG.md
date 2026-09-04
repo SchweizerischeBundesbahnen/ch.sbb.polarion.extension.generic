@@ -1,5 +1,23 @@
 # Changelog
 
+## [16.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.0.0...v16.1.0) (2026-09-04)
+
+
+### Features
+
+* add LuceneUtils for assembling Lucene queries ([#691](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/691)) ([ebb0aa3](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/ebb0aa3d30e84ad8ed58255c4bbe16f3dc7c9e2b)), closes [#690](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/690)
+* manage the polarion compatibility plugin ([#688](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/688)) ([de8437c](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/de8437cb8eef83f99864eb78127ed56a08b28b3c))
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.intechcore:polarion-compatibility-maven-plugin to v0.1.2 ([#694](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/694)) ([fbccdd4](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/fbccdd4932cb82bd899d124b36edac066ec5da0f))
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.193 ([#685](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/685)) ([e192218](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/e192218302720494a7a50a8b8a3cc2ad5e18fb97))
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.194 ([#686](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/686)) ([2af9c5c](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2af9c5c44f5ab68dc01ce8a43540f9fa4c7ae315))
+* **deps:** update dependency io.swagger.core.v3:swagger-maven-plugin-jakarta to v2.2.55 ([#692](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/692)) ([6a71220](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6a7122091a46c146991865a089c88db104f7911c))
+* **deps:** update swagger.version to v2.2.54 ([#679](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/679)) ([39dd880](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/39dd880ed89ea536fe5790dece2f69012ce904b8))
+* **deps:** update swagger.version to v2.2.55 ([#693](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/693)) ([995d746](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/995d746e0be48d762b26bd01ccf246ec5376f9f8))
+
 ## [16.0.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v15.11.0...v16.0.0) (2026-08-21)
 
 
