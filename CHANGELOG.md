@@ -1,5 +1,12 @@
 # Changelog
 
+## [16.1.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.1.0...v16.1.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.apache.maven.plugins:maven-compiler-plugin to v3.16.0 ([#697](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/697)) ([53d498c](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/53d498c740ef3a7f0cebe27e8b686b445119faa2))
+
 ## [16.1.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.0.0...v16.1.0) (2026-09-04)
 
 
