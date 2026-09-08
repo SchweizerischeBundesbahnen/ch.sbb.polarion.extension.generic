@@ -339,8 +339,11 @@ class AdministrationMenuOrderRestorerTest {
      * extensions. Outside a running Polarion every reflective step fails, and it still must not throw.
      */
     @Test
+    // S1612 suppressed: the suggested method reference does not compile. restoreDeclarationOrder is
+    // overloaded, so the reference fits both assertDoesNotThrow overloads and javac rejects it as
+    // ambiguous. Only a lambda with a block body is void-compatible and picks Executable.
+    @SuppressWarnings("java:S1612")
     void neverThrowsOutsideARunningPolarion() {
-        // Explicit lambda, not a method reference: restoreDeclarationOrder is overloaded.
         assertDoesNotThrow(() -> {
             AdministrationMenuOrderRestorer.restoreDeclarationOrder();
         });

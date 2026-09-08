@@ -232,7 +232,8 @@ public final class AdministrationMenuOrderRestorer {
      * Reads the configuration straight from the HiveMind registry, the only place that still holds the
      * entries in declaration order.
      */
-    static @Nullable List<?> readDeclaredOrder(@NotNull IPlatform platform) throws ReflectiveOperationException {
+    @SuppressWarnings("unchecked")
+    static @Nullable List<Object> readDeclaredOrder(@NotNull IPlatform platform) throws ReflectiveOperationException {
         Method getRegistry = findMethod(platform.getClass(), GET_REGISTRY_METHOD);
         if (getRegistry == null) {
             return null;
@@ -246,7 +247,9 @@ public final class AdministrationMenuOrderRestorer {
             return null;
         }
         Object configuration = getConfiguration.invoke(registry, CONFIG_ID);
-        return configuration instanceof List<?> list && !list.isEmpty() ? list : null;
+        // The elements are only ever read and handed to restore(), so the cast carries no risk. Typed
+        // rather than left as a wildcard to match readLiveOrder and to keep the return type usable.
+        return configuration instanceof List<?> list && !list.isEmpty() ? (List<Object>) list : null;
     }
 
     static @Nullable Method findMethod(@NotNull Class<?> type, @NotNull String name, @NotNull Class<?>... parameterTypes) {
