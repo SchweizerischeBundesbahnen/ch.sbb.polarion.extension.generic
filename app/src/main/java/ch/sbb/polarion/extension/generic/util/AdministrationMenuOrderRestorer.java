@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * <p>
  * The registry is reached through two public methods ({@code IHiveMindPlatform.getRegistry()} and
  * {@code Registry.getConfiguration(String)}), reflectively so that the {@code org.apache.hivemind} types
- * stay off to compile classpath and out of {@code Require-Bundle}. The provider's list is read from a
+ * stay off the compile classpath and out of {@code Require-Bundle}. The provider's list is read from a
  * private field, which has no public equivalent. Anything unexpected is logged and leaves Polarion's own
  * order in place.
  * <p>
@@ -73,40 +73,51 @@ public final class AdministrationMenuOrderRestorer {
                 logger.warn("Administration menu order was not restored: the page extender provider was not injected");
                 return;
             }
-            List<Object> liveOrder = readLiveOrder(provider);
-            if (liveOrder == null) {
-                logger.warn("Administration menu order was not restored: %s has no readable '%s' list"
-                        .formatted(provider.getClass().getName(), EXTENDERS_FIELD));
-                return;
-            }
-            List<?> declaredOrder = readDeclaredOrder(PlatformContext.getPlatform());
-            if (declaredOrder == null) {
-                logger.warn("Administration menu order was not restored: the '%s' configuration is not readable".formatted(CONFIG_ID));
-                return;
-            }
-            // The list is shared by every extension bundle, and each one runs this on its own thread.
-            // Locking on the list itself serializes them against each other, unlike locking on a class of
-            // this bundle: every extension loads its own copy of these classes. The lock also covers the
-            // already-ordered check, so exactly one bundle does the work and every later one finds it
-            // done. It orders nothing against Polarion's readers, which never take this monitor, see
-            // restore(List, List) for what a concurrent reader can see.
-            Outcome outcome;
-            synchronized (liveOrder) {
-                outcome = restore(liveOrder, declaredOrder);
-            }
-            switch (outcome) {
-                case RESTORED -> {
-                    logger.info("Restored the declaration order of %d administration menu entries".formatted(declaredOrder.size()));
-                    logger.debug(() -> "Administration menu order: %s".formatted(describe(declaredOrder)));
-                }
-                case ALREADY_ORDERED -> logger.debug(() -> "Administration menu already holds its %d entries in declaration order, another bundle restored it"
-                        .formatted(declaredOrder.size()));
-                case MISMATCH -> logger.warn("Administration menu order was not restored: Polarion's menu entries do not match its own configuration");
-            }
+            restoreDeclarationOrder(provider, PlatformContext.getPlatform());
         } catch (Exception | LinkageError e) {
             // LinkageError included: every Polarion type named here can move in a future release, and a
             // cosmetic menu fix must never take the calling bundle's startup down with it.
             logger.warn("Administration menu order was not restored, Polarion's own order is kept", e);
+        }
+    }
+
+    /**
+     * The reordering itself, with the two things it needs handed in so it can be driven without a running
+     * Polarion.
+     *
+     * @param provider the provider holding every extension's menu entries
+     * @param platform the platform to read the HiveMind configuration from
+     */
+    static void restoreDeclarationOrder(@NotNull AdministrationPageExtenderProvider provider, @NotNull IPlatform platform) throws ReflectiveOperationException {
+        List<Object> liveOrder = readLiveOrder(provider);
+        if (liveOrder == null) {
+            logger.warn("Administration menu order was not restored: %s has no readable '%s' list"
+                    .formatted(provider.getClass().getName(), EXTENDERS_FIELD));
+            return;
+        }
+        List<?> declaredOrder = readDeclaredOrder(platform);
+        if (declaredOrder == null) {
+            logger.warn("Administration menu order was not restored: the '%s' configuration is not readable".formatted(CONFIG_ID));
+            return;
+        }
+        // The list is shared by every extension bundle, and each one runs this on its own thread. Locking
+        // on the list itself serializes them against each other, unlike locking on a class of this
+        // bundle: every extension loads its own copy of these classes. The lock also covers the
+        // already-ordered check, so exactly one bundle does the work and every later one finds it done.
+        // It orders nothing against Polarion's readers, which never take this monitor, see
+        // restore(List, List) for what a concurrent reader can see.
+        Outcome outcome;
+        synchronized (liveOrder) {
+            outcome = restore(liveOrder, declaredOrder);
+        }
+        switch (outcome) {
+            case RESTORED -> {
+                logger.info("Restored the declaration order of %d administration menu entries".formatted(declaredOrder.size()));
+                logger.debug(() -> "Administration menu order: %s".formatted(describe(declaredOrder)));
+            }
+            case ALREADY_ORDERED -> logger.debug(() -> "Administration menu already holds its %d entries in declaration order, another bundle restored it"
+                    .formatted(declaredOrder.size()));
+            case MISMATCH -> logger.warn("Administration menu order was not restored: Polarion's menu entries do not match its own configuration");
         }
     }
 
@@ -174,7 +185,10 @@ public final class AdministrationMenuOrderRestorer {
      * implement {@code equals}, and a repeated instance must count as a mismatch.
      */
     private static boolean holdSameEntries(@NotNull List<?> first, @NotNull List<?> second) {
-        return identitySet(first).equals(identitySet(second));
+        Set<Object> firstEntries = identitySet(first);
+        // The size check also rejects a repeated instance: a set collapses repeats, so equal sets over
+        // equal-sized lists would otherwise admit one entry being dropped and another written twice.
+        return firstEntries.size() == first.size() && firstEntries.equals(identitySet(second));
     }
 
     private static @NotNull Set<Object> identitySet(@NotNull List<?> entries) {
@@ -189,7 +203,7 @@ public final class AdministrationMenuOrderRestorer {
      * class as a Guice singleton, so this is the instance Polarion's own navigation code reaches through
      * its HiveMind proxy.
      */
-    private static @Nullable AdministrationPageExtenderProvider lookupProvider() {
+    static @Nullable AdministrationPageExtenderProvider lookupProvider() {
         ProviderProbe probe = new ProviderProbe();
         GuicePlatform.tryInjectMembers(probe);
         return probe.provider;
@@ -200,7 +214,7 @@ public final class AdministrationMenuOrderRestorer {
      * provider is still handled.
      */
     @SuppressWarnings({"unchecked", "java:S3011"})
-    private static @Nullable List<Object> readLiveOrder(@NotNull AdministrationPageExtenderProvider provider) throws ReflectiveOperationException {
+    static @Nullable List<Object> readLiveOrder(@NotNull AdministrationPageExtenderProvider provider) throws ReflectiveOperationException {
         for (Class<?> type = provider.getClass(); type != null; type = type.getSuperclass()) {
             try {
                 Field field = type.getDeclaredField(EXTENDERS_FIELD);
@@ -218,7 +232,7 @@ public final class AdministrationMenuOrderRestorer {
      * Reads the configuration straight from the HiveMind registry, the only place that still holds the
      * entries in declaration order.
      */
-    private static @Nullable List<?> readDeclaredOrder(@NotNull IPlatform platform) throws ReflectiveOperationException {
+    static @Nullable List<?> readDeclaredOrder(@NotNull IPlatform platform) throws ReflectiveOperationException {
         Method getRegistry = findMethod(platform.getClass(), GET_REGISTRY_METHOD);
         if (getRegistry == null) {
             return null;
@@ -235,7 +249,7 @@ public final class AdministrationMenuOrderRestorer {
         return configuration instanceof List<?> list && !list.isEmpty() ? list : null;
     }
 
-    private static @Nullable Method findMethod(@NotNull Class<?> type, @NotNull String name, @NotNull Class<?>... parameterTypes) {
+    static @Nullable Method findMethod(@NotNull Class<?> type, @NotNull String name, @NotNull Class<?>... parameterTypes) {
         try {
             return type.getMethod(name, parameterTypes);
         } catch (NoSuchMethodException e) {
