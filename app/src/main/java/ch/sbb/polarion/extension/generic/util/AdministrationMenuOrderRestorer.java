@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
  * yields the real singleton the proxy delegates to, which is also the object that builds the navigation
  * tree.
  */
+@SuppressWarnings("SpellCheckingInspection")
 public final class AdministrationMenuOrderRestorer {
 
     static final String CONFIG_ID = "com.polarion.xray.webui.administrationPageExtenders";
