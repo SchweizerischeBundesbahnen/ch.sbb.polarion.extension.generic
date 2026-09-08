@@ -37,9 +37,9 @@ import java.util.stream.Collectors;
  * <p>
  * The registry is reached through two public methods ({@code IHiveMindPlatform.getRegistry()} and
  * {@code Registry.getConfiguration(String)}), reflectively so that the {@code org.apache.hivemind} types
- * stay off the compile classpath and out of {@code Require-Bundle}. The provider's list is read from a
- * private field, which has no public equivalent. Anything unexpected is logged and leaves Polarion's own
- * order in place.
+ * are never named at compile time and stay out of {@code Require-Bundle}. The provider's list is read
+ * from a private field, which has no public equivalent. Anything unexpected is logged and leaves
+ * Polarion's own order in place.
  * <p>
  * The provider must come from Guice, not from {@code PlatformContext.lookupService}. Its HiveMind
  * service point uses the default singleton service model, whose {@code getService()} returns a generated
@@ -47,7 +47,6 @@ import java.util.stream.Collectors;
  * yields the real singleton the proxy delegates to, which is also the object that builds the navigation
  * tree.
  */
-@SuppressWarnings("SpellCheckingInspection")
 public final class AdministrationMenuOrderRestorer {
 
     static final String CONFIG_ID = "com.polarion.xray.webui.administrationPageExtenders";
@@ -83,7 +82,7 @@ public final class AdministrationMenuOrderRestorer {
     }
 
     /**
-     * The reordering itself, with the two things it needs handed in so it can be driven without a running
+     * The reordering itself. Both collaborators are passed in, so it can be driven without a running
      * Polarion.
      *
      * @param provider the provider holding every extension's menu entries
