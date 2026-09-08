@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic;
 
+import ch.sbb.polarion.extension.generic.util.AdministrationMenuOrderRestorer;
 import com.polarion.alm.ui.server.forms.extensions.FormExtensionContribution;
 import com.polarion.alm.ui.server.forms.extensions.IFormExtension;
 import com.polarion.alm.ui.server.forms.extensions.impl.FormExtensionsRegistry;
@@ -102,6 +103,9 @@ public abstract class GenericBundleActivator implements BundleActivator {
             logger.info("Bundle startup cancelled before the Guice platform was ready (bundle stopping)");
             return;
         }
+        // Needs Polarion's platform, so it belongs after the readiness barrier. Every extension bundle
+        // runs this and each one restores the same order for all of them, see the class Javadoc.
+        AdministrationMenuOrderRestorer.restoreDeclarationOrder();
         onStart(context);
         registerExtensions(getExtensions());
     }
