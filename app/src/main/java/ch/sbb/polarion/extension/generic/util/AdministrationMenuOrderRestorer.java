@@ -85,9 +85,11 @@ public final class AdministrationMenuOrderRestorer {
                 return;
             }
             // The list is shared by every extension bundle, and each one runs this on its own thread.
-            // Locking on the list itself serializes them, unlike locking on a class of this bundle: every
-            // extension loads its own copy of these classes. The lock also covers the already-ordered
-            // check, so exactly one bundle does the work and every later one finds it done.
+            // Locking on the list itself serializes them against each other, unlike locking on a class of
+            // this bundle: every extension loads its own copy of these classes. The lock also covers the
+            // already-ordered check, so exactly one bundle does the work and every later one finds it
+            // done. It orders nothing against Polarion's readers, which never take this monitor, see
+            // restore(List, List) for what a concurrent reader can see.
             Outcome outcome;
             synchronized (liveOrder) {
                 outcome = restore(liveOrder, declaredOrder);
@@ -101,7 +103,9 @@ public final class AdministrationMenuOrderRestorer {
                         .formatted(declaredOrder.size()));
                 case MISMATCH -> logger.warn("Administration menu order was not restored: Polarion's menu entries do not match its own configuration");
             }
-        } catch (Exception e) {
+        } catch (Exception | LinkageError e) {
+            // LinkageError included: every Polarion type named here can move in a future release, and a
+            // cosmetic menu fix must never take the calling bundle's startup down with it.
             logger.warn("Administration menu order was not restored, Polarion's own order is kept", e);
         }
     }
@@ -111,8 +115,11 @@ public final class AdministrationMenuOrderRestorer {
      * <p>
      * Only a permutation is applied, and only when both lists hold exactly the same objects. The size
      * never changes and no position is ever empty, so a reader building the navigation tree in parallel
-     * cannot observe a partial list. Rejecting anything but a permutation keeps a future Polarion, which
-     * may fill the provider from somewhere else, from having its entries replaced.
+     * cannot observe a null entry. It can, while the loop runs, briefly see one entry twice and another
+     * not at all, and holding no lock this class holds, it is not guaranteed to observe the new order at
+     * all. Both are acceptable here: the window is a few microseconds during bundle activation, before
+     * administration pages are served. Rejecting anything but a permutation keeps a future Polarion,
+     * which may fill the provider from somewhere else, from having its entries replaced.
      *
      * @param liveOrder     the provider's own list, modified in place
      * @param declaredOrder the same entries in declaration order

@@ -2,12 +2,17 @@ package ch.sbb.polarion.extension.generic.util;
 
 import ch.sbb.polarion.extension.generic.util.AdministrationMenuOrderRestorer.Outcome;
 import com.polarion.alm.administration.web.server.AdministrationPageExtender;
+import com.polarion.alm.administration.web.server.AdministrationPageExtenderProvider;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -168,8 +173,38 @@ class AdministrationMenuOrderRestorerTest {
         assertEquals("a, b", AdministrationMenuOrderRestorer.describe(entries("a", "b")));
     }
 
+    /**
+     * Pins the one reflective name that can silently break this class against Polarion's real type. If a
+     * Polarion upgrade renames or retypes the field, this fails at build time instead of degrading to a
+     * WARN on a production server, where the symptom is the randomized menu this class exists to fix.
+     */
     @Test
-    void configIdMatchesPolarionsExtensionPoint() {
-        assertEquals("com.polarion.xray.webui.administrationPageExtenders", AdministrationMenuOrderRestorer.CONFIG_ID);
+    @SuppressWarnings("java:S3011")
+    void providerStillDeclaresTheExtendersListField() throws Exception {
+        Field field = AdministrationPageExtenderProvider.class.getDeclaredField("extenders");
+        field.setAccessible(true);
+
+        assertInstanceOf(List.class, field.get(new AdministrationPageExtenderProvider()));
+    }
+
+    /**
+     * The provider must keep taking entries through this setter and keep them in a mutable list, which is
+     * what lets the order be corrected in place.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void providerKeepsItsEntriesInAMutableList() throws Exception {
+        AdministrationPageExtender extender = new AdministrationPageExtender();
+        extender.setId("about");
+        AdministrationPageExtenderProvider provider = new AdministrationPageExtenderProvider();
+        provider.setAdministrationPageExtenders(new LinkedHashSet<>(List.of(extender)));
+
+        Field field = AdministrationPageExtenderProvider.class.getDeclaredField("extenders");
+        field.setAccessible(true);
+        List<Object> entries = (List<Object>) field.get(provider);
+
+        assertEquals(1, entries.size());
+        assertSame(extender, entries.get(0));
+        assertDoesNotThrow(() -> entries.set(0, extender), "the entry list must be writable in place");
     }
 }

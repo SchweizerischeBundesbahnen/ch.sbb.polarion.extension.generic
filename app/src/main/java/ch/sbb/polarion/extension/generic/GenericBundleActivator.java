@@ -103,11 +103,13 @@ public abstract class GenericBundleActivator implements BundleActivator {
             logger.info("Bundle startup cancelled before the Guice platform was ready (bundle stopping)");
             return;
         }
-        // Needs Polarion's platform, so it belongs after the readiness barrier. Every extension bundle
-        // runs this and each one restores the same order for all of them, see the class Javadoc.
-        AdministrationMenuOrderRestorer.restoreDeclarationOrder();
         onStart(context);
         registerExtensions(getExtensions());
+        // Last on purpose. It needs Polarion's platform, so it has to sit after the readiness barrier,
+        // and it is cosmetic: a LinkageError from its hard reference to Polarion's administration
+        // classes must not be able to cost this bundle its form extensions. Every extension bundle runs
+        // it and each one restores the same order for all of them, see the class Javadoc.
+        AdministrationMenuOrderRestorer.restoreDeclarationOrder();
     }
 
     @SuppressWarnings("java:S5803")
