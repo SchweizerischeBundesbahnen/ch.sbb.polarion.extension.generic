@@ -1,12 +1,13 @@
 package ch.sbb.polarion.extension.generic;
 
 import ch.sbb.polarion.extension.generic.util.AdministrationMenuOrderRestorer;
-import org.mockito.MockedStatic;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -261,10 +262,11 @@ class GenericUiServletTest {
     void initRestoresTheAdministrationMenuOrderWithoutThrowing() {
         TestServlet servlet = new TestServlet("testServletName");
 
-        // Explicit lambda, not a method reference: init is overloaded in the servlet hierarchy.
-        assertDoesNotThrow(() -> {
-            servlet.init();
-        });
+        // Bound to Executable first: init is overloaded in the servlet hierarchy, so passing the
+        // method reference straight to the overloaded assertDoesNotThrow does not compile.
+        Executable init = servlet::init;
+
+        assertDoesNotThrow(init);
     }
 
     /**
@@ -280,9 +282,9 @@ class GenericUiServletTest {
             restorer.when(AdministrationMenuOrderRestorer::restoreDeclarationOrder)
                     .thenThrow(new NoClassDefFoundError("com/polarion/alm/administration/web/server/AdministrationPageExtenderProvider"));
 
-            assertDoesNotThrow(() -> {
-                servlet.init();
-            });
+            Executable init = servlet::init;
+
+            assertDoesNotThrow(init);
         }
     }
 
