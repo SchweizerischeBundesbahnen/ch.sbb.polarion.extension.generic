@@ -284,34 +284,6 @@ Bundle-Activator: ch.sbb.polarion.extension.pdf_exporter.ExtensionBundleActivato
   > subclass hook may safely touch Polarion's platform. This is transparent to subclasses — just
   > implement `getExtensions()` and, if needed, override `onStart()`.
 
-  > **Administration menu order (restored automatically, no extension code needed).**
-  > Up to Polarion 2512 the entries an extension contributes to
-  > `com.polarion.xray.webui.administrationPageExtenders` appeared in the order of its
-  > `hivemodule.xml`, because `AdministrationPageExtenderProvider` received the HiveMind
-  > configuration as a `List`. Polarion 2606 passes the same configuration through `Set.copyOf` in
-  > `AbstractHiveMindPlatform.lookupSetConfigurationPoint` and injects it as a `Set`. That is a JDK
-  > immutable set whose iteration order follows element hash codes salted once per JVM start, and
-  > `AdministrationPageExtender` overrides no `hashCode` - so every menu entry of every extension
-  > lands somewhere else after each restart. The extension point has no order attribute and nothing
-  > sorts the entries afterward.
-  > `AdministrationMenuOrderRestorer` reads the declaration order back from the HiveMind registry,
-  > which still holds it, and writes it into the provider's own list. That restores the 2512 behavior
-  > exactly: the same objects in the same order the platform used to pass in. It runs on the deferred
-  > thread described above, so nothing has to be declared or ordered per extension. It only ever
-  > applies a permutation of the entries Polarion already holds; on any mismatch it logs and leaves
-  > Polarion's order alone. This is a workaround for a Polarion regression, not a supported extension
-  > point.
-  >
-  > **It deliberately reorders the entries of every extension, not only its own.** The provider keeps
-  > one list for the whole server, and two things follow from that. The position of each parent folder
-  > (`PDF Export`, `Diff Tool`, …) among the administration sections comes from the first index at
-  > which that folder appears, so it can only be made stable by ordering the whole list; a bundle that
-  > touched only its own entries would leave its own folder jumping around per restart. And an
-  > extension still built against an older `generic` gets fixed too, which matters because the entries
-  > of every installed extension share this one list. Every bundle computes the same target order, so
-  > the result does not depend on which bundle wins: the first one to cross the barrier applies it and
-  > logs one INFO line, and each later bundle finds the list already ordered and logs only at DEBUG.
-
 * `Export-Package` — if the extension exports packages for use by other bundles:
 
 ```properties
@@ -507,6 +479,41 @@ public class PdfExporterAppServlet extends GenericUiServlet {
     }
 }
 ```
+
+> **Administration menu order (restored automatically, no extension code needed).**
+> Up to Polarion 2512 the entries an extension contributes to
+> `com.polarion.xray.webui.administrationPageExtenders` appeared in the order of its
+> `hivemodule.xml`, because `AdministrationPageExtenderProvider` received the HiveMind
+> configuration as a `List`. Polarion 2606 passes the same configuration through `Set.copyOf` in
+> `AbstractHiveMindPlatform.lookupSetConfigurationPoint` and injects it as a `Set`. That is a JDK
+> immutable set whose iteration order follows element hash codes salted once per JVM start, and
+> `AdministrationPageExtender` overrides no `hashCode` - so every menu entry of every extension
+> lands somewhere else after each restart. The extension point has no order attribute and nothing
+> sorts the entries afterward.
+> `AdministrationMenuOrderRestorer` reads the declaration order back from the HiveMind registry,
+> which still holds it, and writes it into the provider's own list. That restores the 2512 behavior
+> exactly: the same objects in the same order the platform used to pass in. It only ever applies a
+> permutation of the entries Polarion already holds; on any mismatch it logs and leaves Polarion's
+> order alone. This is a workaround for a Polarion regression, not a supported extension point.
+>
+> **It is triggered from `GenericUiServlet.init()`, not from the activator.** That is the only entry
+> point every extension has: `Bundle-Activator` is declared by fewer than half of them, and an
+> extension without one would never run the fix, while every extension declares a subclass of
+> `GenericUiServlet` with `load-on-startup` in each of its webapps. So nothing has to be declared,
+> ordered or changed per extension. It runs inline and waits for nothing: Polarion builds its Guice
+> injector inside `PlatformService.start()` and starts Tomcat only afterwards, so the provider is
+> always available by then. A failure in this cosmetic fix is caught, so it cannot stop the servlet
+> from loading.
+>
+> **It deliberately reorders the entries of every extension, not only its own.** The provider keeps
+> one list for the whole server, and two things follow from that. The position of each parent folder
+> (`PDF Export`, `Diff Tool`, …) among the administration sections comes from the first index at
+> which that folder appears, so it can only be made stable by ordering the whole list; an extension that
+> touched only its own entries would leave its own folder jumping around per restart. And an
+> extension still built against an older `generic` gets fixed too, which matters because the entries
+> of every installed extension share this one list. Every webapp computes the same target order, so
+> the result does not depend on which one starts first: that one applies it and logs a single INFO
+> line, and each later webapp finds the list already ordered and logs only at DEBUG.
 
 ### UI components (JavaScript / CSS)
 

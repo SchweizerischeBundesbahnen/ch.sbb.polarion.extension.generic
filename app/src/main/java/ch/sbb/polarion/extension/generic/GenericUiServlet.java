@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic;
 
+import ch.sbb.polarion.extension.generic.util.AdministrationMenuOrderRestorer;
 import com.polarion.alm.shared.util.Pair;
 import com.polarion.core.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
@@ -51,6 +52,37 @@ public abstract class GenericUiServlet extends HttpServlet {
 
     protected GenericUiServlet(String webAppName) {
         this.webAppName = webAppName;
+    }
+
+    /**
+     * Restores the administration menu order, which Polarion 2606 randomizes on every restart.
+     * <p>
+     * This is the hook rather than {@code GenericBundleActivator} because it is the only one common to
+     * every extension. {@code Bundle-Activator} is declared by fewer than half of them, and an
+     * extension without one never ran the fix at all, while every extension declares a subclass of this
+     * servlet with {@code load-on-startup} in each of its webapps. Nothing has to change in any
+     * extension.
+     * <p>
+     * It runs inline, without waiting for anything. Polarion builds its Guice injector inside
+     * {@code PlatformService.start()} and only starts Tomcat afterwards, so the provider is always
+     * available by the time a servlet is initialized. The work is a reflective read plus a permutation
+     * of one list, and it is a no-op once any webapp has already done it.
+     * <p>
+     * The restorer guards its own body already, and this guard is not the same one: it also covers
+     * loading and initializing that class. That is a real failure window, because the class names
+     * Polarion's administration types in its signatures and creates a logger in its static initializer,
+     * so a {@code NoClassDefFoundError} or {@code ExceptionInInitializerError} can be thrown at this
+     * call site before the method body ever runs. Uncaught, it would leave the extension's UI servlet
+     * unavailable over a cosmetic menu fix.
+     */
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        try {
+            AdministrationMenuOrderRestorer.restoreDeclarationOrder();
+        } catch (Exception | LinkageError e) {
+            logger.warn("Could not restore the administration menu order", e);
+        }
     }
 
     @VisibleForTesting

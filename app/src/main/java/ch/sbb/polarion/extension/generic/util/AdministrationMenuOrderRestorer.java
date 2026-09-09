@@ -63,8 +63,8 @@ public final class AdministrationMenuOrderRestorer {
      * Reorders the administration menu entries of every extension into their declaration order.
      * <p>
      * Requires Polarion's platform to be initialized, so call it only after the global Guice injector is
-     * available. Safe to call repeatedly and from several bundles: each call computes the same order, and
-     * the work is serialized on the shared list.
+     * available. Safe to call repeatedly and from every webapp of every extension: each call computes the
+     * same order, and the work is serialized on the shared list.
      */
     public static void restoreDeclarationOrder() {
         try {
@@ -76,7 +76,7 @@ public final class AdministrationMenuOrderRestorer {
             restoreDeclarationOrder(provider, PlatformContext.getPlatform());
         } catch (Exception | LinkageError e) {
             // LinkageError included: every Polarion type named here can move in a future release, and a
-            // cosmetic menu fix must never take the calling bundle's startup down with it.
+            // cosmetic menu fix must never take the calling servlet down with it.
             logger.warn("Administration menu order was not restored, Polarion's own order is kept", e);
         }
     }
@@ -100,10 +100,10 @@ public final class AdministrationMenuOrderRestorer {
             logger.warn("Administration menu order was not restored: the '%s' configuration is not readable".formatted(CONFIG_ID));
             return;
         }
-        // The list is shared by every extension bundle, and each one runs this on its own thread. Locking
-        // on the list itself serializes them against each other, unlike locking on a class of this
-        // bundle: every extension loads its own copy of these classes. The lock also covers the
-        // already-ordered check, so exactly one bundle does the work and every later one finds it done.
+        // The list is shared by every extension, while this runs from each webapp's own startup thread.
+        // Locking on the list itself serializes them against each other, unlike locking on one of these
+        // classes: every webapp loads its own copy of them. The lock also covers the
+        // already-ordered check, so exactly one webapp does the work and every later one finds it done.
         // It orders nothing against Polarion's readers, which never take this monitor, see
         // restore(List, List) for what a concurrent reader can see.
         Outcome outcome;
@@ -115,7 +115,7 @@ public final class AdministrationMenuOrderRestorer {
                 logger.info("Restored the declaration order of %d administration menu entries".formatted(declaredOrder.size()));
                 logger.debug(() -> "Administration menu order: %s".formatted(describe(declaredOrder)));
             }
-            case ALREADY_ORDERED -> logger.debug(() -> "Administration menu already holds its %d entries in declaration order, another bundle restored it"
+            case ALREADY_ORDERED -> logger.debug(() -> "Administration menu already holds its %d entries in declaration order, another webapp restored it"
                     .formatted(declaredOrder.size()));
             case MISMATCH -> logger.warn("Administration menu order was not restored: Polarion's menu entries do not match its own configuration");
         }
@@ -128,7 +128,7 @@ public final class AdministrationMenuOrderRestorer {
      * never changes and no position is ever empty, so a reader building the navigation tree in parallel
      * cannot observe a null entry. It can, while the loop runs, briefly see one entry twice and another
      * not at all, and holding no lock this class holds, it is not guaranteed to observe the new order at
-     * all. Both are acceptable here: the window is a few microseconds during bundle activation, before
+     * all. Both are acceptable here: the window is a few microseconds during webapp startup, before
      * administration pages are served. Rejecting anything but a permutation keeps a future Polarion,
      * which may fill the provider from somewhere else, from having its entries replaced.
      *

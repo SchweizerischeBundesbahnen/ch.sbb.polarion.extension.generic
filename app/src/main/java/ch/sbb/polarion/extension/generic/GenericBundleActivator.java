@@ -1,6 +1,5 @@
 package ch.sbb.polarion.extension.generic;
 
-import ch.sbb.polarion.extension.generic.util.AdministrationMenuOrderRestorer;
 import com.polarion.alm.ui.server.forms.extensions.FormExtensionContribution;
 import com.polarion.alm.ui.server.forms.extensions.IFormExtension;
 import com.polarion.alm.ui.server.forms.extensions.impl.FormExtensionsRegistry;
@@ -105,11 +104,6 @@ public abstract class GenericBundleActivator implements BundleActivator {
         }
         onStart(context);
         registerExtensions(getExtensions());
-        // Last on purpose. It needs Polarion's platform, so it has to sit after the readiness barrier,
-        // and it is cosmetic: a LinkageError from its hard reference to Polarion's administration
-        // classes must not be able to cost this bundle its form extensions. Every extension bundle runs
-        // it and each one restores the same order for all of them, see the class Javadoc.
-        AdministrationMenuOrderRestorer.restoreDeclarationOrder();
     }
 
     @SuppressWarnings("java:S5803")

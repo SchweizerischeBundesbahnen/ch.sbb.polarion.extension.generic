@@ -1,5 +1,7 @@
 package ch.sbb.polarion.extension.generic;
 
+import ch.sbb.polarion.extension.generic.util.AdministrationMenuOrderRestorer;
+import org.mockito.MockedStatic;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.Serial;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -247,6 +250,40 @@ class GenericUiServletTest {
         lenient().doNothing().when(spy).serveResource(any(), any());
         spy.service(request, response);
         return spy;
+    }
+
+    /**
+     * Every extension declares a subclass of this servlet with load-on-startup, which is what makes
+     * init() the one hook the administration menu fix can rely on. It must run that work without
+     * throwing, whatever the platform state.
+     */
+    @Test
+    void initRestoresTheAdministrationMenuOrderWithoutThrowing() {
+        TestServlet servlet = new TestServlet("testServletName");
+
+        // Explicit lambda, not a method reference: init is overloaded in the servlet hierarchy.
+        assertDoesNotThrow(() -> {
+            servlet.init();
+        });
+    }
+
+    /**
+     * The menu order fix references Polarion's administration classes, so it can fail to link on a
+     * future Polarion. This servlet is the extension's UI, and the menu order is cosmetic: a failure
+     * there must never stop the servlet from loading.
+     */
+    @Test
+    void initSurvivesAFailingAdministrationMenuOrderRestore() {
+        TestServlet servlet = new TestServlet("testServletName");
+
+        try (MockedStatic<AdministrationMenuOrderRestorer> restorer = mockStatic(AdministrationMenuOrderRestorer.class)) {
+            restorer.when(AdministrationMenuOrderRestorer::restoreDeclarationOrder)
+                    .thenThrow(new NoClassDefFoundError("com/polarion/alm/administration/web/server/AdministrationPageExtenderProvider"));
+
+            assertDoesNotThrow(() -> {
+                servlet.init();
+            });
+        }
     }
 
     public static class TestServlet extends GenericUiServlet {
