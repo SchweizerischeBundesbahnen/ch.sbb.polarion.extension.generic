@@ -60,8 +60,9 @@ public abstract class GenericUiServlet extends HttpServlet {
      * This is the hook rather than {@code GenericBundleActivator} because it is the only one common to
      * every extension. {@code Bundle-Activator} is declared by fewer than half of them, and an
      * extension without one never ran the fix at all, while every extension declares a subclass of this
-     * servlet with {@code load-on-startup} in each of its webapps. Nothing has to change in any
-     * extension.
+     * servlet in each of its webapps, declared with {@code load-on-startup} so that the container calls
+     * this at webapp startup rather than on the first request under {@code /polarion/<extension>/ui/}.
+     * Nothing else has to change in any extension.
      * <p>
      * It runs inline, without waiting for anything. Polarion builds its Guice injector inside
      * {@code PlatformService.start()} and only starts Tomcat afterwards, so the provider is always

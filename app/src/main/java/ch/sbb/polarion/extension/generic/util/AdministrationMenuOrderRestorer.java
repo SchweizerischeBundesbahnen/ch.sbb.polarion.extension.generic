@@ -63,8 +63,13 @@ public final class AdministrationMenuOrderRestorer {
      * Reorders the administration menu entries of every extension into their declaration order.
      * <p>
      * Requires Polarion's platform to be initialized, so call it only after the global Guice injector is
-     * available. Safe to call repeatedly and from every webapp of every extension: each call computes the
-     * same order, and the work is serialized on the shared list.
+     * available. The caller in {@code GenericUiServlet.init()} satisfies that by startup order rather
+     * than by waiting: {@code PlatformService.start()} builds the injector before Tomcat is started, so
+     * no webapp can initialize earlier. Were that ever untrue, the provider would simply not be injected
+     * and this logs a warning and changes nothing.
+     * <p>
+     * Safe to call repeatedly and from every webapp of every extension: each call computes the same
+     * order, and the work is serialized on the shared list.
      */
     public static void restoreDeclarationOrder() {
         try {

@@ -480,6 +480,23 @@ public class PdfExporterAppServlet extends GenericUiServlet {
 }
 ```
 
+The servlet is declared in the webapp's `WEB-INF/web.xml`. Keep `load-on-startup`: it is what makes
+the container call `init()` when the webapp starts rather than on the first request the servlet
+matches, and the administration menu order fix described below runs from there.
+
+```xml
+<servlet>
+    <servlet-name>pdf-exporter-app-ui</servlet-name>
+    <servlet-class>ch.sbb.polarion.extension.pdf_exporter.PdfExporterAppServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>pdf-exporter-app-ui</servlet-name>
+    <url-pattern>/ui/*</url-pattern>
+</servlet-mapping>
+```
+
 > **Administration menu order (restored automatically, no extension code needed).**
 > Up to Polarion 2512 the entries an extension contributes to
 > `com.polarion.xray.webui.administrationPageExtenders` appeared in the order of its
@@ -499,11 +516,13 @@ public class PdfExporterAppServlet extends GenericUiServlet {
 > **It is triggered from `GenericUiServlet.init()`, not from the activator.** That is the only entry
 > point every extension has: `Bundle-Activator` is declared by fewer than half of them, and an
 > extension without one would never run the fix, while every extension declares a subclass of
-> `GenericUiServlet` with `load-on-startup` in each of its webapps. So nothing has to be declared,
-> ordered or changed per extension. It runs inline and waits for nothing: Polarion builds its Guice
-> injector inside `PlatformService.start()` and starts Tomcat only afterwards, so the provider is
-> always available by then. A failure in this cosmetic fix is caught, so it cannot stop the servlet
-> from loading.
+> `GenericUiServlet` in each of its webapps. Nothing has to be ordered or declared per extension
+> beyond the `load-on-startup` shown above, which every extension already carries; without it the
+> container defers `init()` to the first request under `/polarion/<extension>/ui/`, and an
+> administrator who restarts and goes straight to **Administration** would still see the 2606 order.
+> It runs inline and waits for nothing: Polarion builds its Guice injector inside
+> `PlatformService.start()` and starts Tomcat only afterwards, so the provider is available by then.
+> A failure in this cosmetic fix is caught, so it cannot stop the servlet from loading.
 >
 > **It deliberately reorders the entries of every extension, not only its own.** The provider keeps
 > one list for the whole server, and two things follow from that. The position of each parent folder
