@@ -473,7 +473,7 @@
                                             </includes>
                                         </resource>
                                     </resources>
-                                    <overwrite>true</overwrite>
+                                    <changeDetection>always</changeDetection>
                                     <includeEmptyDirs>true</includeEmptyDirs>
                                 </configuration>
                             </execution>
@@ -1319,12 +1319,20 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
-                    <configuration>
-                        <compilerArgs>
-                            <arg>-Alog4j.graalvm.groupId=org.apache.logging.log4j</arg>
-                            <arg>-Alog4j.graalvm.artifactId=log4j-core</arg>
-                        </compilerArgs>
-                    </configuration>
+                    <executions>
+                        <!-- Log4j's GraalVmProcessor needs these options when it meets a Log4j plugin,
+                             which only the tests declare (an in-memory appender). On the main compile no
+                             processor claims them, and javac warns that they are not recognized. -->
+                        <execution>
+                            <id>default-testCompile</id>
+                            <configuration>
+                                <compilerArgs>
+                                    <arg>-Alog4j.graalvm.groupId=org.apache.logging.log4j</arg>
+                                    <arg>-Alog4j.graalvm.artifactId=log4j-core</arg>
+                                </compilerArgs>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <plugin>
