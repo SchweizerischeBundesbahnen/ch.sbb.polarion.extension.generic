@@ -3,6 +3,7 @@ package ch.sbb.polarion.extension.generic.jobs;
 import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
 import ch.sbb.polarion.extension.generic.rest.model.jobs.JobStatus;
 import com.polarion.platform.security.ISecurityService;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,20 +19,24 @@ import java.security.PrivilegedAction;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
@@ -246,7 +251,7 @@ class AsyncJobsServiceTest {
 
         String jobId = service.startJob(PAYLOAD, 50, control -> {
             try {
-                Thread.sleep(10_000);
+                blockUntilInterrupted();
             } catch (InterruptedException e) {
                 interrupted.set(true);
                 Thread.currentThread().interrupt();
@@ -276,7 +281,7 @@ class AsyncJobsServiceTest {
         String jobId = service.startJob(PAYLOAD, 60_000, control -> {
             started.countDown();
             try {
-                Thread.sleep(10_000);
+                blockUntilInterrupted();
             } catch (InterruptedException e) {
                 interrupted.set(true);
                 Thread.currentThread().interrupt();
@@ -291,10 +296,10 @@ class AsyncJobsServiceTest {
 
         JobState jobState = service.getJobState(jobId);
         assertThat(jobState.status()).isEqualTo(JobStatus.CANCELLED);
-        assertThat(jobState.errorMessage()).isEqualTo(AsyncJobsService.CANCELLED_BY_USER_MESSAGE);
+        assertThat(jobState.errorMessage()).isEqualTo(JobMessages.CANCELLED_BY_USER);
         assertThat(stopped.await(5, TimeUnit.SECONDS)).isTrue();
         assertThat(interrupted).isTrue();
-        assertThat(service.getJobState(jobId).errorMessage()).isEqualTo(AsyncJobsService.CANCELLED_BY_USER_MESSAGE);
+        assertThat(service.getJobState(jobId).errorMessage()).isEqualTo(JobMessages.CANCELLED_BY_USER);
         assertThatThrownBy(() -> service.getJobResult(jobId)).isInstanceOf(IllegalStateException.class);
     }
 
@@ -359,7 +364,7 @@ class AsyncJobsServiceTest {
         awaitDone(cooperativeRegistry, jobId);
         JobState jobState = service.getJobState(jobId);
         assertThat(jobState.status()).isEqualTo(JobStatus.CANCELLED);
-        assertThat(jobState.errorMessage()).isEqualTo(AsyncJobsService.CANCELLED_BY_USER_MESSAGE);
+        assertThat(jobState.errorMessage()).isEqualTo(JobMessages.CANCELLED_BY_USER);
     }
 
     @Test
@@ -385,6 +390,29 @@ class AsyncJobsServiceTest {
         assertThat(service.getJobResult(jobId)).contains("partial result");
     }
 
+    /**
+     * A cancel that races a cooperative job finishing with its result loses: the result counts, and the job does not
+     * carry the cancel as its error. The race cannot be forced, so it is run often enough to be hit; the test cannot
+     * fail on correct code, only miss a regression on a given run.
+     */
+    @Test
+    void shouldNotReportCancelOfCooperativeJobThatFinishedWithResult() throws Exception {
+        AsyncJobsService<String, String> service = service(cooperativeRegistry);
+        int successfulJobs = 0;
+        for (int attempt = 0; attempt < 2000; attempt++) {
+            String jobId = service.startJob(PAYLOAD, 60_000, control -> "result");
+            service.cancelJob(jobId);
+            awaitDone(cooperativeRegistry, jobId);
+
+            JobState jobState = service.getJobState(jobId);
+            if (jobState.status() == JobStatus.SUCCESSFULLY_FINISHED) {
+                successfulJobs++;
+                assertThat(jobState.errorMessage()).as("error of successful job %d", attempt).isNull();
+            }
+        }
+        assertThat(successfulJobs).isPositive();
+    }
+
     @Test
     void shouldRefuseJobBeyondExecutorBounds() {
         asyncRequest();
@@ -407,6 +435,385 @@ class AsyncJobsServiceTest {
             release.countDown();
             boundedRegistry.shutdown();
         }
+    }
+
+    /**
+     * A job that timed out while it waited for a thread is over for its caller, so it never runs. The session kept
+     * alive for it is still ended.
+     */
+    @Test
+    void shouldNotRunJobThatTimedOutWhileQueued() {
+        asyncRequest();
+        runQueuedJobThatIsOverBeforeItGetsAThread((service, queuedJobId) -> {
+            long deadline = System.currentTimeMillis() + 5000;
+            while (!service.getJobState(queuedJobId).isDone() && System.currentTimeMillis() < deadline) {
+                Thread.onSpinWait();
+            }
+            assertThat(service.getJobState(queuedJobId).errorMessage()).isEqualTo("Timeout after 50 min");
+        }, 50);
+    }
+
+    /**
+     * A job its caller cancelled while it waited for a thread never runs either.
+     */
+    @Test
+    void shouldNotRunJobCancelledWhileQueued() {
+        asyncRequest();
+        runQueuedJobThatIsOverBeforeItGetsAThread((service, queuedJobId) -> {
+            service.cancelJob(queuedJobId);
+            assertThat(service.getJobState(queuedJobId).status()).isEqualTo(JobStatus.CANCELLED);
+        }, 60_000);
+    }
+
+    /**
+     * Occupies the only thread of an executor, queues a second job behind it with the given timeout, ends that job
+     * with the given action while it still waits, then frees the thread and checks the queued job did not run.
+     */
+    private void runQueuedJobThatIsOverBeforeItGetsAThread(BiConsumer<AsyncJobsService<String, String>, String> endQueuedJob, int queuedJobTimeout) {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        JobsRegistry<String, String> queueingRegistry = JobsRegistry.<String, String>builder("Queueing")
+                .timeoutPolicy(TimeoutPolicy.INTERRUPT)
+                .timeoutUnit(TimeUnit.MILLISECONDS)
+                .executor(executor)
+                .build();
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicBoolean queuedJobRan = new AtomicBoolean();
+        try {
+            AsyncJobsService<String, String> service = service(queueingRegistry);
+            service.startJob(PAYLOAD, 60_000, control -> {
+                awaitQuietly(release);
+                return "result";
+            });
+            String queuedJobId = service.startJob(PAYLOAD, queuedJobTimeout, control -> {
+                queuedJobRan.set(true);
+                return "result";
+            });
+
+            endQueuedJob.accept(service, queuedJobId);
+            release.countDown();
+
+            // both jobs have had their thread: the one which ran, and the one which found itself over
+            verify(securityService, timeout(5000).times(2)).logout(subject);
+            assertThat(queuedJobRan).isFalse();
+            assertThat(service.getJobState(queuedJobId).isDone()).isTrue();
+        } finally {
+            release.countDown();
+            queueingRegistry.shutdown();
+        }
+    }
+
+    /**
+     * A job still waiting for a thread when the extension stops is dropped by the executor, so the shutdown cancels
+     * it and ends the session kept alive for it. The job which ran ends its own session, once.
+     */
+    @Test
+    void shouldCancelQueuedJobOnShutdown() {
+        asyncRequest();
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        JobsRegistry<String, String> queueingRegistry = JobsRegistry.<String, String>builder("Queueing").executor(executor).build();
+        CountDownLatch started = new CountDownLatch(1);
+        AtomicBoolean queuedJobRan = new AtomicBoolean();
+        AsyncJobsService<String, String> service = service(queueingRegistry);
+        String runningJobId = service.startJob(PAYLOAD, 60, control -> {
+            started.countDown();
+            awaitQuietly(new CountDownLatch(1));
+            return "result";
+        });
+        String queuedJobId = service.startJob(PAYLOAD, 60, control -> {
+            queuedJobRan.set(true);
+            return "result";
+        });
+        awaitQuietly(started);
+
+        queueingRegistry.shutdown();
+
+        JobState queuedJobState = service.getJobState(queuedJobId);
+        assertThat(queuedJobState.status()).isEqualTo(JobStatus.CANCELLED);
+        assertThat(queuedJobState.errorMessage()).isEqualTo(JobMessages.STOPPED);
+        // the running job was interrupted and ended its own session; the queued one never ran
+        verify(securityService, timeout(5000).times(2)).logout(subject);
+        assertThat(queuedJobRan).isFalse();
+        assertThat(service.getJobState(runningJobId).isDone()).isTrue();
+    }
+
+    /**
+     * A running cooperative job is asked to stop when the extension stops, and says that is why it stopped.
+     */
+    @Test
+    void shouldAskRunningCooperativeJobToStopOnShutdown() throws Exception {
+        CountDownLatch started = new CountDownLatch(1);
+        AsyncJobsService<String, String> service = service(cooperativeRegistry);
+        String jobId = service.startJob(PAYLOAD, 60_000, control -> {
+            started.countDown();
+            while (!control.isAbortRequested()) {
+                Thread.onSpinWait();
+            }
+            throw new CancellationException("aborted");
+        });
+        assertThat(started.await(5, TimeUnit.SECONDS)).isTrue();
+
+        cooperativeRegistry.shutdown();
+
+        awaitDone(cooperativeRegistry, jobId);
+        JobState jobState = service.getJobState(jobId);
+        assertThat(jobState.status()).isEqualTo(JobStatus.CANCELLED);
+        assertThat(jobState.errorMessage()).isEqualTo(JobMessages.STOPPED);
+    }
+
+    /**
+     * A job asked for while the extension stops is refused before it is registered or run.
+     */
+    @Test
+    void shouldRefuseJobAfterShutdown() {
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+        AtomicBoolean ran = new AtomicBoolean();
+        interruptRegistry.shutdown();
+
+        assertThatThrownBy(() -> service.startJob(PAYLOAD, 60, control -> {
+            ran.set(true);
+            return "result";
+        })).isInstanceOf(RejectedExecutionException.class);
+        assertThat(service.getAllJobsStates()).isEmpty();
+        assertThat(ran).isFalse();
+    }
+
+    /**
+     * The session is ended after the job is over, so a slow logout does not keep finished work "in progress".
+     */
+    @Test
+    void shouldFinishJobBeforeSlowLogoutReturns() throws Exception {
+        asyncRequest();
+        CountDownLatch logoutStarted = new CountDownLatch(1);
+        CountDownLatch releaseLogout = new CountDownLatch(1);
+        doAnswer(invocation -> {
+            logoutStarted.countDown();
+            awaitQuietly(releaseLogout);
+            return null;
+        }).when(securityService).logout(subject);
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+
+        String jobId = service.startJob(PAYLOAD, 60, control -> "result");
+
+        try {
+            assertThat(logoutStarted.await(5, TimeUnit.SECONDS)).isTrue();
+            // the logout still runs, and the job is already over
+            assertThat(service.getJobState(jobId).status()).isEqualTo(JobStatus.SUCCESSFULLY_FINISHED);
+            assertThat(service.getJobResult(jobId)).contains("result");
+        } finally {
+            releaseLogout.countDown();
+        }
+    }
+
+    /**
+     * An error escaping the logout does not keep the job from ending: it is over before the logout runs.
+     */
+    @Test
+    void shouldFinishJobWhenLogoutThrowsError() throws Exception {
+        asyncRequest();
+        doThrow(new LinkageError("logout broken")).when(securityService).logout(subject);
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+
+        String jobId = service.startJob(PAYLOAD, 60, control -> "result");
+
+        awaitDone(interruptRegistry, jobId);
+        assertThat(service.getJobState(jobId).status()).isEqualTo(JobStatus.SUCCESSFULLY_FINISHED);
+        verify(securityService, timeout(5000)).logout(subject);
+    }
+
+    /**
+     * A task which restores the interrupt a stop sent must not leave it on the thread which then logs out.
+     */
+    @Test
+    void shouldClearInterruptBeforeLogout() throws Exception {
+        asyncRequest();
+        AtomicBoolean interruptedAtLogout = new AtomicBoolean(true);
+        CountDownLatch loggedOut = new CountDownLatch(1);
+        doAnswer(invocation -> {
+            interruptedAtLogout.set(Thread.currentThread().isInterrupted());
+            loggedOut.countDown();
+            return null;
+        }).when(securityService).logout(subject);
+        CountDownLatch started = new CountDownLatch(1);
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+        String jobId = service.startJob(PAYLOAD, 60_000, control -> {
+            started.countDown();
+            try {
+                blockUntilInterrupted();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            throw new IllegalStateException("interrupted");
+        });
+        assertThat(started.await(5, TimeUnit.SECONDS)).isTrue();
+
+        service.cancelJob(jobId);
+
+        assertThat(loggedOut.await(5, TimeUnit.SECONDS)).isTrue();
+        assertThat(interruptedAtLogout).isFalse();
+    }
+
+    /**
+     * With {@link TimeoutPolicy#INTERRUPT} a shutdown declares a running job over at once, as a timeout would, even if
+     * the job does not react to its interrupt.
+     */
+    @Test
+    void shouldCancelRunningInterruptJobAtOnceOnShutdown() throws Exception {
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+        String jobId = service.startJob(PAYLOAD, 60_000, control -> {
+            started.countDown();
+            // ignores interrupts, like a call stuck in I/O
+            while (release.getCount() > 0) {
+                Thread.onSpinWait();
+            }
+            return "result";
+        });
+        assertThat(started.await(5, TimeUnit.SECONDS)).isTrue();
+        try {
+            interruptRegistry.shutdown();
+
+            JobState jobState = service.getJobState(jobId);
+            assertThat(jobState.status()).isEqualTo(JobStatus.CANCELLED);
+            assertThat(jobState.errorMessage()).isEqualTo(JobMessages.STOPPED);
+        } finally {
+            release.countDown();
+        }
+    }
+
+    /**
+     * With {@link TimeoutPolicy#COOPERATIVE} a shutdown only asks a running job to stop: its thread may be writing, so
+     * it is not interrupted.
+     */
+    @Test
+    void shouldNotInterruptRunningCooperativeJobOnShutdown() throws Exception {
+        CountDownLatch started = new CountDownLatch(1);
+        AtomicBoolean interrupted = new AtomicBoolean();
+        AsyncJobsService<String, String> service = service(cooperativeRegistry);
+        String jobId = service.startJob(PAYLOAD, 60_000, control -> {
+            started.countDown();
+            while (!control.isAbortRequested()) {
+                Thread.onSpinWait();
+            }
+            // give an interrupt which a shutdown would send the time to arrive
+            long until = System.currentTimeMillis() + 200;
+            while (System.currentTimeMillis() < until) {
+                interrupted.compareAndSet(false, Thread.currentThread().isInterrupted());
+                Thread.onSpinWait();
+            }
+            throw new CancellationException("stopped at a safe point");
+        });
+        assertThat(started.await(5, TimeUnit.SECONDS)).isTrue();
+
+        cooperativeRegistry.shutdown();
+
+        awaitDone(cooperativeRegistry, jobId);
+        assertThat(interrupted).isFalse();
+        assertThat(service.getJobState(jobId).errorMessage()).isEqualTo(JobMessages.STOPPED);
+    }
+
+    /**
+     * With {@link TimeoutPolicy#COOPERATIVE} a job which times out while it waits for a thread has written nothing,
+     * so it ends at once and never runs.
+     */
+    @Test
+    void shouldEndQueuedCooperativeJobAtItsDeadline() throws Exception {
+        JobsRegistry<String, String> queueingRegistry = JobsRegistry.<String, String>builder("Queueing")
+                .timeoutPolicy(TimeoutPolicy.COOPERATIVE)
+                .timeoutUnit(TimeUnit.MILLISECONDS)
+                .maxConcurrentJobs(1, 1)
+                .build();
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicBoolean queuedJobRan = new AtomicBoolean();
+        try {
+            AsyncJobsService<String, String> service = service(queueingRegistry);
+            service.startJob(PAYLOAD, 60_000, control -> {
+                awaitQuietly(release);
+                return "result";
+            });
+            String queuedJobId = service.startJob(PAYLOAD, 50, control -> {
+                queuedJobRan.set(true);
+                return "result";
+            });
+
+            awaitDone(queueingRegistry, queuedJobId);
+            JobState jobState = service.getJobState(queuedJobId);
+            assertThat(jobState.status()).isEqualTo(JobStatus.FAILED);
+            assertThat(jobState.errorMessage()).isEqualTo("Timeout after 50 min");
+            release.countDown();
+            assertThat(queuedJobRan).isFalse();
+        } finally {
+            release.countDown();
+            queueingRegistry.shutdown();
+        }
+    }
+
+    /**
+     * A job cancelled while it waits is taken out of the queue, so its place is free for the next job at once.
+     */
+    @Test
+    void shouldFreeQueuePlaceOfCancelledJob() {
+        JobsRegistry<String, String> boundedRegistry = JobsRegistry.<String, String>builder("Bounded").maxConcurrentJobs(1, 1).build();
+        CountDownLatch release = new CountDownLatch(1);
+        try {
+            AsyncJobsService<String, String> service = service(boundedRegistry);
+            service.startJob(PAYLOAD, 60, control -> {
+                awaitQuietly(release);
+                return "result";
+            });
+            String queuedJobId = service.startJob(PAYLOAD, 60, control -> "result");
+
+            service.cancelJob(queuedJobId);
+
+            assertThat(service.getJobState(queuedJobId).status()).isEqualTo(JobStatus.CANCELLED);
+            assertThatCode(() -> service.startJob(PAYLOAD, 60, control -> "result")).doesNotThrowAnyException();
+        } finally {
+            release.countDown();
+            boundedRegistry.shutdown();
+        }
+    }
+
+    @Test
+    void shouldFailJobWithoutResult() throws Exception {
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+
+        String jobId = service.startJob(PAYLOAD, 60, control -> null);
+
+        awaitDone(interruptRegistry, jobId);
+        JobState jobState = service.getJobState(jobId);
+        assertThat(jobState.status()).isEqualTo(JobStatus.FAILED);
+        assertThat(jobState.errorMessage()).isEqualTo(JobMessages.NO_RESULT);
+    }
+
+    /**
+     * An overridden description which fails itself does not keep the failed job from ending.
+     */
+    @Test
+    void shouldEndJobWhoseFailureCannotBeDescribed() throws Exception {
+        AsyncJobsService<String, String> service = new AsyncJobsService<>(interruptRegistry, securityService) {
+            @Override
+            protected @NotNull String describeFailure(@NotNull Throwable thrown) {
+                throw new IllegalArgumentException("cannot describe");
+            }
+        };
+
+        String jobId = service.startJob(PAYLOAD, 60, control -> {
+            throw new IllegalStateException("broken");
+        });
+
+        awaitDone(interruptRegistry, jobId);
+        JobState jobState = service.getJobState(jobId);
+        assertThat(jobState.status()).isEqualTo(JobStatus.FAILED);
+        assertThat(jobState.errorMessage()).isEqualTo(IllegalStateException.class.getName());
+    }
+
+    @Test
+    void shouldRefuseJobAfterShutdownAsShutDown() {
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+        interruptRegistry.shutdown();
+
+        assertThatThrownBy(() -> service.startJob(PAYLOAD, 60, control -> "result"))
+                .isInstanceOf(JobsRegistryShutDownException.class);
     }
 
     @Test
@@ -437,8 +844,14 @@ class AsyncJobsServiceTest {
     static void awaitDone(JobsRegistry<?, ?> registry, String jobId) throws Exception {
         AsyncJob<?, ?> job = registry.getJob(jobId);
         assertThat(job).isNotNull();
-        CompletableFuture<?> future = job.getFuture();
-        future.handle((result, thrown) -> null).get(5, TimeUnit.SECONDS);
+        job.completion().get(5, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Blocks the way a long conversion does, until its thread is interrupted. The latch is never released.
+     */
+    private static void blockUntilInterrupted() throws InterruptedException {
+        assertThat(new CountDownLatch(1).await(10, TimeUnit.SECONDS)).as("interrupted before this").isFalse();
     }
 
     private static void awaitQuietly(CountDownLatch latch) {

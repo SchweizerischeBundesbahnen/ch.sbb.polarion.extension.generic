@@ -1,6 +1,7 @@
 package ch.sbb.polarion.extension.generic.jobs;
 
 import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
+import ch.sbb.polarion.extension.generic.rest.model.jobs.JobStatus;
 import com.polarion.core.util.logging.Logger;
 import com.polarion.platform.security.ISecurityService;
 import org.jetbrains.annotations.NotNull;
@@ -15,12 +16,10 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -31,14 +30,16 @@ import java.util.stream.Collectors;
  * <p>
  * A job runs as the user who started it: the subject of the start request goes along to the worker thread. A job
  * belongs to that user; for anybody else it does not exist. If the start request asked {@link LogoutFilter} to keep
- * its session alive, the job ends that session when it is over.
+ * its session alive, that session is ended once, when the job is over: by the worker which ran it, or by whoever ended
+ * it before it got a thread.
+ * <p>
+ * A job ends once, by whoever ends it first: its worker with a result or a failure, or a stop - its deadline, a cancel,
+ * a shutdown of the registry. What a stop does depends on the {@link TimeoutPolicy} of the registry.
  *
  * @param <P> type of the payload stored with each job, for example its parameters
  * @param <R> type of the job result
  */
 public class AsyncJobsService<P, R> {
-
-    public static final String CANCELLED_BY_USER_MESSAGE = "Cancelled by user";
 
     private static final Logger logger = Logger.getLogger(AsyncJobsService.class);
 
@@ -58,9 +59,11 @@ public class AsyncJobsService<P, R> {
      * @param timeoutInMinutes how long the job may take, counted from now; see {@link TimeoutPolicy} for what happens then
      * @param task             the work
      * @return the ID to poll the job by
-     * @throws RejectedExecutionException if the executor of the registry has no room for another job. A job that is
-     *                                    not started ends no session: a caller that asked {@link LogoutFilter} to keep
-     *                                    the session must give it back, for example by removing that request attribute
+     * @throws RejectedExecutionException if the executor of the registry has no room for another job; a
+     *                                    {@link JobsRegistryShutDownException} if the registry is shut down. A job
+     *                                    that is not started ends no session: a caller that asked {@link LogoutFilter}
+     *                                    to keep the session must give it back, see
+     *                                    {@link ch.sbb.polarion.extension.generic.util.RequestContextUtil#releaseSession()}
      */
     public @NotNull String startJob(@Nullable P payload, int timeoutInMinutes, @NotNull JobTask<R> task) {
         if (timeoutInMinutes <= 0) {
@@ -69,41 +72,30 @@ public class AsyncJobsService<P, R> {
         Subject userSubject = securityService.getCurrentSubject();
         boolean logoutRequired = isJobLogoutRequired();
         AsyncJob<P, R> job = new AsyncJob<>(UUID.randomUUID().toString(), securityService.getCurrentUser(), payload);
+        job.setSessionRelease(() -> logoutIfRequired(userSubject, logoutRequired));
 
+        ScheduledFuture<?> deadline;
         try {
-            registry.register(job, () -> runJob(job, task, userSubject, logoutRequired, timeoutInMinutes));
+            deadline = registry.submit(job, () -> runJob(job, task, userSubject),
+                    () -> stop(job, StopRequest.timeout(timeoutInMinutes)), timeoutInMinutes);
         } catch (RejectedExecutionException e) {
-            logger.error("%s job is refused: no free place for another job".formatted(registry.getJobName()), e);
+            logger.warn("%s job is refused: %s".formatted(registry.getJobName(), e.getMessage()));
             throw e;
         }
-
-        ScheduledFuture<?> deadline = registry.scheduleDeadline(() -> onDeadline(job, timeoutInMinutes), timeoutInMinutes);
-        job.getFuture().whenComplete((result, thrown) -> deadline.cancel(false));
+        job.completion().whenComplete((result, thrown) -> deadline.cancel(false));
         return job.jobId();
     }
 
     /**
-     * Cancels a running job. Does nothing if the job is already over.
+     * Cancels a job. Does nothing if the job is already over.
      * <p>
-     * With {@link TimeoutPolicy#INTERRUPT} the job is cancelled at once and its worker thread is interrupted.
-     * With {@link TimeoutPolicy#COOPERATIVE} the job is asked to stop and stays running until it stops; if it
-     * still finishes with a result, that result counts.
+     * A job which still waits for a thread is cancelled at once and never runs. A running one is, with
+     * {@link TimeoutPolicy#INTERRUPT}, cancelled at once and its worker thread interrupted; with
+     * {@link TimeoutPolicy#COOPERATIVE}, asked to stop and still running until it stops - if it still finishes with a
+     * result, that result counts.
      */
     public void cancelJob(@NotNull String jobId) {
-        AsyncJob<P, R> job = getJob(jobId);
-        if (job.getFuture().isDone()) {
-            return;
-        }
-        // recorded before the job is stopped, so the failure the stop causes does not replace it
-        job.recordFailure(CANCELLED_BY_USER_MESSAGE);
-        job.requestCancel();
-        job.requestAbort();
-        if (registry.getTimeoutPolicy() == TimeoutPolicy.INTERRUPT) {
-            if (!job.getFuture().cancel(true)) {
-                job.withdrawFailure(CANCELLED_BY_USER_MESSAGE);
-            }
-            job.interruptWorker();
-        }
+        stop(getJob(jobId), StopRequest.cancel());
     }
 
     public @NotNull JobState getJobState(@NotNull String jobId) {
@@ -115,14 +107,14 @@ public class AsyncJobsService<P, R> {
      * @throws IllegalStateException if the job failed or was cancelled
      */
     public @NotNull Optional<R> getJobResult(@NotNull String jobId) {
-        AsyncJob<P, R> job = getJob(jobId);
-        if (!job.getFuture().isDone()) {
+        JobOutcome<R> outcome = getJob(jobId).getOutcome();
+        if (outcome == null) {
             return Optional.empty();
         }
-        if (job.getFuture().isCompletedExceptionally()) {
-            throw new IllegalStateException("%s job was cancelled or failed: %s".formatted(registry.getJobName(), job.toJobState().errorMessage()));
+        if (outcome.status() != JobStatus.SUCCESSFULLY_FINISHED) {
+            throw new IllegalStateException("%s job was cancelled or failed: %s".formatted(registry.getJobName(), outcome.errorMessage()));
         }
-        return Optional.ofNullable(job.getFuture().getNow(null));
+        return Optional.of(Objects.requireNonNull(outcome.result()));
     }
 
     /**
@@ -165,63 +157,118 @@ public class AsyncJobsService<P, R> {
         return reason;
     }
 
-    public static @NotNull String timeoutMessage(int timeoutInMinutes) {
-        return "Timeout after %d min".formatted(timeoutInMinutes);
+    /**
+     * Stops a job which is not over: for its deadline, or for a cancel.
+     * <p>
+     * A job which still waits for a thread has done nothing yet, so it ends here, whatever the policy, and never runs.
+     * A running one is ended here and interrupted with {@link TimeoutPolicy#INTERRUPT}, and only asked to stop with
+     * {@link TimeoutPolicy#COOPERATIVE}: it then ends on its own thread, with the reason of this request.
+     */
+    private void stop(@NotNull AsyncJob<P, R> job, @NotNull StopRequest request) {
+        if (job.isOver()) {
+            return;
+        }
+        job.requestStop(request);
+        if (registry.takeBackIfQueued(job)) {
+            if (job.finish(request.toOutcome())) {
+                logger.warn("%s job '%s' is stopped before it started: %s".formatted(registry.getJobName(), job.jobId(), request.message()));
+            }
+            job.releaseSession();
+        } else if (registry.getTimeoutPolicy() == TimeoutPolicy.INTERRUPT) {
+            if (job.finish(request.toOutcome())) {
+                logger.warn("%s job '%s' is stopped: %s".formatted(registry.getJobName(), job.jobId(), request.message()));
+                job.interruptWorker();
+            }
+        } else {
+            logger.warn("%s job '%s' is asked to stop: %s".formatted(registry.getJobName(), job.jobId(), request.message()));
+        }
     }
 
     @SuppressWarnings("java:S1181") // any throwable must end the job, or it stays "in progress" forever
-    private void runJob(@NotNull AsyncJob<P, R> job, @NotNull JobTask<R> task, @Nullable Subject userSubject,
-                        boolean logoutRequired, int timeoutInMinutes) {
+    private void runJob(@NotNull AsyncJob<P, R> job, @NotNull JobTask<R> task, @Nullable Subject userSubject) {
+        if (!job.claim()) {
+            // the job was taken back while it waited for this thread, and has already ended
+            return;
+        }
+        // attached before the check below, so a stop that comes after the check interrupts this thread
         job.attachWorker(Thread.currentThread());
+        boolean ran = false;
         R result = null;
         Throwable failure = null;
         try {
-            result = runAsUser(userSubject, () -> task.run(job));
+            // a job can be stopped while it waits for a thread: its caller has been told it is over, so it must not
+            // run now
+            if (!job.isOver()) {
+                ran = true;
+                result = runAsUser(userSubject, () -> task.run(job));
+            }
         } catch (Throwable e) {
             failure = e;
         } finally {
             job.detachWorker();
-            logoutIfRequired(userSubject, logoutRequired);
+            // Nothing interrupts this thread for this job any more. An interrupt which a stop sent, and which the task
+            // passed on by restoring the flag, must not reach the completion and the logout below.
+            Thread.interrupted();
         }
 
-        if (failure == null) {
-            if (job.getFuture().complete(result)) {
-                // a cancel that came while the job was finishing on its own is too late: the result counts
-                job.withdrawFailure(CANCELLED_BY_USER_MESSAGE);
-            }
-            logger.debug("%s job '%s' is finished".formatted(registry.getJobName(), job.jobId()));
-        } else {
-            job.recordFailure(job.isAbortRequested() ? timeoutMessage(timeoutInMinutes) : describeFailure(failure));
-            logger.error("%s job '%s' failed with error: %s".formatted(registry.getJobName(), job.jobId(), job.toJobState().errorMessage()), failure);
-            if (job.isCancelRequested()) {
-                job.getFuture().cancel(false);
-            } else if (failure instanceof CancellationException) {
-                // a task that stops on its own throws this, and a future completed with it reads as cancelled
-                job.getFuture().completeExceptionally(new CompletionException(failure));
+        try {
+            if (!ran) {
+                logger.debug("%s job '%s' was over before it got a thread, so it did not run".formatted(registry.getJobName(), job.jobId()));
+            } else if (failure == null) {
+                finishWithResult(job, result);
             } else {
-                job.getFuture().completeExceptionally(failure);
+                finishWithFailure(job, failure);
             }
+        } finally {
+            // After the job is over, not before: a slow logout must not keep finished work "in progress", and an error
+            // escaping it must not keep the job from ending. The session was kept alive for this job, whether it ran
+            // or not.
+            job.releaseSession();
         }
     }
 
-    private void onDeadline(@NotNull AsyncJob<P, R> job, int timeoutInMinutes) {
-        if (job.getFuture().isDone()) {
-            return;
-        }
-        if (registry.getTimeoutPolicy() == TimeoutPolicy.COOPERATIVE) {
-            logger.warn("%s job '%s' has run for %d min and is asked to stop".formatted(registry.getJobName(), job.jobId(), timeoutInMinutes));
-            job.requestAbort();
-            return;
-        }
-        String reason = timeoutMessage(timeoutInMinutes);
-        job.recordFailure(reason);
-        job.requestAbort();
-        if (job.getFuture().completeExceptionally(new TimeoutException(reason))) {
-            logger.error("%s job '%s' failed with error: %s".formatted(registry.getJobName(), job.jobId(), reason));
-            job.interruptWorker();
+    private void finishWithResult(@NotNull AsyncJob<P, R> job, @Nullable R result) {
+        if (result == null) {
+            if (job.finish(JobOutcome.failed(JobMessages.NO_RESULT))) {
+                logger.error("%s job '%s' failed: %s".formatted(registry.getJobName(), job.jobId(), JobMessages.NO_RESULT));
+            }
+        } else if (job.finish(JobOutcome.succeeded(result))) {
+            logger.debug("%s job '%s' is finished".formatted(registry.getJobName(), job.jobId()));
         } else {
-            // the job finished on its own in the meantime
-            job.withdrawFailure(reason);
+            logger.debug("%s job '%s' finished after it was stopped, its result is dropped".formatted(registry.getJobName(), job.jobId()));
+        }
+    }
+
+    /**
+     * A job which was asked to stop and then failed is taken to have stopped as asked, and reports the reason of that
+     * request. Any other failure is the job's own.
+     */
+    private void finishWithFailure(@NotNull AsyncJob<P, R> job, @NotNull Throwable failure) {
+        StopRequest stop = job.getStopRequest();
+        if (stop != null) {
+            if (job.finish(stop.toOutcome())) {
+                logger.warn("%s job '%s' stopped: %s".formatted(registry.getJobName(), job.jobId(), stop.message()));
+            }
+            return;
+        }
+        String reason = describeFailureSafely(failure);
+        if (job.finish(JobOutcome.failed(reason))) {
+            logger.error("%s job '%s' failed with error: %s".formatted(registry.getJobName(), job.jobId(), reason), failure);
+        } else {
+            logger.warn("%s job '%s' failed after it was over: %s".formatted(registry.getJobName(), job.jobId(), reason));
+        }
+    }
+
+    /**
+     * {@link #describeFailure(Throwable)} can be overridden: a description which fails itself must not keep the job
+     * from ending.
+     */
+    private @NotNull String describeFailureSafely(@NotNull Throwable failure) {
+        try {
+            return describeFailure(failure);
+        } catch (RuntimeException e) {
+            logger.error("Cannot describe the failure of a %s job".formatted(registry.getJobName()), e);
+            return failure.getClass().getName();
         }
     }
 

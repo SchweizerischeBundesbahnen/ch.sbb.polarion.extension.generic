@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public interface JobTask<R> {
 
     /**
-     * @return the job result; a {@code null} result reads as "no result yet" in {@link AsyncJobsService#getJobResult(String)}
+     * @return the job result, never {@code null}: a job which returns {@code null} fails with {@link JobMessages#NO_RESULT}
      */
     R run(@NotNull JobControl control);
 }

@@ -13,9 +13,10 @@ public interface JobControl {
     @NotNull String jobId();
 
     /**
-     * A job run with {@link TimeoutPolicy#COOPERATIVE} must check this at points where it can stop safely.
+     * A job run with {@link TimeoutPolicy#COOPERATIVE} must check this at points where it can stop safely, and stop by
+     * throwing. It then reports the reason it was asked to stop for.
      *
-     * @return {@code true} when the job ran out of time or its caller cancelled it
+     * @return {@code true} when the job ran out of time, its caller cancelled it, or its extension is stopping
      */
     boolean isAbortRequested();
 

@@ -7,12 +7,6 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Snapshot of an asynchronous job, as its caller polls it.
- *
- * @param isDone                   the job is over, whichever way it ended
- * @param isCompletedExceptionally the job failed or was cancelled
- * @param isCancelled              the job was cancelled
- * @param progressMessage          the last progress the job reported, if any
- * @param errorMessage             why the job failed or was cancelled, if it did
  */
 @Builder
 public record JobState(

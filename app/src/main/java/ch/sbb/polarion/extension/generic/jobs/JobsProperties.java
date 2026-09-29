@@ -42,7 +42,11 @@ public class JobsProperties {
         if (propValue == null) {
             throw new IllegalStateException("Missing property: " + propName);
         }
-        return Integer.parseInt(propValue.trim());
+        try {
+            return Integer.parseInt(propValue.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("Invalid integer value for property '" + propName + "': " + propValue, e);
+        }
     }
 
     private static @NotNull Properties loadProperties(@NotNull Class<?> anchor, @NotNull String resourcePath) {
