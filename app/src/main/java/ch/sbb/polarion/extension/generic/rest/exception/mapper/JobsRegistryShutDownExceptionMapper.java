@@ -16,6 +16,7 @@ import jakarta.ws.rs.ext.Provider;
 public class JobsRegistryShutDownExceptionMapper implements ExceptionMapper<JobsRegistryShutDownException> {
     private final Logger logger = Logger.getLogger(JobsRegistryShutDownExceptionMapper.class);
 
+    @Override
     public Response toResponse(JobsRegistryShutDownException e) {
         logger.warn("Job refused: " + e.getMessage());
         return Response.status(Response.Status.SERVICE_UNAVAILABLE.getStatusCode())

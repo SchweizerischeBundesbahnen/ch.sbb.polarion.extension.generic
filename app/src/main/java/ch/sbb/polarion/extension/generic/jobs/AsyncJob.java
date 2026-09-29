@@ -3,6 +3,7 @@ package ch.sbb.polarion.extension.generic.jobs;
 import ch.sbb.polarion.extension.generic.rest.model.jobs.JobStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
@@ -26,14 +27,26 @@ final class AsyncJob<P, R> implements JobControl {
     private final AtomicReference<String> progressMessage = new AtomicReference<>();
     private final AtomicReference<StopRequest> stopRequest = new AtomicReference<>();
     private final AtomicBoolean claimed = new AtomicBoolean();
-    private volatile @NotNull Runnable sessionRelease = () -> { };
-    private volatile @Nullable Runnable work;
+    private final @NotNull Runnable sessionRelease;
+    private final AtomicReference<Runnable> work = new AtomicReference<>();
     private @Nullable Thread workerThread;
 
-    AsyncJob(@NotNull String jobId, @Nullable String user, @Nullable P payload) {
+    /**
+     * @param sessionRelease ends the session kept alive for this job, if one was; called once, when the job is over
+     */
+    AsyncJob(@NotNull String jobId, @Nullable String user, @Nullable P payload, @NotNull Runnable sessionRelease) {
         this.jobId = jobId;
         this.user = user;
         this.payload = payload;
+        this.sessionRelease = sessionRelease;
+    }
+
+    /**
+     * A job with no session to end.
+     */
+    @VisibleForTesting
+    AsyncJob(@NotNull String jobId, @Nullable String user, @Nullable P payload) {
+        this(jobId, user, payload, () -> { });
     }
 
     @Override
@@ -109,27 +122,23 @@ final class AsyncJob<P, R> implements JobControl {
         return claimed.compareAndSet(false, true);
     }
 
-    /**
-     * Sets what ends the session kept alive for this job, if one was.
-     */
-    void setSessionRelease(@NotNull Runnable sessionRelease) {
-        this.sessionRelease = sessionRelease;
-    }
-
     void releaseSession() {
         sessionRelease.run();
     }
 
     /**
      * The runnable handed to the executor, so that a job which ends while it still waits can be taken out of the
-     * executor's queue.
+     * executor's queue. Set once, when the job is submitted: the runnable refers to the job, so it cannot be passed
+     * to the constructor.
      */
-    void setWork(@NotNull Runnable work) {
-        this.work = work;
+    void setWork(@NotNull Runnable runnable) {
+        if (!work.compareAndSet(null, runnable)) {
+            throw new IllegalStateException("Job '%s' is already submitted".formatted(jobId));
+        }
     }
 
     @Nullable Runnable getWork() {
-        return work;
+        return work.get();
     }
 
     synchronized void attachWorker(@NotNull Thread thread) {

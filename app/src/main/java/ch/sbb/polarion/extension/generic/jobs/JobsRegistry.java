@@ -214,6 +214,7 @@ public final class JobsRegistry<P, R> {
      * @return the deadline, to be cancelled once the job is over
      * @throws RejectedExecutionException if the executor has no room for the job, or the registry is shut down
      */
+    @SuppressWarnings( "java:S1452")
     synchronized @NotNull ScheduledFuture<?> submit(@NotNull AsyncJob<P, R> job, @NotNull Runnable work,
                                                     @NotNull Runnable onDeadline, int timeoutInMinutes) {
         if (shutDown) {

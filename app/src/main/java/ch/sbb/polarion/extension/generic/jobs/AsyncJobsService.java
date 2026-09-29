@@ -71,8 +71,8 @@ public class AsyncJobsService<P, R> {
         }
         Subject userSubject = securityService.getCurrentSubject();
         boolean logoutRequired = isJobLogoutRequired();
-        AsyncJob<P, R> job = new AsyncJob<>(UUID.randomUUID().toString(), securityService.getCurrentUser(), payload);
-        job.setSessionRelease(() -> logoutIfRequired(userSubject, logoutRequired));
+        AsyncJob<P, R> job = new AsyncJob<>(UUID.randomUUID().toString(), securityService.getCurrentUser(), payload,
+                () -> logoutIfRequired(userSubject, logoutRequired));
 
         ScheduledFuture<?> deadline;
         try {

@@ -193,8 +193,9 @@ class JobsRegistryTest {
         try {
             bounded.submit(new AsyncJob<>("running", "user", null), blocking, () -> { }, 60);
             bounded.submit(new AsyncJob<>("queued", "user", null), blocking, () -> { }, 60);
+            AsyncJob<String, String> refused = new AsyncJob<>("refused", "user", null);
 
-            assertThatThrownBy(() -> bounded.submit(new AsyncJob<>("refused", "user", null), blocking, () -> { }, 60))
+            assertThatThrownBy(() -> bounded.submit(refused, blocking, () -> { }, 60))
                     .isInstanceOf(RejectedExecutionException.class);
             assertThat(bounded.getJob("refused")).isNull();
             assertThat(bounded.getJobs()).hasSize(2);
@@ -216,8 +217,9 @@ class JobsRegistryTest {
                     Thread.currentThread().interrupt();
                 }
             }, () -> { }, 60);
+            AsyncJob<String, String> refused = new AsyncJob<>("refused", "user", null);
 
-            assertThatThrownBy(() -> bounded.submit(new AsyncJob<>("refused", "user", null), () -> { }, () -> { }, 60))
+            assertThatThrownBy(() -> bounded.submit(refused, () -> { }, () -> { }, 60))
                     .isInstanceOf(RejectedExecutionException.class);
         } finally {
             release.countDown();
