@@ -241,7 +241,7 @@ class AsyncJobsInvariantsStressTest {
      */
     private static RequestAttributes asyncRequest() {
         ServletRequestAttributes requestAttributes = mock(ServletRequestAttributes.class, withSettings().stubOnly());
-        when(requestAttributes.getAttribute(eq(LogoutFilter.ASYNC_SKIP_LOGOUT), eq(RequestAttributes.SCOPE_REQUEST))).thenReturn(Boolean.TRUE);
+        when(requestAttributes.getAttribute(LogoutFilter.ASYNC_SKIP_LOGOUT, RequestAttributes.SCOPE_REQUEST)).thenReturn(Boolean.TRUE);
         return requestAttributes;
     }
 
