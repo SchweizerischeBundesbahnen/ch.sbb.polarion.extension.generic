@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -48,7 +47,7 @@ public final class JobsRegistry<P, R> {
     private final @NotNull String jobName;
     private final @NotNull String threadNamePrefix;
     private final @NotNull TimeoutPolicy timeoutPolicy;
-    private final @NotNull ExecutorService executor;
+    private final @NotNull ThreadPoolExecutor executor;
     private final @NotNull ScheduledExecutorService deadlineScheduler;
     private final @NotNull Consumer<String> onJobRemoved;
     private final @NotNull IntConsumer onCleanup;
@@ -67,12 +66,14 @@ public final class JobsRegistry<P, R> {
         this.timeoutUnit = builder.timeoutUnit;
     }
 
-    private static @NotNull ExecutorService createExecutor(@NotNull Builder<?, ?> builder, @NotNull ThreadFactory threadFactory) {
-        if (builder.executor != null) {
-            return builder.executor;
-        }
+    /**
+     * Always a {@link ThreadPoolExecutor} owned by this registry, handed the job's own runnable, so that a job which
+     * ends while it waits can be taken back out of its queue.
+     */
+    private static @NotNull ThreadPoolExecutor createExecutor(@NotNull Builder<?, ?> builder, @NotNull ThreadFactory threadFactory) {
         if (builder.maxRunningJobs == null) {
-            return Executors.newCachedThreadPool(threadFactory);
+            // what Executors.newCachedThreadPool builds: a thread for each job which finds none idle
+            return new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactory);
         }
         return new ThreadPoolExecutor(builder.maxRunningJobs, builder.maxRunningJobs, 0L, TimeUnit.MILLISECONDS,
                 builder.maxQueuedJobs == 0 ? new SynchronousQueue<>() : new ArrayBlockingQueue<>(builder.maxQueuedJobs),
@@ -184,17 +185,49 @@ public final class JobsRegistry<P, R> {
             executor.shutdownNow();
         } else {
             // the jobs which wait must not start; the running ones must not be interrupted
-            if (executor instanceof ThreadPoolExecutor threadPool) {
-                threadPool.getQueue().clear();
-            }
+            executor.getQueue().clear();
             executor.shutdown();
         }
         deadlineScheduler.shutdownNow();
         // a job no worker has taken over never will: it was dropped, or its worker finds it taken over
-        unfinishedJobs.stream().filter(AsyncJob::claim).forEach(job -> {
-            job.finish(stop.toOutcome());
+        Throwable firstFailure = null;
+        for (AsyncJob<P, R> job : unfinishedJobs) {
+            if (job.claim()) {
+                job.finish(stop.toOutcome());
+                firstFailure = releaseSession(job, firstFailure);
+            }
+        }
+        if (firstFailure instanceof Error error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Ends the session of a job which shutdown took over. A failure is kept for after the last job, so that every job
+     * is ended and every session given its chance, and an {@link Error} is not lost.
+     *
+     * @return the first failure of this shutdown, so far
+     */
+    @SuppressWarnings("java:S1181") // one session which cannot be ended must not keep the others open
+    private @Nullable Throwable releaseSession(@NotNull AsyncJob<P, R> job, @Nullable Throwable firstFailure) {
+        try {
             job.releaseSession();
-        });
+            return firstFailure;
+        } catch (Throwable e) {
+            logger.error("Cannot end the session of %s job '%s'".formatted(jobName, job.jobId()), e);
+            return firstFailure != null ? firstFailure : e;
+        }
+    }
+
+    /**
+     * Waits until the threads of this registry are done, after {@link #shutdown()}. For tests, which check what the
+     * jobs did once nothing runs any more.
+     *
+     * @return {@code true} if they are done within the given time
+     */
+    @VisibleForTesting
+    boolean awaitTermination(long timeout, @NotNull TimeUnit unit) throws InterruptedException {
+        return executor.awaitTermination(timeout, unit) && deadlineScheduler.awaitTermination(timeout, unit);
     }
 
     /**
@@ -234,14 +267,14 @@ public final class JobsRegistry<P, R> {
 
     /**
      * Takes a job which still waits for a thread out of the executor's queue, so that it never runs and no longer
-     * takes a place in a bounded queue. Possible only with a {@link ThreadPoolExecutor}, the default and the executor
-     * of {@link Builder#maxConcurrentJobs(int, int)}.
+     * takes a place in a bounded queue. A job already handed to a thread is not in the queue: it finds itself stopped
+     * when it starts, see {@code AsyncJobsService.runJob}.
      *
      * @return {@code true} if the job was taken back and taken over by the caller, which then ends it and its session
      */
     boolean takeBackIfQueued(@NotNull AsyncJob<P, R> job) {
         Runnable work = job.getWork();
-        return work != null && executor instanceof ThreadPoolExecutor threadPool && threadPool.remove(work) && job.claim();
+        return work != null && executor.remove(work) && job.claim();
     }
 
     @Nullable AsyncJob<P, R> getJob(@NotNull String jobId) {
@@ -267,7 +300,6 @@ public final class JobsRegistry<P, R> {
     public static final class Builder<P, R> {
         private final @NotNull String jobName;
         private @NotNull TimeoutPolicy timeoutPolicy = TimeoutPolicy.INTERRUPT;
-        private @Nullable ExecutorService executor;
         private @Nullable Integer maxRunningJobs;
         private int maxQueuedJobs;
         private @NotNull Consumer<String> onJobRemoved = jobId -> { };
@@ -284,32 +316,13 @@ public final class JobsRegistry<P, R> {
         }
 
         /**
-         * The executor that runs the jobs, instead of the default one.
-         * <p>
-         * The default is an unbounded pool of daemon threads: it starts a thread for every job which finds none idle.
-         * Jobs that wait on external work, such as a conversion service, can then pile up threads for as long as
-         * callers keep starting them. Bound them with {@link #maxConcurrentJobs(int, int)} or a bounded executor.
-         * A bounded executor refuses jobs beyond its bounds: {@link AsyncJobsService#startJob} then throws
-         * {@link RejectedExecutionException}, which the extension should answer with 429.
-         * <p>
-         * The executor must refuse a job by throwing {@link RejectedExecutionException} (the {@code AbortPolicy} of a
-         * {@link ThreadPoolExecutor}), and must never run a job on the caller's thread: a job is submitted under the
-         * lock of this registry, before its deadline is scheduled. A {@link ThreadPoolExecutor} which is handed the
-         * job itself, not a wrapper, also lets a job which ends while it waits be taken back out of its queue.
-         * <p>
-         * Cannot be combined with {@link #maxConcurrentJobs(int, int)}.
-         */
-        public @NotNull Builder<P, R> executor(@NotNull ExecutorService executor) {
-            this.executor = executor;
-            return this;
-        }
-
-        /**
          * Bounds the jobs of this kind: at most {@code maxRunningJobs} run at once, at most {@code maxQueuedJobs} wait
-         * for a thread, and a job beyond both is refused with {@link RejectedExecutionException}. A waiting job's
-         * timeout runs while it waits. The threads are daemon threads named after the job kind.
+         * for a thread, and a job beyond both is refused with {@link RejectedExecutionException}, which the extension
+         * should answer with 429. A waiting job's timeout runs while it waits.
          * <p>
-         * Cannot be combined with {@link #executor(ExecutorService)}.
+         * Without it, jobs are not bounded: a thread is started for every job which finds none idle. Jobs that wait on
+         * external work, such as a conversion service, can then pile up threads for as long as callers keep starting
+         * them. Either way the threads are daemon threads named after the job kind.
          *
          * @param maxRunningJobs at least 1
          * @param maxQueuedJobs  0 or more; 0 refuses a job as soon as all threads are busy
@@ -356,9 +369,6 @@ public final class JobsRegistry<P, R> {
         }
 
         public @NotNull JobsRegistry<P, R> build() {
-            if (executor != null && maxRunningJobs != null) {
-                throw new IllegalStateException("Either an executor or the bounds of the default one, not both");
-            }
             return new JobsRegistry<>(this);
         }
     }

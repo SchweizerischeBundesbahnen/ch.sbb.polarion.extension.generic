@@ -2,6 +2,7 @@ package ch.sbb.polarion.extension.generic.jobs;
 
 import ch.sbb.polarion.extension.generic.rest.filter.LogoutFilter;
 import ch.sbb.polarion.extension.generic.rest.model.jobs.JobStatus;
+import ch.sbb.polarion.extension.generic.util.RequestContextUtil;
 import com.polarion.core.util.logging.Logger;
 import com.polarion.platform.security.ISecurityService;
 import org.jetbrains.annotations.NotNull;
@@ -63,7 +64,7 @@ public class AsyncJobsService<P, R> {
      *                                    {@link JobsRegistryShutDownException} if the registry is shut down. A job
      *                                    that is not started ends no session: a caller that asked {@link LogoutFilter}
      *                                    to keep the session must give it back, see
-     *                                    {@link ch.sbb.polarion.extension.generic.util.RequestContextUtil#releaseSession()}
+     *                                    {@link RequestContextUtil#releaseSession()}
      */
     public @NotNull String startJob(@Nullable P payload, int timeoutInMinutes, @NotNull JobTask<R> task) {
         if (timeoutInMinutes <= 0) {
@@ -83,6 +84,8 @@ public class AsyncJobsService<P, R> {
             throw e;
         }
         job.completion().whenComplete((result, thrown) -> deadline.cancel(false));
+        // from here on the job ends the session kept for it, whatever else fails in this request
+        RequestContextUtil.markJobStarted();
         return job.jobId();
     }
 
@@ -160,7 +163,8 @@ public class AsyncJobsService<P, R> {
     /**
      * Stops a job which is not over: for its deadline, or for a cancel.
      * <p>
-     * A job which still waits for a thread has done nothing yet, so it ends here, whatever the policy, and never runs.
+     * A job which still waits for a thread has done nothing yet, so it ends whatever the policy, and never runs: here,
+     * if it can be taken back from the queue, or else when it gets its thread.
      * A running one is ended here and interrupted with {@link TimeoutPolicy#INTERRUPT}, and only asked to stop with
      * {@link TimeoutPolicy#COOPERATIVE}: it then ends on its own thread, with the reason of this request.
      */
@@ -196,8 +200,14 @@ public class AsyncJobsService<P, R> {
         R result = null;
         Throwable failure = null;
         try {
-            // a job can be stopped while it waits for a thread: its caller has been told it is over, so it must not
-            // run now
+            // A job can be stopped while it waits for a thread. With TimeoutPolicy.INTERRUPT the stop has ended it
+            // already. With TimeoutPolicy.COOPERATIVE the stop only asked it to stop, since a running job stops at a
+            // safe point - but this one has not started, so it has done nothing and ends here, as a job taken back
+            // from the queue would. A stop which comes after this check reaches the task through isAbortRequested().
+            StopRequest earlyStop = job.getStopRequest();
+            if (earlyStop != null && job.finish(earlyStop.toOutcome())) {
+                logger.warn("%s job '%s' is stopped before it started: %s".formatted(registry.getJobName(), job.jobId(), earlyStop.message()));
+            }
             if (!job.isOver()) {
                 ran = true;
                 result = runAsUser(userSubject, () -> task.run(job));
@@ -260,13 +270,14 @@ public class AsyncJobsService<P, R> {
     }
 
     /**
-     * {@link #describeFailure(Throwable)} can be overridden: a description which fails itself must not keep the job
-     * from ending.
+     * {@link #describeFailure(Throwable)} can be overridden: a description which fails itself, in any way, must not
+     * keep the job from ending.
      */
+    @SuppressWarnings("java:S1181") // any throwable must end the job, or it stays "in progress" forever
     private @NotNull String describeFailureSafely(@NotNull Throwable failure) {
         try {
             return describeFailure(failure);
-        } catch (RuntimeException e) {
+        } catch (Throwable e) {
             logger.error("Cannot describe the failure of a %s job".formatted(registry.getJobName()), e);
             return failure.getClass().getName();
         }

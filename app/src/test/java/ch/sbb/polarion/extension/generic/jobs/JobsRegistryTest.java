@@ -8,8 +8,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -233,20 +231,6 @@ class JobsRegistryTest {
 
         assertThatThrownBy(() -> builder.maxConcurrentJobs(0, 5)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> builder.maxConcurrentJobs(1, -1)).isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void shouldRefuseBoundsTogetherWithExecutor() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        try {
-            JobsRegistry.Builder<String, String> builder = JobsRegistry.<String, String>builder("Bounded")
-                    .executor(executor)
-                    .maxConcurrentJobs(1, 1);
-
-            assertThatThrownBy(builder::build).isInstanceOf(IllegalStateException.class);
-        } finally {
-            executor.shutdownNow();
-        }
     }
 
     private AsyncJob<String, String> register(String jobId) {

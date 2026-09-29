@@ -24,6 +24,11 @@ public final class RequestContextUtil {
     }
 
     /**
+     * Request attribute set once an asynchronous job has started for this request and so owns its session.
+     */
+    public static final String ASYNC_JOB_STARTED = "async.job.started";
+
+    /**
      * Keeps the session of the current user past the response of this request, for an asynchronous job the request
      * only starts: {@link LogoutFilter} would end that session as soon as the response is written, long before the job
      * is over. The job ends that session itself when it is over.
@@ -40,12 +45,25 @@ public final class RequestContextUtil {
 
     /**
      * Gives the session of the current user back to {@link LogoutFilter}, for a request which asked to keep it with
-     * {@link #keepSessionAlive()} and then did not start the job which was to end it.
+     * {@link #keepSessionAlive()} and then failed. Does nothing if the job was started before the failure: the job
+     * owns the session then and ends it itself, and a logout by the filter would end it under the running job.
      */
     public static void releaseSession() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if (requestAttributes != null) {
+        if (requestAttributes != null
+                && requestAttributes.getAttribute(ASYNC_JOB_STARTED, RequestAttributes.SCOPE_REQUEST) != Boolean.TRUE) {
             requestAttributes.removeAttribute(LogoutFilter.ASYNC_SKIP_LOGOUT, RequestAttributes.SCOPE_REQUEST);
+        }
+    }
+
+    /**
+     * Records that an asynchronous job has started for this request, see {@link #releaseSession()}. Called by
+     * {@code AsyncJobsService.startJob}.
+     */
+    public static void markJobStarted() {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if (requestAttributes != null) {
+            requestAttributes.setAttribute(ASYNC_JOB_STARTED, Boolean.TRUE, RequestAttributes.SCOPE_REQUEST);
         }
     }
 }
