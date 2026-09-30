@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -1046,6 +1047,57 @@ class AsyncJobsServiceTest {
             release.countDown();
             boundedRegistry.shutdown();
         }
+    }
+
+    /**
+     * A second job of a request takes its lease, and while its start is refused, the first job finishes: the first
+     * leaves the session to the lease of the second, so the refusal must end it - nobody else would, since the request
+     * is marked as owned by a started job and the logout filter stays disabled.
+     * <p>
+     * The moment is made by holding the lock of the registry: the second start waits in {@code submit}, with its lease
+     * taken, while the first job finishes and the registry is shut down, so that the second start is refused.
+     */
+    @Test
+    void shouldEndSessionLeftToRefusedJob() throws Exception {
+        asyncRequest();
+        CountDownLatch releaseFirstJob = new CountDownLatch(1);
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+        String firstJobId = service.startJob(PAYLOAD, 60_000, control -> {
+            awaitQuietly(releaseFirstJob);
+            return "result";
+        });
+        // what the start of the first job recorded on the request
+        when(requestAttributes.getAttribute(RequestContextUtil.ASYNC_JOB_STARTED, RequestAttributes.SCOPE_REQUEST)).thenReturn(Boolean.TRUE);
+
+        AtomicReference<Throwable> secondStart = new AtomicReference<>();
+        Thread secondRequestThread = new Thread(() -> {
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+            try {
+                service.startJob(PAYLOAD, 60_000, control -> "result");
+            } catch (RuntimeException e) {
+                secondStart.set(e);
+            }
+        });
+        synchronized (interruptRegistry) {
+            secondRequestThread.start();
+            long until = System.currentTimeMillis() + 5000;
+            while (secondRequestThread.getState() != Thread.State.BLOCKED && System.currentTimeMillis() < until) {
+                Thread.onSpinWait();
+            }
+            assertThat(secondRequestThread.getState()).isEqualTo(Thread.State.BLOCKED);
+
+            releaseFirstJob.countDown();
+            awaitDone(interruptRegistry, firstJobId);
+            // the second job holds a lease: the first job does not end the session
+            verify(securityService, after(200).never()).logout(any());
+
+            interruptRegistry.shutdown();
+        }
+        secondRequestThread.join(5000);
+
+        assertThat(secondStart.get()).isInstanceOf(JobsRegistryShutDownException.class);
+        verify(securityService, timeout(5000)).logout(subject);
+        verify(securityService, after(200).times(1)).logout(subject);
     }
 
     @Test

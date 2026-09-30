@@ -50,10 +50,18 @@ public final class RequestContextUtil {
      */
     public static void releaseSession() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if (requestAttributes != null
-                && requestAttributes.getAttribute(ASYNC_JOB_STARTED, RequestAttributes.SCOPE_REQUEST) != Boolean.TRUE) {
+        if (requestAttributes != null && !isJobStarted()) {
             requestAttributes.removeAttribute(LogoutFilter.ASYNC_SKIP_LOGOUT, RequestAttributes.SCOPE_REQUEST);
         }
+    }
+
+    /**
+     * @return {@code true} if an asynchronous job has started for this request and so owns its session
+     */
+    public static boolean isJobStarted() {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        return requestAttributes != null
+                && requestAttributes.getAttribute(ASYNC_JOB_STARTED, RequestAttributes.SCOPE_REQUEST) == Boolean.TRUE;
     }
 
     /**

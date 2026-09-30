@@ -83,6 +83,21 @@ class RequestContextUtilTest {
     }
 
     @Test
+    void shouldTellWhetherJobStarted() {
+        ServletRequestAttributes requestAttributes = mock(ServletRequestAttributes.class);
+        RequestContextHolder.setRequestAttributes(requestAttributes);
+        try {
+            assertThat(RequestContextUtil.isJobStarted()).isFalse();
+
+            when(requestAttributes.getAttribute(RequestContextUtil.ASYNC_JOB_STARTED, RequestAttributes.SCOPE_REQUEST)).thenReturn(Boolean.TRUE);
+            assertThat(RequestContextUtil.isJobStarted()).isTrue();
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
+        assertThat(RequestContextUtil.isJobStarted()).isFalse();
+    }
+
+    @Test
     void shouldKeepAndReleaseNothingOutsideOfRequest() {
         RequestContextHolder.resetRequestAttributes();
 

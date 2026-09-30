@@ -84,16 +84,19 @@ public class AsyncJobsService<P, R> {
                 () -> endSession(userSubject, endsSession));
 
         ScheduledFuture<?> deadline;
+        boolean submitted = false;
         try {
             deadline = registry.submit(job, () -> runJob(job, task, userSubject),
                     () -> stop(job, StopRequest.timeout(timeoutInMinutes)), timeoutInMinutes);
+            submitted = true;
         } catch (RejectedExecutionException e) {
-            if (endsSession) {
-                // the job never runs: its lease goes, but the session is the caller's to give back, not this job's
-                SESSION_LEASES.release(userSubject);
-            }
             logger.warn("%s job is refused: %s".formatted(registry.getJobName(), e.getMessage()));
             throw e;
+        } finally {
+            if (!submitted && endsSession) {
+                // the job never runs, whatever stopped it: its lease must not stay behind
+                dropLeaseOfJobWhichNeverRan(userSubject);
+            }
         }
         job.completion().whenComplete((result, thrown) -> deadline.cancel(false));
         // from here on the job ends the session kept for it, whatever else fails in this request
@@ -311,9 +314,23 @@ public class AsyncJobsService<P, R> {
      * them ends it.
      */
     private void endSession(@Nullable Subject userSubject, boolean endsSession) {
-        if (userSubject == null || !endsSession || !SESSION_LEASES.release(userSubject)) {
-            return;
+        if (userSubject != null && endsSession && SESSION_LEASES.release(userSubject)) {
+            logout(userSubject);
         }
+    }
+
+    /**
+     * Gives back the lease of a job which was refused, or failed to start. The session is normally the caller's to give
+     * back then, not this job's - unless an earlier job of the same request started, owns the session, and finished
+     * while this job held its lease: that job left the session to the last lease, and this is it.
+     */
+    private void dropLeaseOfJobWhichNeverRan(@NotNull Subject userSubject) {
+        if (SESSION_LEASES.release(userSubject) && RequestContextUtil.isJobStarted()) {
+            logout(userSubject);
+        }
+    }
+
+    private void logout(@NotNull Subject userSubject) {
         try {
             securityService.logout(userSubject);
         } catch (RuntimeException e) {
