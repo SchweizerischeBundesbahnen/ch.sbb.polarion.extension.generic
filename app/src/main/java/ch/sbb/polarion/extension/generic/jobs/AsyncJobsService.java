@@ -32,7 +32,8 @@ import java.util.stream.Collectors;
  * A job runs as the user who started it: the subject of the start request goes along to the worker thread. A job
  * belongs to that user; for anybody else it does not exist. If the start request asked {@link LogoutFilter} to keep
  * its session alive, that session is ended once, when the job is over: by the worker which ran it, or by whoever ended
- * it before it got a thread.
+ * it before it got a thread. If one request starts several jobs, they share its session, and the last of them to end
+ * ends it.
  * <p>
  * A job ends once, by whoever ends it first: its worker with a result or a failure, or a stop - its deadline, a cancel,
  * a shutdown of the registry. What a stop does depends on the {@link TimeoutPolicy} of the registry.
@@ -43,6 +44,9 @@ import java.util.stream.Collectors;
 public class AsyncJobsService<P, R> {
 
     private static final Logger logger = Logger.getLogger(AsyncJobsService.class);
+
+    // Shared by all job kinds of the extension: two jobs of one request may belong to different registries.
+    private static final SessionLeases SESSION_LEASES = new SessionLeases();
 
     private final @NotNull JobsRegistry<P, R> registry;
     private final @NotNull ISecurityService securityService;
@@ -71,15 +75,23 @@ public class AsyncJobsService<P, R> {
             throw new IllegalArgumentException("Job timeout must be positive: " + timeoutInMinutes);
         }
         Subject userSubject = securityService.getCurrentSubject();
-        boolean logoutRequired = isJobLogoutRequired();
+        boolean endsSession = userSubject != null && isJobLogoutRequired();
+        if (endsSession) {
+            // taken before the job can run: a job of the same request which finishes meanwhile must not end the session
+            SESSION_LEASES.acquire(userSubject);
+        }
         AsyncJob<P, R> job = new AsyncJob<>(UUID.randomUUID().toString(), securityService.getCurrentUser(), payload,
-                () -> logoutIfRequired(userSubject, logoutRequired));
+                () -> endSession(userSubject, endsSession));
 
         ScheduledFuture<?> deadline;
         try {
             deadline = registry.submit(job, () -> runJob(job, task, userSubject),
                     () -> stop(job, StopRequest.timeout(timeoutInMinutes)), timeoutInMinutes);
         } catch (RejectedExecutionException e) {
+            if (endsSession) {
+                // the job never runs: its lease goes, but the session is the caller's to give back, not this job's
+                SESSION_LEASES.release(userSubject);
+            }
             logger.warn("%s job is refused: %s".formatted(registry.getJobName(), e.getMessage()));
             throw e;
         }
@@ -166,25 +178,28 @@ public class AsyncJobsService<P, R> {
      * A job which still waits for a thread has done nothing yet, so it ends whatever the policy, and never runs: here,
      * if it can be taken back from the queue, or else when it gets its thread.
      * A running one is ended here and interrupted with {@link TimeoutPolicy#INTERRUPT}, and only asked to stop with
-     * {@link TimeoutPolicy#COOPERATIVE}: it then ends on its own thread, with the reason of this request.
+     * {@link TimeoutPolicy#COOPERATIVE}: it then ends on its own thread.
+     * <p>
+     * Whoever ends the job, it ends with the first stop request it received: a deadline and a cancel which reach a job
+     * together report the one which came first, the same one the job showed while it was stopping.
      */
     private void stop(@NotNull AsyncJob<P, R> job, @NotNull StopRequest request) {
         if (job.isOver()) {
             return;
         }
-        job.requestStop(request);
+        StopRequest firstRequest = job.requestStop(request);
         if (registry.takeBackIfQueued(job)) {
-            if (job.finish(request.toOutcome())) {
-                logger.warn("%s job '%s' is stopped before it started: %s".formatted(registry.getJobName(), job.jobId(), request.message()));
+            if (job.finish(firstRequest.toOutcome())) {
+                logger.warn("%s job '%s' is stopped before it started: %s".formatted(registry.getJobName(), job.jobId(), firstRequest.message()));
             }
             job.releaseSession();
         } else if (registry.getTimeoutPolicy() == TimeoutPolicy.INTERRUPT) {
-            if (job.finish(request.toOutcome())) {
-                logger.warn("%s job '%s' is stopped: %s".formatted(registry.getJobName(), job.jobId(), request.message()));
+            if (job.finish(firstRequest.toOutcome())) {
+                logger.warn("%s job '%s' is stopped: %s".formatted(registry.getJobName(), job.jobId(), firstRequest.message()));
                 job.interruptWorker();
             }
         } else {
-            logger.warn("%s job '%s' is asked to stop: %s".formatted(registry.getJobName(), job.jobId(), request.message()));
+            logger.warn("%s job '%s' is asked to stop: %s".formatted(registry.getJobName(), job.jobId(), firstRequest.message()));
         }
     }
 
@@ -291,8 +306,12 @@ public class AsyncJobsService<P, R> {
         return securityService.doAsUser(userSubject, action);
     }
 
-    private void logoutIfRequired(@Nullable Subject userSubject, boolean logoutRequired) {
-        if (userSubject == null || !logoutRequired) {
+    /**
+     * Ends the session kept for a job which is over, unless another job of the same session still runs: the last of
+     * them ends it.
+     */
+    private void endSession(@Nullable Subject userSubject, boolean endsSession) {
+        if (userSubject == null || !endsSession || !SESSION_LEASES.release(userSubject)) {
             return;
         }
         try {

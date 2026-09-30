@@ -171,7 +171,8 @@ public final class JobsRegistry<P, R> {
      *     <li>{@link TimeoutPolicy#COOPERATIVE}: it is asked to stop and its thread is <b>not</b> interrupted - it may
      *     be writing - so it stops at its next safe point, or finishes the write it is in, on its own thread.</li>
      * </ul>
-     * Either way the job reports {@link JobMessages#STOPPED}.
+     * Either way the job reports {@link JobMessages#STOPPED}, unless it was asked to stop before, for a cancel or its
+     * deadline: the first request decides how a job ends.
      */
     public synchronized void shutdown() {
         shutDown = true;
@@ -180,7 +181,7 @@ public final class JobsRegistry<P, R> {
         List<AsyncJob<P, R>> unfinishedJobs = jobs.values().stream().filter(job -> !job.isOver()).toList();
         unfinishedJobs.forEach(job -> job.requestStop(stop));
         if (timeoutPolicy == TimeoutPolicy.INTERRUPT) {
-            unfinishedJobs.forEach(job -> job.finish(stop.toOutcome()));
+            unfinishedJobs.forEach(job -> job.finish(job.requestStop(stop).toOutcome()));
             // drops the jobs which wait, and interrupts the running ones
             executor.shutdownNow();
         } else {
@@ -193,7 +194,7 @@ public final class JobsRegistry<P, R> {
         Throwable firstFailure = null;
         for (AsyncJob<P, R> job : unfinishedJobs) {
             if (job.claim()) {
-                job.finish(stop.toOutcome());
+                job.finish(job.requestStop(stop).toOutcome());
                 firstFailure = releaseSession(job, firstFailure);
             }
         }

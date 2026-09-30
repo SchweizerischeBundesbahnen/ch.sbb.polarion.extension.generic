@@ -17,6 +17,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.security.auth.Subject;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CancellationException;
@@ -34,6 +35,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -76,7 +79,7 @@ class AsyncJobsServiceTest {
         RequestContextHolder.setRequestAttributes(requestAttributes);
         lenient().when(securityService.getCurrentUser()).thenReturn(TEST_USER);
         lenient().when(securityService.getCurrentSubject()).thenReturn(subject);
-        lenient().when(securityService.doAsUser(eq(subject), any(PrivilegedAction.class)))
+        lenient().when(securityService.doAsUser(any(Subject.class), any(PrivilegedAction.class)))
                 .thenAnswer(invocation -> ((PrivilegedAction<?>) invocation.getArgument(1)).run());
     }
 
@@ -477,6 +480,7 @@ class AsyncJobsServiceTest {
                 .build();
         CountDownLatch release = new CountDownLatch(1);
         AtomicBoolean queuedJobRan = new AtomicBoolean();
+        Subject[] subjects = separateRequests(2);
         try {
             AsyncJobsService<String, String> service = service(queueingRegistry);
             service.startJob(PAYLOAD, 60_000, control -> {
@@ -491,8 +495,8 @@ class AsyncJobsServiceTest {
             endQueuedJob.accept(service, queuedJobId);
             release.countDown();
 
-            // both jobs have had their thread: the one which ran, and the one which found itself over
-            verify(securityService, timeout(5000).times(2)).logout(subject);
+            // each session is ended: the one of the job which ran, and the one of the job which was over before it ran
+            verifyEachLoggedOutOnce(subjects);
             assertThat(queuedJobRan).isFalse();
             assertThat(service.getJobState(queuedJobId).isDone()).isTrue();
         } finally {
@@ -511,6 +515,7 @@ class AsyncJobsServiceTest {
         JobsRegistry<String, String> queueingRegistry = JobsRegistry.<String, String>builder("Queueing").maxConcurrentJobs(1, 10).build();
         CountDownLatch started = new CountDownLatch(1);
         AtomicBoolean queuedJobRan = new AtomicBoolean();
+        Subject[] subjects = separateRequests(2);
         AsyncJobsService<String, String> service = service(queueingRegistry);
         String runningJobId = service.startJob(PAYLOAD, 60, control -> {
             started.countDown();
@@ -528,8 +533,8 @@ class AsyncJobsServiceTest {
         JobState queuedJobState = service.getJobState(queuedJobId);
         assertThat(queuedJobState.status()).isEqualTo(JobStatus.CANCELLED);
         assertThat(queuedJobState.errorMessage()).isEqualTo(JobMessages.STOPPED);
-        // the running job was interrupted and ended its own session; the queued one never ran
-        verify(securityService, timeout(5000).times(2)).logout(subject);
+        // the running job was interrupted and ended its own session; the shutdown ended the one of the queued job
+        verifyEachLoggedOutOnce(subjects);
         assertThat(queuedJobRan).isFalse();
         assertThat(service.getJobState(runningJobId).isDone()).isTrue();
     }
@@ -763,6 +768,7 @@ class AsyncJobsServiceTest {
                 .build();
         CountDownLatch release = new CountDownLatch(1);
         AtomicBoolean queuedJobRan = new AtomicBoolean();
+        Subject[] subjects = separateRequests(2);
         try {
             AsyncJobsService<String, String> service = service(wrappedRegistry);
             service.startJob(PAYLOAD, 60, control -> {
@@ -785,8 +791,8 @@ class AsyncJobsServiceTest {
             assertThat(jobState.status()).isEqualTo(JobStatus.CANCELLED);
             assertThat(jobState.errorMessage()).isEqualTo(JobMessages.CANCELLED_BY_USER);
             assertThat(queuedJobRan).isFalse();
-            // both jobs had their thread and ended their sessions: the one which ran, and the one which found itself stopped
-            verify(securityService, timeout(5000).times(2)).logout(subject);
+            // both jobs ended their sessions: the one which ran, and the one which found itself stopped
+            verifyEachLoggedOutOnce(subjects);
         } finally {
             release.countDown();
             wrappedRegistry.shutdown();
@@ -881,10 +887,12 @@ class AsyncJobsServiceTest {
     @Test
     void shouldEndAllQueuedJobsOnShutdownWhenOneLogoutFails() {
         asyncRequest();
-        doThrow(new LinkageError("logout broken")).doNothing().when(securityService).logout(subject);
+        // the first logout of all fails, whichever queued job the shutdown ends first
+        doThrow(new LinkageError("logout broken")).doNothing().when(securityService).logout(any());
         JobsRegistry<String, String> queueingRegistry = JobsRegistry.<String, String>builder("Queueing").maxConcurrentJobs(1, 10).build();
         CountDownLatch started = new CountDownLatch(1);
         CountDownLatch release = new CountDownLatch(1);
+        Subject[] subjects = separateRequests(3);
         try {
             AsyncJobsService<String, String> service = service(queueingRegistry);
             service.startJob(PAYLOAD, 60, control -> {
@@ -904,7 +912,8 @@ class AsyncJobsServiceTest {
             assertThat(service.getJobState(firstQueuedJobId).status()).isEqualTo(JobStatus.CANCELLED);
             assertThat(service.getJobState(secondQueuedJobId).status()).isEqualTo(JobStatus.CANCELLED);
             // both queued jobs were logged out, the first of them with the error
-            verify(securityService, times(2)).logout(subject);
+            verify(securityService).logout(same(subjects[1]));
+            verify(securityService).logout(same(subjects[2]));
         } finally {
             release.countDown();
             queueingRegistry.shutdown();
@@ -926,6 +935,118 @@ class AsyncJobsServiceTest {
         clearInvocations(requestAttributes);
         assertThatThrownBy(() -> service.startJob(PAYLOAD, 60, control -> "result")).isInstanceOf(JobsRegistryShutDownException.class);
         verify(requestAttributes, never()).setAttribute(eq(RequestContextUtil.ASYNC_JOB_STARTED), any(), anyInt());
+    }
+
+    /**
+     * A deadline and a cancel which reach a job together: the one which came first decides how the job ends, whoever
+     * of them then ends it. The deadline's request is recorded directly, the way a deadline which got there first but
+     * has not ended the job yet leaves it.
+     */
+    @Test
+    void shouldEndWithFirstStopRequestWhenCancelComesSecond() throws Exception {
+        CountDownLatch started = new CountDownLatch(1);
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+        String jobId = service.startJob(PAYLOAD, 60_000, control -> {
+            started.countDown();
+            try {
+                blockUntilInterrupted();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            throw new IllegalStateException("interrupted");
+        });
+        assertThat(started.await(5, TimeUnit.SECONDS)).isTrue();
+        AsyncJob<String, String> job = interruptRegistry.getJob(jobId);
+        assertThat(job).isNotNull();
+        job.requestStop(StopRequest.timeout(5));
+
+        service.cancelJob(jobId);
+
+        JobState jobState = service.getJobState(jobId);
+        assertThat(jobState.status()).isEqualTo(JobStatus.FAILED);
+        assertThat(jobState.errorMessage()).isEqualTo("Timeout after 5 min");
+    }
+
+    /**
+     * A shutdown after a cancel reports the cancel: the first request decides how a job ends.
+     */
+    @Test
+    void shouldReportEarlierCancelOnShutdown() throws Exception {
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+        String jobId = service.startJob(PAYLOAD, 60_000, control -> {
+            started.countDown();
+            while (release.getCount() > 0) {
+                Thread.onSpinWait();
+            }
+            return "result";
+        });
+        assertThat(started.await(5, TimeUnit.SECONDS)).isTrue();
+        try {
+            AsyncJob<String, String> job = interruptRegistry.getJob(jobId);
+            assertThat(job).isNotNull();
+            job.requestStop(StopRequest.cancel());
+
+            interruptRegistry.shutdown();
+
+            JobState jobState = service.getJobState(jobId);
+            assertThat(jobState.status()).isEqualTo(JobStatus.CANCELLED);
+            assertThat(jobState.errorMessage()).isEqualTo(JobMessages.CANCELLED_BY_USER);
+        } finally {
+            release.countDown();
+        }
+    }
+
+    /**
+     * Two jobs of one request share its session: the first to finish does not end it under the other, and the last
+     * ends it, once.
+     */
+    @Test
+    void shouldEndSharedSessionWithLastJobOfRequest() throws Exception {
+        asyncRequest();
+        CountDownLatch release = new CountDownLatch(1);
+        AsyncJobsService<String, String> service = service(interruptRegistry);
+        // this registry counts timeouts in milliseconds: long enough for the long job not to be stopped
+        String longJobId = service.startJob(PAYLOAD, 60_000, control -> {
+            awaitQuietly(release);
+            return "result";
+        });
+        String shortJobId = service.startJob(PAYLOAD, 60_000, control -> "result");
+
+        awaitDone(interruptRegistry, shortJobId);
+        verify(securityService, after(200).never()).logout(any());
+
+        release.countDown();
+        awaitDone(interruptRegistry, longJobId);
+        verify(securityService, timeout(5000)).logout(subject);
+        verify(securityService, after(200).times(1)).logout(subject);
+    }
+
+    /**
+     * A second job of a request which is refused takes nothing from the session the first job still uses.
+     */
+    @Test
+    void shouldKeepSharedSessionWhenSecondJobIsRefused() throws Exception {
+        asyncRequest();
+        JobsRegistry<String, String> boundedRegistry = JobsRegistry.<String, String>builder("Bounded").maxConcurrentJobs(1, 0).build();
+        CountDownLatch release = new CountDownLatch(1);
+        try {
+            AsyncJobsService<String, String> service = service(boundedRegistry);
+            String jobId = service.startJob(PAYLOAD, 60, control -> {
+                awaitQuietly(release);
+                return "result";
+            });
+            assertThatThrownBy(() -> service.startJob(PAYLOAD, 60, control -> "result")).isInstanceOf(RejectedExecutionException.class);
+            verify(securityService, never()).logout(any());
+
+            release.countDown();
+            awaitDone(boundedRegistry, jobId);
+            verify(securityService, timeout(5000)).logout(subject);
+        } finally {
+            release.countDown();
+            boundedRegistry.shutdown();
+        }
     }
 
     @Test
@@ -955,6 +1076,27 @@ class AsyncJobsServiceTest {
 
     private AsyncJobsService<String, String> service(JobsRegistry<String, String> registry) {
         return new AsyncJobsService<>(registry, securityService);
+    }
+
+    /**
+     * Jobs started by separate requests: each has a subject, and so a session, of its own - unlike jobs started by one
+     * request, which share its session.
+     *
+     * @return the subjects, in the order the jobs are started
+     */
+    private Subject[] separateRequests(int count) {
+        Subject[] subjects = new Subject[count];
+        for (int index = 0; index < count; index++) {
+            subjects[index] = new Subject();
+        }
+        when(securityService.getCurrentSubject()).thenReturn(subjects[0], Arrays.copyOfRange(subjects, 1, count));
+        return subjects;
+    }
+
+    private void verifyEachLoggedOutOnce(Subject... subjects) {
+        for (Subject each : subjects) {
+            verify(securityService, timeout(5000)).logout(same(each));
+        }
     }
 
     private void asyncRequest() {

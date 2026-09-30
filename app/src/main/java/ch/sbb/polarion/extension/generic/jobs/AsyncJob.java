@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -102,10 +103,14 @@ final class AsyncJob<P, R> implements JobControl {
     }
 
     /**
-     * Asks the job to stop. The first request is kept: it is the reason a job which then stops reports.
+     * Asks the job to stop. The first request is kept: it decides how the job ends, whoever then ends it - a stop
+     * which comes second does not change the reason.
+     *
+     * @return the request which is kept: this one, or the one which came first
      */
-    void requestStop(@NotNull StopRequest request) {
+    @NotNull StopRequest requestStop(@NotNull StopRequest request) {
         stopRequest.compareAndSet(null, request);
+        return Objects.requireNonNull(stopRequest.get());
     }
 
     @Nullable StopRequest getStopRequest() {

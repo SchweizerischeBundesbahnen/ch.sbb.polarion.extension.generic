@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Why a job is asked to stop, and how it ends if it does: a timeout makes it failed, a cancel or a shutdown makes it
- * cancelled.
+ * cancelled. A job keeps the first request it receives, and ends with that one.
  */
 record StopRequest(@NotNull JobStatus status, @NotNull String message) {
 
