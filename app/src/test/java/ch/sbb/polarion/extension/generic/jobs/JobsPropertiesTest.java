@@ -11,8 +11,8 @@ class JobsPropertiesTest {
     void shouldReadTimeouts() {
         JobsProperties jobsProperties = new JobsProperties(JobsPropertiesTest.class, "/jobs/test-jobs.properties");
 
-        assertThat(jobsProperties.getFinishedJobTimeout()).isEqualTo(30);
-        assertThat(jobsProperties.getInProgressJobTimeout()).isEqualTo(60);
+        assertThat(jobsProperties.getFinishedJobTimeout()).isEqualTo(7);
+        assertThat(jobsProperties.getInProgressJobTimeout()).isEqualTo(11);
     }
 
     @Test
