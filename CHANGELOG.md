@@ -1,5 +1,14 @@
 # Changelog
 
+## [16.2.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.2.0...v16.2.1) (2026-10-05)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.fasterxml.jackson.module:jackson-module-jaxb-annotations to v2.22.3 ([#711](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/711)) ([0ecd54d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/0ecd54d366fb05f984fb36ddd8c6c28594236378))
+* **deps:** update dependency com.intechcore:polarion-compatibility-maven-plugin to v0.1.3 ([#714](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/714)) ([9d8ea01](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/9d8ea01372c95ec9e9bc2c90f1aa83b843160b1f))
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.196 ([#712](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/712)) ([ae43e6d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/ae43e6d82a3fa444b3bc742da4e284dc0005a12f))
+
 ## [16.2.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.1.0...v16.2.0) (2026-09-30)
 
 
