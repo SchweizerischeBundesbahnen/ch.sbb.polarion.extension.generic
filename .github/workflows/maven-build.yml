@@ -125,18 +125,20 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
           gpg-private-key: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}
-      - name: 📦 Deploy to Maven Central
-        # This cannot be implemented using deploy:deploy-file
-        # The central-publishing-maven-plugin must be used instead due to specific deployment requirements
-        # Additionally, timeouts are set to 1 hour to avoid issues with the connection to Sonatype Central during deployment
+      - name: 📦 Stage the release
+        # The deploy plugin writes the signed artifacts of both modules into target/staging-deploy. The upload is
+        # skipped here: in a multi-module build it would run before the last module is staged.
         run: |
           mvn --batch-mode -s "${SETTINGS_XML}" clean deploy \
             -DskipTests=true \
             -P gpg-sign \
             -P central-publishing \
-            -Dcentral.timeout=3600 \
-            -Dmaven.wagon.http.connectionTimeout=3600000 \
-            -Dmaven.wagon.http.readTimeout=3600000 \
+            -Drelease.central.skip=true
+      - name: 📦 Publish to Maven Central
+        # A public repository publishes the release, a private one leaves it to be published in the Central Portal
+        run: |
+          mvn --batch-mode -s "${SETTINGS_XML}" --non-recursive jreleaser:deploy \
+            -P central-publishing \
             -Dcentral-publishing-maven-plugin.autoPublish=${{ github.event.repository.visibility == 'public' }}
   # Upload release assets to the corresponding GitHub Release.
   # Generic intentionally does NOT publish to GitHub Packages (releases go to
