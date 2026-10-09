@@ -165,8 +165,21 @@
         <maven-jar-plugin.Require-Bundle.extension/>
         <maven-jar-plugin.Require-Bundle>${maven-jar-plugin.Require-Bundle.common}</maven-jar-plugin.Require-Bundle>
 
-        <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
+        <!-- The central-publishing profile: `mvn deploy` stages the release into this directory, all modules together,
+             and JReleaser uploads it to the Central Publisher API at the end of the deploy phase. FULL publishes it,
+             UPLOAD leaves it to be published by hand in the Central Portal: false for autoPublish, which the release
+             workflows pass, selects UPLOAD (the release-central-upload-only profile). -->
+        <jreleaser-maven-plugin.version>1.26.0</jreleaser-maven-plugin.version>
         <central-publishing-maven-plugin.autoPublish>true</central-publishing-maven-plugin.autoPublish>
+        <release.central.stagingDirectory>${maven.multiModuleProjectDirectory}/target/staging-deploy</release.central.stagingDirectory>
+        <release.central.stage>FULL</release.central.stage>
+        <release.central.url>https://central.sonatype.com/api/v1/publisher</release.central.url>
+        <!-- The Central token, from the variables the release workflows already set for .mvn/settings.xml -->
+        <release.central.username>${env.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME}</release.central.username>
+        <release.central.password>${env.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN}</release.central.password>
+        <!-- A multi-module build publishes once, after its last module: it skips the upload during the deploy and runs
+             `mvn -N -P central-publishing jreleaser:deploy` after it. Generic does. -->
+        <release.central.skip>false</release.central.skip>
 
         <markdown2html-maven-plugin.version>1.7.1</markdown2html-maven-plugin.version>
         <markdown2html-maven-plugin.inputFile>${project.basedir}/README.md</markdown2html-maven-plugin.inputFile>
@@ -331,16 +344,50 @@
             </build>
         </profile>
 
+        <!-- Publishes to Maven Central during `mvn deploy`, with any Maven version: the standard deploy plugin stages the
+             release, JReleaser uploads the staged directory. It replaced central-publishing-maven-plugin, which stages
+             through maven-compat and leaves local repository files in the bundle since Maven 3.10. -->
         <profile>
             <id>central-publishing</id>
+            <properties>
+                <altDeploymentRepository>local::file:${release.central.stagingDirectory}</altDeploymentRepository>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.sonatype.central</groupId>
-                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <groupId>org.jreleaser</groupId>
+                        <artifactId>jreleaser-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- Bound after the deploy plugin's own execution, which stages the module -->
+                                <id>publish-to-central</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>deploy</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${release.central.skip}</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!-- Uploads the release without publishing it, for a private repository: the release workflows pass false for
+             autoPublish there -->
+        <profile>
+            <id>release-central-upload-only</id>
+            <activation>
+                <property>
+                    <name>central-publishing-maven-plugin.autoPublish</name>
+                    <value>false</value>
+                </property>
+            </activation>
+            <properties>
+                <release.central.stage>UPLOAD</release.central.stage>
+            </properties>
         </profile>
 
         <!-- ==== React/Vite administration app ======================================================
@@ -1336,16 +1383,51 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.sonatype.central</groupId>
-                    <artifactId>central-publishing-maven-plugin</artifactId>
-                    <version>${central-publishing-maven-plugin.version}</version>
-                    <extensions>true</extensions>
+                    <groupId>org.jreleaser</groupId>
+                    <artifactId>jreleaser-maven-plugin</artifactId>
+                    <version>${jreleaser-maven-plugin.version}</version>
                     <configuration>
-                        <publishingServerId>sonatype-central</publishingServerId>
-                        <autoPublish>${central-publishing-maven-plugin.autoPublish}</autoPublish>
-                        <waitUntil>published</waitUntil>
+                        <jreleaser>
+                            <signing>
+                                <!-- maven-gpg-plugin (the gpg-sign profile) signs during the deploy -->
+                                <pgp>
+                                    <active>NEVER</active>
+                                </pgp>
+                            </signing>
+                            <deploy>
+                                <maven>
+                                    <!-- Not strict: a module may inherit its description and the like from its parent,
+                                         as Central accepts -->
+                                    <pomchecker>
+                                        <strict>false</strict>
+                                    </pomchecker>
+                                    <mavenCentral>
+                                        <sonatype>
+                                            <active>RELEASE</active>
+                                            <url>${release.central.url}</url>
+                                            <username>${release.central.username}</username>
+                                            <password>${release.central.password}</password>
+                                            <stage>${release.central.stage}</stage>
+                                            <stagingRepositories>${release.central.stagingDirectory}</stagingRepositories>
+                                            <sign>false</sign>
+                                            <checksums>true</checksums>
+                                            <sourceJar>true</sourceJar>
+                                            <javadocJar>true</javadocJar>
+                                            <verifyPom>true</verifyPom>
+                                            <!-- A large extension uploads for minutes, and Central can take up to an
+                                                 hour to publish: 180 checks, 20 seconds apart -->
+                                            <connectTimeout>60</connectTimeout>
+                                            <readTimeout>600</readTimeout>
+                                            <retryDelay>20</retryDelay>
+                                            <maxRetries>180</maxRetries>
+                                        </sonatype>
+                                    </mavenCentral>
+                                </maven>
+                            </deploy>
+                        </jreleaser>
                     </configuration>
                 </plugin>
+
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
