@@ -9,12 +9,17 @@ import com.polarion.core.util.types.duration.DurationTime;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
@@ -72,6 +77,46 @@ class PrimitiveConvertersTest {
         fieldMetadata.setType(FieldType.CURRENCY.getType());
 
         assertEquals(Currency.parse("123.44"), ConverterTestUtils.process(123.44, fieldMetadata));
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            "123.44     | 123.44",
+            "-100       | -100",
+            "-0.5       | -0.5",
+            "CHF -12.30 | -12.30",
+            "1,000.50   | 1000.50",
+            "1'000.50   | 1000.50",
+            "1,000      | 1000",
+            "1,5        | 15",
+    })
+    void testStringToCurrencyConversion(String value, String expected) {
+        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
+        fieldMetadata.setType(FieldType.CURRENCY.getType());
+
+        assertEquals(Currency.parse(expected), ConverterTestUtils.process(value, fieldMetadata));
+    }
+
+    @Test
+    void testStringToCurrencyConversionIgnoresServerLocale() {
+        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
+        fieldMetadata.setType(FieldType.CURRENCY.getType());
+        Locale defaultLocale = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.GERMANY);
+            assertEquals(Currency.parse("1000.50"), ConverterTestUtils.process("1,000.50", fieldMetadata));
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "CHF", "1.2.3", "100-"})
+    void testStringToCurrencyConversionOfInvalidValue(String value) {
+        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
+        fieldMetadata.setType(FieldType.CURRENCY.getType());
+
+        assertNull(ConverterTestUtils.process(value, fieldMetadata));
     }
 
     @Test

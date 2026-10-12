@@ -6,25 +6,19 @@ import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
 import com.polarion.core.util.types.Currency;
 import org.jetbrains.annotations.NotNull;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.Locale;
-
 public class StringToCurrencyConverter implements IConverter<String, Currency> {
     @Override
+    @SuppressWarnings("squid:S1166") // an unparsable value converts to null by design
     public Currency convert(@NotNull String initialValue, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-        final NumberFormat format = NumberFormat.getNumberInstance(Locale.getDefault());
-        if (format instanceof DecimalFormat decimalFormat) {
-            decimalFormat.setParseBigDecimal(true);
-            try {
-                return new Currency((BigDecimal) format.parse(initialValue.replaceAll("[^\\d.,]", "")));
-            } catch (ParseException e) {
-                return null;
-            }
+        String value = initialValue.replaceAll("[^\\d.-]", "");
+        if (value.isEmpty()) {
+            return null;
         }
-        return null;
+        try {
+            return Currency.parse(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     @Override
