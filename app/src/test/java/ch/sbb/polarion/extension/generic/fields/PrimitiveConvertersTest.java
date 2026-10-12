@@ -89,6 +89,10 @@ class PrimitiveConvertersTest {
             "1'000.50   | 1000.50",
             "1,000      | 1000",
             "1,5        | 15",
+            "100.-      | 100",
+            "CHF 12.-   | 12",
+            "-12.-      | -12",
+            "100-       | 100",
     })
     void testStringToCurrencyConversion(String value, String expected) {
         FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
@@ -111,7 +115,7 @@ class PrimitiveConvertersTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "CHF", "1.2.3", "100-"})
+    @ValueSource(strings = {"", "CHF", "-", "1.2.3"})
     void testStringToCurrencyConversionOfInvalidValue(String value) {
         FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
         fieldMetadata.setType(FieldType.CURRENCY.getType());

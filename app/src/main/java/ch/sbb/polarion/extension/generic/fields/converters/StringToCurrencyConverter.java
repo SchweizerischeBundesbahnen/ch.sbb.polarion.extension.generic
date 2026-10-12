@@ -11,11 +11,12 @@ public class StringToCurrencyConverter implements IConverter<String, Currency> {
     @SuppressWarnings("squid:S1166") // an unparsable value converts to null by design
     public Currency convert(@NotNull String initialValue, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
         String value = initialValue.replaceAll("[^\\d.-]", "");
-        if (value.isEmpty()) {
+        String unsigned = value.replace("-", "");
+        if (unsigned.isEmpty()) {
             return null;
         }
         try {
-            return Currency.parse(value);
+            return Currency.parse(value.startsWith("-") ? "-" + unsigned : unsigned);
         } catch (NumberFormatException e) {
             return null;
         }
