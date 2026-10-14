@@ -36,6 +36,7 @@ import com.polarion.subterra.base.data.identification.IContextId;
 import com.polarion.subterra.base.data.model.ICustomField;
 import com.polarion.subterra.base.data.model.IEnumType;
 import com.polarion.subterra.base.data.model.IListType;
+import com.polarion.subterra.base.data.model.IRelationMapping;
 import com.polarion.subterra.base.data.model.IType;
 import com.polarion.subterra.base.data.model.internal.EnumType;
 import com.polarion.subterra.base.data.model.internal.ListType;
@@ -269,6 +270,95 @@ public class PolarionService {
         }
         return fieldType instanceof EnumType enumType ? getEnumeration(enumType, contextId).getAvailableOptions(optTypeId).stream()
                 .map(o -> new Option(EnumUtils.getEnumId(o), o.getName(), EnumUtils.getIconUrl(o))).collect(Collectors.toSet()) : null;
+    }
+
+    /**
+     * Checks the enum values of the object against the dependencies of its custom fields
+     * ("dependsOn" and "mapping" attributes in the custom fields configuration).
+     * Polarion applies these dependencies only in its UI forms, its API accepts any combination.
+     * Call this method after all fields are set, because the result depends on the value of the controlling field.
+     * It also reports invalid values which the object held before the current change.
+     *
+     * @return the first violation found, or null if all values are allowed
+     */
+    @Nullable
+    public String validateEnumDependencies(@NotNull IPObject object) {
+        return findEnumDependencyViolation(object, null);
+    }
+
+    /**
+     * Same as {@link #validateEnumDependencies(IPObject)}, but checks only the dependencies which include
+     * at least one of the given fields, either as the dependent field or as the controlling one.
+     *
+     * @param fieldIds the fields to check, an empty collection checks nothing
+     * @return the first violation found, or null if all values are allowed
+     */
+    @Nullable
+    public String validateEnumDependencies(@NotNull IPObject object, @NotNull Collection<String> fieldIds) {
+        return findEnumDependencyViolation(object, fieldIds);
+    }
+
+    @Nullable
+    private String findEnumDependencyViolation(@NotNull IPObject object, @Nullable Collection<String> fieldIds) {
+        for (String fieldId : object.getCustomFieldsList()) {
+            ICustomField field = object.getCustomFieldPrototype(fieldId);
+            String controllingFieldId = field.getDependsOn();
+            if (StringUtils.isEmptyTrimmed(controllingFieldId)
+                    || fieldIds != null && !fieldIds.contains(fieldId) && !fieldIds.contains(controllingFieldId)) {
+                continue;
+            }
+            String error = validateEnumDependency(object, fieldId, field, controllingFieldId);
+            if (error != null) {
+                return error;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private String validateEnumDependency(@NotNull IPObject object, @NotNull String fieldId, @NotNull ICustomField field, @NotNull String controllingFieldId) {
+        IRelationMapping mapping = field.getDependencyMapping();
+        if (mapping == null) {
+            return null;
+        }
+        List<IEnumOption> controllingOptions = toEnumOptions(getFieldValue(object, controllingFieldId));
+        if (controllingOptions.isEmpty()) {
+            return null; // Polarion UI offers all options while the controlling field is empty
+        }
+        Set<String> allowedIds = controllingOptions.stream()
+                .flatMap(option -> mapping.getFilteredValues(option).stream())
+                .filter(IEnumOption.class::isInstance)
+                .map(option -> ((IEnumOption) option).getId())
+                .collect(Collectors.toSet());
+        return toEnumOptions(object.getCustomField(fieldId)).stream()
+                .filter(option -> !allowedIds.contains(option.getId()))
+                .findFirst()
+                .map(option -> String.format("Can not set '%s' into '%s' field when '%s' is '%s'",
+                        getOptionName(option), getFieldName(field, fieldId),
+                        getFieldName(object.getCustomFieldPrototype(controllingFieldId), controllingFieldId),
+                        controllingOptions.stream().map(this::getOptionName).collect(Collectors.joining(", "))))
+                .orElse(null);
+    }
+
+    @NotNull
+    private List<IEnumOption> toEnumOptions(@Nullable Object value) {
+        if (value instanceof IEnumOption option) {
+            return List.of(option);
+        }
+        if (value instanceof Collection<?> values) {
+            return values.stream().filter(IEnumOption.class::isInstance).map(IEnumOption.class::cast).toList();
+        }
+        return List.of();
+    }
+
+    @NotNull
+    private String getFieldName(@NotNull ICustomField field, @NotNull String fieldId) {
+        return StringUtils.isEmptyTrimmed(field.getName()) ? fieldId : field.getName();
+    }
+
+    @NotNull
+    private String getOptionName(@NotNull IEnumOption option) {
+        return StringUtils.isEmptyTrimmed(option.getName()) ? option.getId() : option.getName();
     }
 
     @SneakyThrows
