@@ -26,6 +26,7 @@ import com.polarion.platform.persistence.IEnumOption;
 import com.polarion.platform.persistence.IEnumeration;
 import com.polarion.platform.persistence.model.IPObject;
 import com.polarion.platform.persistence.model.IPrototype;
+import com.polarion.platform.persistence.spi.CustomTypedList;
 import com.polarion.platform.persistence.spi.EnumOption;
 import com.polarion.platform.security.ISecurityService;
 import com.polarion.subterra.base.data.identification.IContextId;
@@ -572,6 +573,30 @@ public class PolarionServiceTest {
         assertNull(polarionService.validateEnumDependencies(workItem));
 
         workItem = mockDependentFields(shops, List.of(mockOption("milk", "Milk"), mockOption("hammer", "Hammer")));
+        assertEquals("Can not set 'Hammer' into 'Product' field when 'Shop' is 'Grocery store, Pharmacy'", polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithStoredMultiValues() {
+        IWorkItem workItem = mockDependentFields(null, null);
+        IContextId contextId = mock(IContextId.class);
+        when(workItem.getContextId()).thenReturn(contextId);
+        when(workItem.getDataSvc()).thenReturn(dataService);
+        IEnumeration enumeration = mock(IEnumeration.class);
+        when(dataService.getEnumerationForEnumId(any(), eq(contextId))).thenReturn(enumeration);
+        Map<String, String> optionNames = Map.of("grocery", "Grocery store", "pharmacy", "Pharmacy", "milk", "Milk", "bandage", "Bandage", "hammer", "Hammer");
+        when(enumeration.wrapOption(anyString(), (Object) any())).thenAnswer(invocation -> {
+            String optionId = invocation.getArgument(0);
+            return mockOption(optionId, optionNames.get(optionId));
+        });
+        ListType listType = new ListType("listTypeId", new EnumType("enumId"));
+
+        // CustomTypedList holds the option ids which setFieldValue() stores, and wraps them into options on read
+        doReturn(new CustomTypedList(workItem, listType, false, List.of("grocery", "pharmacy"))).when(workItem).getCustomField("shop");
+        doReturn(new CustomTypedList(workItem, listType, false, List.of("milk", "bandage"))).when(workItem).getCustomField("product");
+        assertNull(polarionService.validateEnumDependencies(workItem));
+
+        doReturn(new CustomTypedList(workItem, listType, false, List.of("milk", "hammer"))).when(workItem).getCustomField("product");
         assertEquals("Can not set 'Hammer' into 'Product' field when 'Shop' is 'Grocery store, Pharmacy'", polarionService.validateEnumDependencies(workItem));
     }
 
