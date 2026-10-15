@@ -779,6 +779,38 @@ public class PolarionServiceTest {
     }
 
     @Test
+    void testRunWorkflowIfNeededWithUnavailableNamedAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[0]);
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "Review");
+        when(workItem.getUnavailableActions()).thenReturn(Map.of(review, "Description is empty"));
+
+        assertEquals("Workflow action 'Review' to status 'Reviewed' is not available: Description is empty",
+                polarionService.runWorkflowIfNeeded(workItem));
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithoutStoredStatus() {
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mock(IWorkItem.class);
+        IObjectId objectId = mock(IObjectId.class);
+        when(workItem.isPersisted()).thenReturn(true);
+        when(workItem.getLastRevision()).thenReturn(REVISION);
+        when(workItem.getStatus()).thenReturn(reviewed);
+        when(workItem.getObjectId()).thenReturn(objectId);
+        when(workItem.getDataSvc()).thenReturn(dataService);
+        when(dataService.getVersionedInstance(objectId, REVISION)).thenReturn(mock(IPObject.class));
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[0]);
+        when(workItem.getUnavailableActions()).thenReturn(Map.of());
+
+        assertEquals("No workflow action leads from status '' to status 'Reviewed'", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem).setValue("status", null);
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
     void testRunWorkflowIfNeededWithFailedAction() {
         IStatusOpt draft = mockStatus("draft", "Draft");
         IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
