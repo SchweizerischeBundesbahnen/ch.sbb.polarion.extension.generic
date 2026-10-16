@@ -45,6 +45,9 @@ public class TestUtils {
         lenient().when(polarionService.getFieldValue(any(), any())).thenCallRealMethod();
         lenient().when(polarionService.getFieldValue(any(), any(), any())).thenCallRealMethod();
         lenient().when(polarionService.getOptionsForEnum(any(), any(), any())).thenCallRealMethod();
+        lenient().when(polarionService.validateEnumDependencies(any())).thenCallRealMethod();
+        lenient().when(polarionService.validateEnumDependencies(any(), any())).thenCallRealMethod();
+        lenient().when(polarionService.runWorkflowIfNeeded(any())).thenCallRealMethod();
 
         lenient().doCallRealMethod().when(polarionService).setFieldValue(any(),any(), any());
         lenient().doCallRealMethod().when(polarionService).setFieldValue(any(),any(), any(), any());

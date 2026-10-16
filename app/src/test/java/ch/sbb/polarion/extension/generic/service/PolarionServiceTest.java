@@ -16,9 +16,12 @@ import com.polarion.alm.shared.api.transaction.ReadOnlyTransaction;
 import com.polarion.alm.tracker.IModuleManager;
 import com.polarion.alm.tracker.ITrackerService;
 import com.polarion.alm.tracker.model.IModule;
+import com.polarion.alm.tracker.model.IStatusOpt;
 import com.polarion.alm.tracker.model.ITrackerProject;
 import com.polarion.alm.tracker.model.IWorkItem;
+import com.polarion.alm.tracker.model.IWorkflowAction;
 import com.polarion.alm.tracker.model.baselinecollection.IBaselineCollection;
+import com.polarion.core.util.exceptions.UserFriendlyRuntimeException;
 import com.polarion.platform.IPlatformService;
 import com.polarion.platform.persistence.ICustomFieldsService;
 import com.polarion.platform.persistence.IDataService;
@@ -26,18 +29,21 @@ import com.polarion.platform.persistence.IEnumOption;
 import com.polarion.platform.persistence.IEnumeration;
 import com.polarion.platform.persistence.model.IPObject;
 import com.polarion.platform.persistence.model.IPrototype;
+import com.polarion.platform.persistence.spi.CustomTypedList;
 import com.polarion.platform.persistence.spi.EnumOption;
 import com.polarion.platform.security.ISecurityService;
 import com.polarion.subterra.base.data.identification.IContextId;
 import com.polarion.subterra.base.data.identification.IObjectId;
 import com.polarion.subterra.base.data.model.ICustomField;
 import com.polarion.subterra.base.data.model.IEnumType;
+import com.polarion.subterra.base.data.model.IRelationMapping;
 import com.polarion.subterra.base.data.model.internal.EnumType;
 import com.polarion.subterra.base.data.model.internal.ListType;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -55,7 +61,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith({MockitoExtension.class, PlatformContextMockExtension.class, TransactionalExecutorExtension.class})
-@SuppressWarnings({"rawtypes", "unchecked", "UnusedReturnValue"})
+@SuppressWarnings({"rawtypes", "unchecked", "unused", "UnusedReturnValue"})
 public class PolarionServiceTest {
 
     private static final String PROJECT_ID = "project_id";
@@ -507,6 +513,376 @@ public class PolarionServiceTest {
     void testGetPolarionVersion() {
         when(platformService.getPolarionVersion()).thenReturn(POLARION_VERSION);
         assertEquals(POLARION_VERSION, polarionService.getPolarionVersion());
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithoutDependency() {
+        IWorkItem workItem = mock(IWorkItem.class);
+        ICustomField field = mock(ICustomField.class);
+        when(workItem.getCustomFieldsList()).thenReturn(List.of("product"));
+        when(workItem.getCustomFieldPrototype("product")).thenReturn(field);
+
+        assertNull(polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithoutMapping() {
+        IWorkItem workItem = mock(IWorkItem.class);
+        ICustomField field = mock(ICustomField.class);
+        when(workItem.getCustomFieldsList()).thenReturn(List.of("product"));
+        when(workItem.getCustomFieldPrototype("product")).thenReturn(field);
+        when(field.getDependsOn()).thenReturn("shop");
+
+        assertNull(polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithEmptyControllingField() {
+        IWorkItem workItem = mockDependentFields(null, mockOption("cough_syrup", "Cough syrup"));
+        assertNull(polarionService.validateEnumDependencies(workItem));
+
+        workItem = mockDependentFields(List.of(), mockOption("cough_syrup", "Cough syrup"));
+        assertNull(polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithEmptyDependentField() {
+        IWorkItem workItem = mockDependentFields(mockOption("grocery", "Grocery store"), null);
+        assertNull(polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithAllowedValue() {
+        IWorkItem workItem = mockDependentFields(mockOption("grocery", "Grocery store"), mockOption("milk", "Milk"));
+        assertNull(polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithNotAllowedValue() {
+        IWorkItem workItem = mockDependentFields(mockOption("grocery", "Grocery store"), mockOption("cough_syrup", "Cough syrup"));
+        assertEquals("Can not set 'Cough syrup' into 'Product' field when 'Shop' is 'Grocery store'", polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithUnmappedControllingValue() {
+        IWorkItem workItem = mockDependentFields(mockOption("hardware", "Hardware store"), mockOption("milk", "Milk"));
+        assertEquals("Can not set 'Milk' into 'Product' field when 'Shop' is 'Hardware store'", polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithMultiValuedFields() {
+        List<IEnumOption> shops = List.of(mockOption("grocery", "Grocery store"), mockOption("pharmacy", "Pharmacy"));
+
+        IWorkItem workItem = mockDependentFields(shops, List.of(mockOption("milk", "Milk"), mockOption("bandage", "Bandage")));
+        assertNull(polarionService.validateEnumDependencies(workItem));
+
+        workItem = mockDependentFields(shops, List.of(mockOption("milk", "Milk"), mockOption("hammer", "Hammer")));
+        assertEquals("Can not set 'Hammer' into 'Product' field when 'Shop' is 'Grocery store, Pharmacy'", polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithStoredMultiValues() {
+        IWorkItem workItem = mockDependentFields(null, null);
+        IContextId contextId = mock(IContextId.class);
+        when(workItem.getContextId()).thenReturn(contextId);
+        when(workItem.getDataSvc()).thenReturn(dataService);
+        IEnumeration enumeration = mock(IEnumeration.class);
+        when(dataService.getEnumerationForEnumId(any(), eq(contextId))).thenReturn(enumeration);
+        Map<String, String> optionNames = Map.of("grocery", "Grocery store", "pharmacy", "Pharmacy", "milk", "Milk", "bandage", "Bandage", "hammer", "Hammer");
+        when(enumeration.wrapOption(anyString(), (Object) any())).thenAnswer(invocation -> {
+            String optionId = invocation.getArgument(0);
+            return mockOption(optionId, optionNames.get(optionId));
+        });
+        ListType listType = new ListType("listTypeId", new EnumType("enumId"));
+
+        // CustomTypedList holds the option ids which setFieldValue() stores, and wraps them into options on read
+        doReturn(new CustomTypedList(workItem, listType, false, List.of("grocery", "pharmacy"))).when(workItem).getCustomField("shop");
+        doReturn(new CustomTypedList(workItem, listType, false, List.of("milk", "bandage"))).when(workItem).getCustomField("product");
+        assertNull(polarionService.validateEnumDependencies(workItem));
+
+        doReturn(new CustomTypedList(workItem, listType, false, List.of("milk", "hammer"))).when(workItem).getCustomField("product");
+        assertEquals("Can not set 'Hammer' into 'Product' field when 'Shop' is 'Grocery store, Pharmacy'", polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithValidChain() {
+        IWorkItem workItem = mockChainedFields(mockOption("grocery", "Grocery store"), mockOption("milk", "Milk"), mockOption("bottle", "Bottle"));
+        assertNull(polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithChainBrokenAtLastLink() {
+        IWorkItem workItem = mockChainedFields(mockOption("grocery", "Grocery store"), mockOption("milk", "Milk"), mockOption("blister", "Blister"));
+        assertEquals("Can not set 'Blister' into 'Package' field when 'Product' is 'Milk'", polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithChainBrokenAtMiddleLink() {
+        IWorkItem workItem = mockChainedFields(mockOption("grocery", "Grocery store"), mockOption("cough_syrup", "Cough syrup"), mockOption("bottle", "Bottle"));
+        assertEquals("Can not set 'Cough syrup' into 'Product' field when 'Shop' is 'Grocery store'", polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesWithChainEmptyMiddleLink() {
+        IWorkItem workItem = mockChainedFields(mockOption("grocery", "Grocery store"), null, mockOption("blister", "Blister"));
+        assertNull(polarionService.validateEnumDependencies(workItem));
+    }
+
+    @Test
+    void testValidateEnumDependenciesForDependentField() {
+        IWorkItem workItem = mockDependentFields(mockOption("grocery", "Grocery store"), mockOption("cough_syrup", "Cough syrup"));
+        assertEquals("Can not set 'Cough syrup' into 'Product' field when 'Shop' is 'Grocery store'", polarionService.validateEnumDependencies(workItem, List.of("product")));
+    }
+
+    @Test
+    void testValidateEnumDependenciesForControllingField() {
+        IWorkItem workItem = mockDependentFields(mockOption("grocery", "Grocery store"), mockOption("cough_syrup", "Cough syrup"));
+        assertEquals("Can not set 'Cough syrup' into 'Product' field when 'Shop' is 'Grocery store'", polarionService.validateEnumDependencies(workItem, List.of("shop")));
+    }
+
+    @Test
+    void testValidateEnumDependenciesForUnrelatedOrNoFields() {
+        IWorkItem workItem = mockDependentFields(mockOption("grocery", "Grocery store"), mockOption("cough_syrup", "Cough syrup"));
+        assertNull(polarionService.validateEnumDependencies(workItem, List.of("description")));
+        assertNull(polarionService.validateEnumDependencies(workItem, List.of()));
+    }
+
+    @Test
+    void testValidateEnumDependenciesForFieldsInChain() {
+        IWorkItem workItem = mockChainedFields(mockOption("grocery", "Grocery store"), mockOption("milk", "Milk"), mockOption("blister", "Blister"));
+        String expectedError = "Can not set 'Blister' into 'Package' field when 'Product' is 'Milk'";
+
+        assertNull(polarionService.validateEnumDependencies(workItem, List.of("shop")));
+        assertEquals(expectedError, polarionService.validateEnumDependencies(workItem, List.of("product")));
+        assertEquals(expectedError, polarionService.validateEnumDependencies(workItem, List.of("package")));
+    }
+
+    /**
+     * Shop -> product.
+     */
+    @NotNull
+    private IWorkItem mockDependentFields(Object shopValue, Object productValue) {
+        IWorkItem workItem = mock(IWorkItem.class);
+        IPrototype prototype = mock(IPrototype.class);
+        lenient().when(workItem.getPrototype()).thenReturn(prototype);
+        when(workItem.getCustomFieldsList()).thenReturn(List.of("shop", "product"));
+
+        mockEnumField(workItem, "shop", "Shop", shopValue, null, Map.of());
+        mockEnumField(workItem, "product", "Product", productValue, "shop", Map.of(
+                "grocery", List.of(mockOption("milk", "Milk"), mockOption("cheese", "Cheese")),
+                "pharmacy", List.of(mockOption("cough_syrup", "Cough syrup"), mockOption("bandage", "Bandage"))));
+        return workItem;
+    }
+
+    /**
+     * Chain shop -> product -> package.
+     */
+    @NotNull
+    private IWorkItem mockChainedFields(Object shopValue, Object productValue, Object packageValue) {
+        IWorkItem workItem = mock(IWorkItem.class);
+        IPrototype prototype = mock(IPrototype.class);
+        lenient().when(workItem.getPrototype()).thenReturn(prototype);
+        when(workItem.getCustomFieldsList()).thenReturn(List.of("shop", "product", "package"));
+
+        mockEnumField(workItem, "shop", "Shop", shopValue, null, Map.of());
+        mockEnumField(workItem, "product", "Product", productValue, "shop",
+                Map.of("grocery", List.of(mockOption("milk", "Milk"))));
+        mockEnumField(workItem, "package", "Package", packageValue, "product",
+                Map.of("milk", List.of(mockOption("bottle", "Bottle"), mockOption("carton", "Carton"))));
+        return workItem;
+    }
+
+    private void mockEnumField(@NotNull IWorkItem workItem, @NotNull String fieldId, @NotNull String fieldName, Object value,
+                               String dependsOn, @NotNull Map<String, List<IEnumOption>> valueMappings) {
+        ICustomField field = mock(ICustomField.class);
+        lenient().when(field.getName()).thenReturn(fieldName);
+        lenient().when(field.getDependsOn()).thenReturn(dependsOn);
+        lenient().when(workItem.getCustomFieldPrototype(fieldId)).thenReturn(field);
+        lenient().when(workItem.getCustomField(fieldId)).thenReturn(value);
+        if (dependsOn != null) {
+            IRelationMapping mapping = mock(IRelationMapping.class);
+            lenient().when(mapping.getFilteredValues(any())).thenAnswer(invocation ->
+                    valueMappings.getOrDefault(((IEnumOption) invocation.getArgument(0)).getId(), List.of()));
+            lenient().when(field.getDependencyMapping()).thenReturn(mapping);
+        }
+    }
+
+    @Test
+    void testRunWorkflowIfNeededSkipsNewObject() {
+        IWorkItem workItem = mock(IWorkItem.class);
+
+        assertNull(polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem, never()).performAction(anyInt());
+    }
+
+    @Test
+    void testRunWorkflowIfNeededSkipsObjectWithoutWorkflow() {
+        IPObject object = mock(IPObject.class);
+
+        assertNull(polarionService.runWorkflowIfNeeded(object));
+        verify(object, never()).setValue(anyString(), any());
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithUnchangedStatus() {
+        IWorkItem workItem = mockStatusChange(mockStatus("draft", "Draft"), mockStatus("draft", "Draft"));
+
+        assertNull(polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem, never()).setValue(anyString(), any());
+        verify(workItem, never()).performAction(anyInt());
+    }
+
+    @Test
+    void testRunWorkflowIfNeededPerformsAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        IWorkflowAction reject = mockAction(1, mockStatus("rejected", "Rejected"), "Reject");
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "Review");
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[]{reject, review});
+
+        assertNull(polarionService.runWorkflowIfNeeded(workItem));
+        InOrder inOrder = inOrder(workItem);
+        inOrder.verify(workItem).setValue("status", draft);
+        inOrder.verify(workItem).performAction(2);
+        inOrder.verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithUnavailableAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[0]);
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "");
+        when(review.getNativeActionId()).thenReturn("review");
+        when(workItem.getUnavailableActions()).thenReturn(Map.of(review, "Description is empty"));
+
+        assertEquals("Workflow action 'review' to status 'Reviewed' is not available: Description is empty",
+                polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem, never()).performAction(anyInt());
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithoutAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt verified = mockStatus("verified", "Verified");
+        IWorkItem workItem = mockStatusChange(draft, verified);
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "Review");
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[]{review});
+        when(workItem.getUnavailableActions()).thenReturn(Map.of());
+
+        assertEquals("No workflow action leads from status 'Draft' to status 'Verified'", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem, never()).performAction(anyInt());
+        verify(workItem).setValue("status", verified);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithUnavailableNamedAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[0]);
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "Review");
+        when(workItem.getUnavailableActions()).thenReturn(Map.of(review, "Description is empty"));
+
+        assertEquals("Workflow action 'Review' to status 'Reviewed' is not available: Description is empty",
+                polarionService.runWorkflowIfNeeded(workItem));
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithoutStoredStatus() {
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mock(IWorkItem.class);
+        IObjectId objectId = mock(IObjectId.class);
+        when(workItem.isPersisted()).thenReturn(true);
+        when(workItem.getLastRevision()).thenReturn(REVISION);
+        when(workItem.getStatus()).thenReturn(reviewed);
+        when(workItem.getObjectId()).thenReturn(objectId);
+        when(workItem.getDataSvc()).thenReturn(dataService);
+        when(dataService.getVersionedInstance(objectId, REVISION)).thenReturn(mock(IPObject.class));
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[0]);
+        when(workItem.getUnavailableActions()).thenReturn(Map.of());
+
+        assertEquals("No workflow action leads from status '' to status 'Reviewed'", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem).setValue("status", null);
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithFailedAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "Review");
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[]{review});
+        when(workItem.performAction(2)).thenThrow(new UserFriendlyRuntimeException("Workflow function failed"));
+
+        assertEquals("Workflow function failed", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithUnexpectedException() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        when(workItem.getAvailableActions()).thenThrow(new IllegalStateException("Unexpected"));
+
+        assertEquals("Unexpected", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithExceptionWithoutMessage() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        when(workItem.getAvailableActions()).thenThrow(new NullPointerException());
+
+        assertEquals("NullPointerException", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @NotNull
+    private IWorkItem mockStatusChange(@NotNull IStatusOpt storedStatus, @NotNull IStatusOpt newStatus) {
+        IWorkItem workItem = mock(IWorkItem.class);
+        IWorkItem storedWorkItem = mock(IWorkItem.class);
+        IObjectId objectId = mock(IObjectId.class);
+        when(workItem.isPersisted()).thenReturn(true);
+        when(workItem.getLastRevision()).thenReturn(REVISION);
+        when(workItem.getStatus()).thenReturn(newStatus);
+        when(workItem.getObjectId()).thenReturn(objectId);
+        when(workItem.getDataSvc()).thenReturn(dataService);
+        when(dataService.getVersionedInstance(objectId, REVISION)).thenReturn(storedWorkItem);
+        when(storedWorkItem.getStatus()).thenReturn(storedStatus);
+        return workItem;
+    }
+
+    @NotNull
+    private IStatusOpt mockStatus(@NotNull String id, @NotNull String name) {
+        IStatusOpt status = mock(IStatusOpt.class);
+        lenient().when(status.getId()).thenReturn(id);
+        lenient().when(status.getName()).thenReturn(name);
+        return status;
+    }
+
+    @NotNull
+    private IWorkflowAction mockAction(int actionId, @NotNull IStatusOpt targetStatus, @NotNull String name) {
+        IWorkflowAction action = mock(IWorkflowAction.class);
+        lenient().when(action.getActionId()).thenReturn(actionId);
+        lenient().when(action.getTargetStatus()).thenReturn(targetStatus);
+        lenient().when(action.getActionName()).thenReturn(name);
+        return action;
+    }
+
+    @NotNull
+    private IEnumOption mockOption(@NotNull String id, @NotNull String name) {
+        IEnumOption option = mock(IEnumOption.class);
+        lenient().when(option.getId()).thenReturn(id);
+        lenient().when(option.getName()).thenReturn(name);
+        return option;
     }
 
     @NotNull
