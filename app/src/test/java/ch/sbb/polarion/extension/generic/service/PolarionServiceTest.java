@@ -16,9 +16,12 @@ import com.polarion.alm.shared.api.transaction.ReadOnlyTransaction;
 import com.polarion.alm.tracker.IModuleManager;
 import com.polarion.alm.tracker.ITrackerService;
 import com.polarion.alm.tracker.model.IModule;
+import com.polarion.alm.tracker.model.IStatusOpt;
 import com.polarion.alm.tracker.model.ITrackerProject;
 import com.polarion.alm.tracker.model.IWorkItem;
+import com.polarion.alm.tracker.model.IWorkflowAction;
 import com.polarion.alm.tracker.model.baselinecollection.IBaselineCollection;
+import com.polarion.core.util.exceptions.UserFriendlyRuntimeException;
 import com.polarion.platform.IPlatformService;
 import com.polarion.platform.persistence.ICustomFieldsService;
 import com.polarion.platform.persistence.IDataService;
@@ -40,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -57,7 +61,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith({MockitoExtension.class, PlatformContextMockExtension.class, TransactionalExecutorExtension.class})
-@SuppressWarnings({"rawtypes", "unchecked", "UnusedReturnValue"})
+@SuppressWarnings({"rawtypes", "unchecked", "unused", "UnusedReturnValue"})
 public class PolarionServiceTest {
 
     private static final String PROJECT_ID = "project_id";
@@ -701,6 +705,176 @@ public class PolarionServiceTest {
                     valueMappings.getOrDefault(((IEnumOption) invocation.getArgument(0)).getId(), List.of()));
             lenient().when(field.getDependencyMapping()).thenReturn(mapping);
         }
+    }
+
+    @Test
+    void testRunWorkflowIfNeededSkipsNewObject() {
+        IWorkItem workItem = mock(IWorkItem.class);
+
+        assertNull(polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem, never()).performAction(anyInt());
+    }
+
+    @Test
+    void testRunWorkflowIfNeededSkipsObjectWithoutWorkflow() {
+        IPObject object = mock(IPObject.class);
+
+        assertNull(polarionService.runWorkflowIfNeeded(object));
+        verify(object, never()).setValue(anyString(), any());
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithUnchangedStatus() {
+        IWorkItem workItem = mockStatusChange(mockStatus("draft", "Draft"), mockStatus("draft", "Draft"));
+
+        assertNull(polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem, never()).setValue(anyString(), any());
+        verify(workItem, never()).performAction(anyInt());
+    }
+
+    @Test
+    void testRunWorkflowIfNeededPerformsAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        IWorkflowAction reject = mockAction(1, mockStatus("rejected", "Rejected"), "Reject");
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "Review");
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[]{reject, review});
+
+        assertNull(polarionService.runWorkflowIfNeeded(workItem));
+        InOrder inOrder = inOrder(workItem);
+        inOrder.verify(workItem).setValue("status", draft);
+        inOrder.verify(workItem).performAction(2);
+        inOrder.verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithUnavailableAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[0]);
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "");
+        when(review.getNativeActionId()).thenReturn("review");
+        when(workItem.getUnavailableActions()).thenReturn(Map.of(review, "Description is empty"));
+
+        assertEquals("Workflow action 'review' to status 'Reviewed' is not available: Description is empty",
+                polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem, never()).performAction(anyInt());
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithoutAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt verified = mockStatus("verified", "Verified");
+        IWorkItem workItem = mockStatusChange(draft, verified);
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "Review");
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[]{review});
+        when(workItem.getUnavailableActions()).thenReturn(Map.of());
+
+        assertEquals("No workflow action leads from status 'Draft' to status 'Verified'", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem, never()).performAction(anyInt());
+        verify(workItem).setValue("status", verified);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithUnavailableNamedAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[0]);
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "Review");
+        when(workItem.getUnavailableActions()).thenReturn(Map.of(review, "Description is empty"));
+
+        assertEquals("Workflow action 'Review' to status 'Reviewed' is not available: Description is empty",
+                polarionService.runWorkflowIfNeeded(workItem));
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithoutStoredStatus() {
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mock(IWorkItem.class);
+        IObjectId objectId = mock(IObjectId.class);
+        when(workItem.isPersisted()).thenReturn(true);
+        when(workItem.getLastRevision()).thenReturn(REVISION);
+        when(workItem.getStatus()).thenReturn(reviewed);
+        when(workItem.getObjectId()).thenReturn(objectId);
+        when(workItem.getDataSvc()).thenReturn(dataService);
+        when(dataService.getVersionedInstance(objectId, REVISION)).thenReturn(mock(IPObject.class));
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[0]);
+        when(workItem.getUnavailableActions()).thenReturn(Map.of());
+
+        assertEquals("No workflow action leads from status '' to status 'Reviewed'", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem).setValue("status", null);
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithFailedAction() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        IWorkflowAction review = mockAction(2, mockStatus("reviewed", "Reviewed"), "Review");
+        when(workItem.getAvailableActions()).thenReturn(new IWorkflowAction[]{review});
+        when(workItem.performAction(2)).thenThrow(new UserFriendlyRuntimeException("Workflow function failed"));
+
+        assertEquals("Workflow function failed", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithUnexpectedException() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        when(workItem.getAvailableActions()).thenThrow(new IllegalStateException("Unexpected"));
+
+        assertEquals("Unexpected", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @Test
+    void testRunWorkflowIfNeededWithExceptionWithoutMessage() {
+        IStatusOpt draft = mockStatus("draft", "Draft");
+        IStatusOpt reviewed = mockStatus("reviewed", "Reviewed");
+        IWorkItem workItem = mockStatusChange(draft, reviewed);
+        when(workItem.getAvailableActions()).thenThrow(new NullPointerException());
+
+        assertEquals("NullPointerException", polarionService.runWorkflowIfNeeded(workItem));
+        verify(workItem).setValue("status", reviewed);
+    }
+
+    @NotNull
+    private IWorkItem mockStatusChange(@NotNull IStatusOpt storedStatus, @NotNull IStatusOpt newStatus) {
+        IWorkItem workItem = mock(IWorkItem.class);
+        IWorkItem storedWorkItem = mock(IWorkItem.class);
+        IObjectId objectId = mock(IObjectId.class);
+        when(workItem.isPersisted()).thenReturn(true);
+        when(workItem.getLastRevision()).thenReturn(REVISION);
+        when(workItem.getStatus()).thenReturn(newStatus);
+        when(workItem.getObjectId()).thenReturn(objectId);
+        when(workItem.getDataSvc()).thenReturn(dataService);
+        when(dataService.getVersionedInstance(objectId, REVISION)).thenReturn(storedWorkItem);
+        when(storedWorkItem.getStatus()).thenReturn(storedStatus);
+        return workItem;
+    }
+
+    @NotNull
+    private IStatusOpt mockStatus(@NotNull String id, @NotNull String name) {
+        IStatusOpt status = mock(IStatusOpt.class);
+        lenient().when(status.getId()).thenReturn(id);
+        lenient().when(status.getName()).thenReturn(name);
+        return status;
+    }
+
+    @NotNull
+    private IWorkflowAction mockAction(int actionId, @NotNull IStatusOpt targetStatus, @NotNull String name) {
+        IWorkflowAction action = mock(IWorkflowAction.class);
+        lenient().when(action.getActionId()).thenReturn(actionId);
+        lenient().when(action.getTargetStatus()).thenReturn(targetStatus);
+        lenient().when(action.getActionName()).thenReturn(name);
+        return action;
     }
 
     @NotNull

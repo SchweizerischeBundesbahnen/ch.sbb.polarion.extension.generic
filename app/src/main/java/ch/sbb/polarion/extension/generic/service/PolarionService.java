@@ -16,10 +16,14 @@ import com.polarion.alm.shared.api.model.baselinecollection.BaselineCollectionRe
 import com.polarion.alm.shared.api.transaction.TransactionalExecutor;
 import com.polarion.alm.tracker.ITrackerService;
 import com.polarion.alm.tracker.model.IModule;
+import com.polarion.alm.tracker.model.IStatusOpt;
 import com.polarion.alm.tracker.model.ITrackerProject;
 import com.polarion.alm.tracker.model.IWorkItem;
+import com.polarion.alm.tracker.model.IWorkflowAction;
+import com.polarion.alm.tracker.model.IWorkflowObject;
 import com.polarion.alm.tracker.model.baselinecollection.IBaselineCollection;
 import com.polarion.core.util.StringUtils;
+import com.polarion.core.util.logging.Logger;
 import com.polarion.platform.IPlatformService;
 import com.polarion.platform.core.PlatformContext;
 import com.polarion.platform.persistence.IDataService;
@@ -50,17 +54,22 @@ import org.jetbrains.annotations.Nullable;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 @Getter
-@SuppressWarnings({"squid:S1200", "unused"}) // Ignore dependencies on other classes count limitation
+@SuppressWarnings({"squid:S1200", "unused", "ClassCanBeRecord"}) // Ignore dependencies on other classes count limitation
 public class PolarionService {
+
+    private static final String STATUS_FIELD_ID = "status";
+    private static final Logger logger = Logger.getLogger(PolarionService.class);
 
     protected final ITrackerService trackerService;
     protected final IProjectService projectService;
@@ -359,6 +368,74 @@ public class PolarionService {
     @NotNull
     private String getOptionName(@NotNull IEnumOption option) {
         return StringUtils.isEmptyTrimmed(option.getName()) ? option.getId() : option.getName();
+    }
+
+    /**
+     * Performs a workflow action for a status which was written directly into the object.
+     * Polarion runs workflow conditions and functions only in a workflow action, a direct write of the status skips them.
+     * Call this method after all fields are set and before saving, so the action sees the new values of other fields.
+     * Like Polarion's xUnit import, it performs the first available action which leads from the stored status to the new one.
+     * The action can clear fields, which the workflow configures as cleared fields.
+     *
+     * @return null if the action succeeded or the status did not change, otherwise the reason why the action failed.
+     * In this case the object keeps the new status, but workflow functions can have changed it, so do not save it.
+     */
+    @Nullable
+    public String runWorkflowIfNeeded(@NotNull IPObject object) {
+        if (!(object instanceof IWorkflowObject workflowObject) || !object.isPersisted()) {
+            return null; // Polarion performs the initial action of a new object on its own
+        }
+        IStatusOpt newStatus = workflowObject.getStatus();
+        IStatusOpt storedStatus = getObjectRevision(object, object.getLastRevision()) instanceof IWorkflowObject stored ? stored.getStatus() : null;
+        if (Objects.equals(getStatusId(newStatus), getStatusId(storedStatus))) {
+            return null;
+        }
+        // Polarion looks for actions starting from the current status
+        workflowObject.setValue(STATUS_FIELD_ID, storedStatus);
+        String error;
+        try {
+            error = performStatusChangeAction(workflowObject, storedStatus, newStatus);
+        } catch (Exception e) {
+            logger.error("Error performing workflow status change action", e);
+            error = Optional.ofNullable(e.getMessage()).orElse(e.getClass().getSimpleName());
+        } finally {
+            workflowObject.setValue(STATUS_FIELD_ID, newStatus);
+        }
+        return error;
+    }
+
+    @Nullable
+    private String performStatusChangeAction(@NotNull IWorkflowObject workflowObject, @Nullable IStatusOpt storedStatus, @Nullable IStatusOpt newStatus) {
+        String newStatusId = getStatusId(newStatus);
+        Optional<IWorkflowAction> action = Arrays.stream(workflowObject.getAvailableActions())
+                .filter(availableAction -> availableAction.getTargetStatus().getId().equals(newStatusId))
+                .findFirst();
+        if (action.isPresent()) {
+            workflowObject.performAction(action.get().getActionId());
+            return null;
+        }
+        return workflowObject.getUnavailableActions().entrySet().stream()
+                .filter(unavailableAction -> unavailableAction.getKey().getTargetStatus().getId().equals(newStatusId))
+                .findFirst()
+                .map(unavailableAction -> String.format("Workflow action '%s' to status '%s' is not available: %s",
+                        getActionName(unavailableAction.getKey()), getStatusName(newStatus), unavailableAction.getValue()))
+                .orElseGet(() -> String.format("No workflow action leads from status '%s' to status '%s'",
+                        getStatusName(storedStatus), getStatusName(newStatus)));
+    }
+
+    @Nullable
+    private String getStatusId(@Nullable IStatusOpt status) {
+        return status == null ? null : status.getId();
+    }
+
+    @NotNull
+    private String getStatusName(@Nullable IStatusOpt status) {
+        return status == null ? "" : getOptionName(status);
+    }
+
+    @NotNull
+    private String getActionName(@NotNull IWorkflowAction action) {
+        return StringUtils.isEmptyTrimmed(action.getActionName()) ? action.getNativeActionId() : action.getActionName();
     }
 
     @SneakyThrows
