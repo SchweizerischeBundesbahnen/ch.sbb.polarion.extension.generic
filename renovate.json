@@ -5,9 +5,9 @@
   ],
   "packageRules": [
     {
-      "description": "ClassGraph 6 requires Java 25. Polarion 2606 runs on Java 21, so stay on 4.x.",
+      "description": "ClassGraph 5 rewrites the API, and ClassGraph 6 requires Java 25. Polarion 2606 runs on Java 21, so stay on 4.x.",
       "matchPackageNames": ["io.github.classgraph:classgraph"],
-      "allowedVersions": "<6"
+      "allowedVersions": "<5"
     }
   ]
 }
