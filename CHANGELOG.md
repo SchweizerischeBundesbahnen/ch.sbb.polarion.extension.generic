@@ -1,5 +1,13 @@
 # Changelog
 
+## [16.3.1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.3.0...v16.3.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.199 ([#732](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/732)) ([1db142c](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/1db142c5c19e8b88990aa924aaccec8a2399ba89))
+* **deps:** update mockito monorepo to v5.24.0 ([#735](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/735)) ([f2fa9e0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/f2fa9e0380363b37fcf7ed9df7afff39d1144a8d))
+
 ## [16.3.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.2.0...v16.3.0) (2026-10-16)
 
 
