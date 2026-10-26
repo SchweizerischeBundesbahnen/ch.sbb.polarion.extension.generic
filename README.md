@@ -559,3 +559,38 @@ no longer shipped here: RSP builds them into `dist/dle-toolbar-starter.js`, whic
 next to its own app bundle and loads from there. An extension's whole toolbar integration is now one
 small `js/dle-toolbar.js` that appends that script with the button's title, icon and click action on
 `data-*` attributes. See "Shell scripts" in react-sbb-polarion's README.
+
+### Bulk export widget
+
+A report page widget that lists what its data set finds, with a checkbox per row. The extension exports the
+selected rows. The server side lives here, the React side in react-sbb-polarion (`BulkExportWidget`).
+
+1. Extend `AbstractBulkExportWidget`. Name the allowed prototypes and return your renderer.
+2. Extend `AbstractBulkExportWidgetRenderer`. Render the loader of your widget app module in `renderWidgetAppLoader`.
+3. Register the widget in `hivemodule.xml`, as any other rich page widget.
+4. Register `BulkExportWidgetApiController` and `BulkExportWidgetInternalController` in your REST application.
+5. Add `ch.sbb.polarion.extension.generic.rest.controller.widgets` to the `resourcePackages` of the OpenAPI plugin.
+
+```java
+public class BulkMyExportWidget extends AbstractBulkExportWidget {
+    @Override
+    protected @NotNull List<PrototypeEnum> getAllowedPrototypes() {
+        return List.of(PrototypeEnum.Document);
+    }
+
+    @Override
+    protected @NotNull AbstractBulkExportWidgetRenderer createRenderer(@NotNull RichPageWidgetRenderingContext context) {
+        return new BulkMyExportWidgetRenderer(context);
+    }
+    ...
+}
+```
+
+The renderer emits a shim element, and the extension's loader after it. The shim carries the resolved data
+set as a signed descriptor (`WidgetDescriptorSigner`). The app posts it back to `/widgets/bulk-export/items`,
+which rejects a descriptor this server did not sign. The rows come back with the cells Polarion rendered.
+
+generic carries no JavaScript, so the loader lives in the extension. It imports the widget app and calls it
+with the selector of the shim. Add `BundleCacheKey.forModule(...)` to the module URL: it is a hash of the module
+in the jar, so a rebuild of one version still reaches the browser. Use it for any module a server-side surface
+imports by a fixed name.
