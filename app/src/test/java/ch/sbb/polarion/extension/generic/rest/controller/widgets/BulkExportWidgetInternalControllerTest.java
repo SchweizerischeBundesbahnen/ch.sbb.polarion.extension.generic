@@ -1,10 +1,12 @@
 package ch.sbb.polarion.extension.generic.rest.controller.widgets;
 
 import ch.sbb.polarion.extension.generic.test_extensions.CustomExtensionMock;
+import ch.sbb.polarion.extension.generic.test_extensions.PlatformContextMockExtension;
 import ch.sbb.polarion.extension.generic.test_extensions.TransactionalExecutorExtension;
 import ch.sbb.polarion.extension.generic.rest.model.widgets.BulkExportItems;
 import ch.sbb.polarion.extension.generic.rest.model.widgets.BulkExportItemsRequest;
 import ch.sbb.polarion.extension.generic.rest.model.widgets.BulkExportWidgetDescriptor;
+import ch.sbb.polarion.extension.generic.service.PolarionService;
 import ch.sbb.polarion.extension.generic.widgets.bulk.BulkExportWidgetHelper;
 import ch.sbb.polarion.extension.generic.widgets.WidgetDescriptorSigner;
 import com.polarion.alm.shared.api.transaction.internal.InternalReadOnlyTransaction;
@@ -17,17 +19,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import jakarta.ws.rs.BadRequestException;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith({MockitoExtension.class, TransactionalExecutorExtension.class})
+@ExtendWith({MockitoExtension.class, PlatformContextMockExtension.class, TransactionalExecutorExtension.class})
 class BulkExportWidgetInternalControllerTest {
 
     @CustomExtensionMock
@@ -99,15 +105,31 @@ class BulkExportWidgetInternalControllerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void theApiControllerRunsAsTheCallingUser() {
-        // Not privileged on purpose: a widget must not show items the calling user cannot read
+        // A token caller has no Polarion session: callPrivileged runs the call as the token's user, so the rows
+        // are the ones that user may read. Without it the query runs as nobody.
         BulkExportItems items = BulkExportItems.builder().totalCount(1).build();
         BulkExportWidgetHelper apiHelper = mock(BulkExportWidgetHelper.class);
-        when(apiHelper.getItems(any(), any())).thenReturn(items);
+        PolarionService polarionService = mock(PolarionService.class);
+        AtomicBoolean asCaller = new AtomicBoolean();
+        when(polarionService.callPrivileged(any(Callable.class))).thenAnswer(invocation -> {
+            asCaller.set(true);
+            try {
+                return ((Callable<Object>) invocation.getArgument(0)).call();
+            } finally {
+                asCaller.set(false);
+            }
+        });
+        when(apiHelper.getItems(any(), any())).thenAnswer(invocation -> {
+            assertTrue(asCaller.get(), "the rows must be read as the calling user");
+            return items;
+        });
         String encoded = WidgetDescriptorSigner.getInstance().encode(BulkExportWidgetDescriptor.builder().query("id:x").build());
 
-        BulkExportWidgetApiController apiController = new BulkExportWidgetApiController(apiHelper);
+        BulkExportWidgetApiController apiController = new BulkExportWidgetApiController(apiHelper, polarionService);
 
         assertSame(items, apiController.getItems(new BulkExportItemsRequest(encoded, WidgetDescriptorSigner.getInstance().sign(encoded))));
+        verify(polarionService).callPrivileged(any(Callable.class));
     }
 }
