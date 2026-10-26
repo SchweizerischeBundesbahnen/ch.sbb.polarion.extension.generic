@@ -15,6 +15,7 @@ import com.polarion.alm.shared.api.model.rp.widget.RichPageWidgetRenderingContex
 import com.polarion.alm.shared.api.transaction.internal.InternalReadOnlyTransaction;
 import com.polarion.alm.shared.api.utils.SharedLocalization;
 import com.polarion.alm.shared.api.utils.collections.ReadOnlyStrictMap;
+import com.polarion.alm.shared.api.utils.html.HtmlFragmentBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
@@ -138,13 +139,8 @@ class AbstractBulkExportWidgetTest {
         protected @NotNull AbstractBulkExportWidgetRenderer createRenderer(@NotNull RichPageWidgetRenderingContext renderingContext) {
             return new AbstractBulkExportWidgetRenderer(renderingContext) {
                 @Override
-                protected @NotNull String getModuleUrl() {
-                    return "/polarion/test-app/ui/app/assets/bulk-widget.js";
-                }
-
-                @Override
-                protected @NotNull String getModulePath() {
-                    return "webapp/test-app/app/assets/bulk-widget.js";
+                protected void renderWidgetAppLoader(@NotNull HtmlFragmentBuilder builder, @NotNull String shimId) {
+                    // The widget app is not loaded in a unit test
                 }
 
                 @Override

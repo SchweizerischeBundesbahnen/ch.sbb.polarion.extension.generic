@@ -5,6 +5,7 @@ import com.polarion.core.util.logging.Logger;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,18 +47,23 @@ public class BundleCacheKey {
      * be read.
      */
     public static @NotNull String forModule(@NotNull String modulePath) {
+        return forModule(modulePath, BundleCacheKey.class.getClassLoader());
+    }
+
+    @VisibleForTesting
+    static @NotNull String forModule(@NotNull String modulePath, @NotNull ClassLoader bundle) {
         String bundleVersion = VersionUtils.getVersion().getBundleVersion();
         String version = bundleVersion == null ? UNKNOWN_VERSION : bundleVersion;
         String hash = HASHES.computeIfAbsent(modulePath, path -> {
-            String computed = hashOf(path);
+            String computed = hashOf(path, bundle);
             // An empty value is kept too, so that a missing module is not looked up on every render
             return computed == null ? "" : computed;
         });
         return hash.isEmpty() ? version : version + "-" + hash;
     }
 
-    private static @Nullable String hashOf(@NotNull String modulePath) {
-        try (InputStream module = BundleCacheKey.class.getClassLoader().getResourceAsStream(modulePath)) {
+    private static @Nullable String hashOf(@NotNull String modulePath, @NotNull ClassLoader bundle) {
+        try (InputStream module = bundle.getResourceAsStream(modulePath)) {
             if (module == null) {
                 // Keyed by the version alone, a rebuild of one version would be served from the browser cache
                 // again. Once per module: the result is kept.

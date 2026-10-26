@@ -2,7 +2,6 @@ package ch.sbb.polarion.extension.generic.widgets.bulk;
 
 import ch.sbb.polarion.extension.generic.rest.model.widgets.BulkExportColumn;
 import ch.sbb.polarion.extension.generic.rest.model.widgets.BulkExportWidgetDescriptor;
-import ch.sbb.polarion.extension.generic.util.BundleCacheKey;
 import ch.sbb.polarion.extension.generic.widgets.DataSetQueryTypeReader;
 import ch.sbb.polarion.extension.generic.widgets.WidgetDescriptorSigner;
 import com.polarion.alm.server.api.model.rp.widget.AbstractWidgetRenderer;
@@ -45,8 +44,9 @@ import static ch.sbb.polarion.extension.generic.widgets.bulk.AbstractBulkExportW
  * resolved here - the query, the sorting, the column labels - and it travels signed, see
  * {@link WidgetDescriptorSigner}.
  * <p>
- * An extension names its widget app with {@link #getModuleUrl()} and {@link #getModulePath()}, and adds what that
- * app needs for its presentation with {@link #addShimAttributes(HtmlAttributesBuilder)}.
+ * An extension loads its widget app with {@link #renderWidgetAppLoader(HtmlFragmentBuilder, String)}, and adds what
+ * that app needs for its presentation with {@link #addShimAttributes(HtmlAttributesBuilder)}. The loader is
+ * JavaScript, so it lives in the extension: generic carries no JavaScript.
  */
 public abstract class AbstractBulkExportWidgetRenderer extends AbstractWidgetRenderer {
 
@@ -83,16 +83,11 @@ public abstract class AbstractBulkExportWidgetRenderer extends AbstractWidgetRen
     }
 
     /**
-     * The URL the page imports the widget app from, e.g. {@code /polarion/<extension>-app/ui/app/assets/bulk-widget.js}.
-     * Its default export is called with the selector of the shim.
+     * Renders what loads the widget app into the shim with the id {@code shimId}. It goes after the shim, as its
+     * sibling, so that the shim can become a shadow host. Add {@link ch.sbb.polarion.extension.generic.util.BundleCacheKey}
+     * to the module URL, or a rebuild of one version is served from the browser cache.
      */
-    protected abstract @NotNull String getModuleUrl();
-
-    /**
-     * The same module in the jar, e.g. {@code webapp/<extension>-app/app/assets/bulk-widget.js}, which is what its
-     * cache key is a hash of.
-     */
-    protected abstract @NotNull String getModulePath();
+    protected abstract void renderWidgetAppLoader(@NotNull HtmlFragmentBuilder builder, @NotNull String shimId);
 
     /**
      * The class of the shim element, next to {@code sbb-ui}.
@@ -131,8 +126,9 @@ public abstract class AbstractBulkExportWidgetRenderer extends AbstractWidgetRen
         String panelId = "bulk-%s".formatted(UUID.randomUUID().toString());
         String descriptor = WidgetDescriptorSigner.getInstance().encode(buildDescriptor());
 
-        // Nothing else is put on the page for this widget. Everything it renders lives in the shadow root the
-        // widget app attaches to the shim below, styled by the stylesheets that app injects into it.
+        // Apart from the extension's loader, nothing else is put on the page for this widget. Everything it renders
+        // lives in the shadow root the widget app attaches to the shim below, styled by the stylesheets that app
+        // injects into it.
         HtmlTagBuilder shim = builder.tag().div();
         // sbb-ui carries the --sbb-* design tokens, which the widget's shadow root inherits through this element:
         // the token declarations live on .sbb-ui, not on :root, so this element is what makes the widget's
@@ -143,11 +139,7 @@ public abstract class AbstractBulkExportWidgetRenderer extends AbstractWidgetRen
                 .byName("data-signature", WidgetDescriptorSigner.getInstance().sign(descriptor));
         addShimAttributes(attributes);
 
-        //language=JS
-        builder.tag().script().append().javaScript("""
-                import('%s?v=%s')
-                    .then(module => module.default('#%s'))
-                    .catch(console.error);""".formatted(getModuleUrl(), BundleCacheKey.forModule(getModulePath()), panelId));
+        renderWidgetAppLoader(builder, panelId);
     }
 
     @VisibleForTesting

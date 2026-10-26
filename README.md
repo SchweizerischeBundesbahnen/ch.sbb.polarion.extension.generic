@@ -566,7 +566,7 @@ A report page widget that lists what its data set finds, with a checkbox per row
 selected rows. The server side lives here, the React side in react-sbb-polarion (`BulkExportWidget`).
 
 1. Extend `AbstractBulkExportWidget`. Name the allowed prototypes and return your renderer.
-2. Extend `AbstractBulkExportWidgetRenderer`. Name the URL and the jar path of your widget app module.
+2. Extend `AbstractBulkExportWidgetRenderer`. Render the loader of your widget app module in `renderWidgetAppLoader`.
 3. Register the widget in `hivemodule.xml`, as any other rich page widget.
 4. Register `BulkExportWidgetApiController` and `BulkExportWidgetInternalController` in your REST application.
 5. Add `ch.sbb.polarion.extension.generic.rest.controller.widgets` to the `resourcePackages` of the OpenAPI plugin.
@@ -586,9 +586,11 @@ public class BulkMyExportWidget extends AbstractBulkExportWidget {
 }
 ```
 
-The renderer emits a shim element and a script that imports the widget app. The shim carries the resolved data
+The renderer emits a shim element, and the extension's loader after it. The shim carries the resolved data
 set as a signed descriptor (`WidgetDescriptorSigner`). The app posts it back to `/widgets/bulk-export/items`,
 which rejects a descriptor this server did not sign. The rows come back with the cells Polarion rendered.
 
-The app module URL carries `BundleCacheKey.forModule(...)`, a hash of the module in the jar. A rebuild of one
-version then still reaches the browser. Use it for any module a server-side surface imports by a fixed name.
+generic carries no JavaScript, so the loader lives in the extension. It imports the widget app and calls it
+with the selector of the shim. Add `BundleCacheKey.forModule(...)` to the module URL: it is a hash of the module
+in the jar, so a rebuild of one version still reaches the browser. Use it for any module a server-side surface
+imports by a fixed name.

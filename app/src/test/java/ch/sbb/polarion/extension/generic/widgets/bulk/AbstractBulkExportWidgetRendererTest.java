@@ -1,12 +1,8 @@
 package ch.sbb.polarion.extension.generic.widgets.bulk;
 
-import ch.sbb.polarion.extension.generic.rest.model.Version;
-import ch.sbb.polarion.extension.generic.util.VersionUtils;
 import ch.sbb.polarion.extension.generic.widgets.WidgetDescriptorSigner;
 import ch.sbb.polarion.extension.generic.rest.model.widgets.BulkExportColumn;
 import ch.sbb.polarion.extension.generic.rest.model.widgets.BulkExportWidgetDescriptor;
-import ch.sbb.polarion.extension.generic.util.BundleCacheKey;
-import ch.sbb.polarion.extension.generic.widgets.WidgetDescriptorSigner;
 import com.polarion.alm.shared.api.Scope;
 import com.polarion.alm.shared.api.model.PrototypeEnum;
 import com.polarion.alm.shared.api.model.baselinecollection.BaselineCollectionReference;
@@ -23,14 +19,12 @@ import com.polarion.alm.shared.api.model.rp.widget.RichPageWidgetCommonContext;
 import com.polarion.alm.shared.api.transaction.internal.InternalReadOnlyTransaction;
 import com.polarion.alm.shared.api.utils.SharedLocalization;
 import com.polarion.alm.shared.api.utils.html.HtmlAttributesBuilder;
-import com.polarion.alm.shared.api.utils.html.HtmlContentBuilder;
 import com.polarion.alm.shared.api.utils.html.HtmlFragmentBuilder;
 import com.polarion.alm.shared.api.utils.html.HtmlTagBuilder;
 import com.polarion.alm.shared.api.utils.html.HtmlTagSelector;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -49,7 +42,6 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -131,25 +123,6 @@ class AbstractBulkExportWidgetRendererTest {
     }
 
     @Test
-    void theLoaderCarriesTheCacheKeyOfTheModule() {
-        RichPageWidgetCommonContext context = mock(RichPageWidgetCommonContext.class, RETURNS_DEEP_STUBS);
-        CapturingBuilder builder = new CapturingBuilder();
-        String key;
-
-        try (MockedStatic<VersionUtils> versions = mockStatic(VersionUtils.class)) {
-            versions.when(VersionUtils::getVersion).thenReturn(Version.builder().bundleVersion("13.5.1").build());
-
-            mockRenderer(context).render(builder.fragmentBuilder);
-            key = BundleCacheKey.forModule(TestRenderer.MODULE_PATH);
-        }
-
-        ArgumentCaptor<String> script = ArgumentCaptor.forClass(String.class);
-        verify(builder.scriptContent, atLeastOnce()).javaScript(script.capture());
-        assertTrue(key.startsWith("13.5.1"), key);
-        assertTrue(script.getValue().contains("bulk-widget.js?v=" + key + "')"), script.getValue());
-    }
-
-    @Test
     void renderEmitsAShimCarryingASignedDescriptor() {
         RichPageWidgetCommonContext context = mock(RichPageWidgetCommonContext.class, RETURNS_DEEP_STUBS);
         TestRenderer renderer = mockRenderer(context);
@@ -169,18 +142,41 @@ class AbstractBulkExportWidgetRendererTest {
     }
 
     @Test
-    void renderLoadsTheWidgetAppOfThisExtensionVersion() {
+    void theExtensionLoadsItsWidgetAppForThisShim() {
+        RichPageWidgetCommonContext context = mock(RichPageWidgetCommonContext.class, RETURNS_DEEP_STUBS);
+        TestRenderer renderer = mockRenderer(context);
+        CapturingBuilder builder = new CapturingBuilder();
+
+        renderer.render(builder.fragmentBuilder);
+
+        ArgumentCaptor<String> id = ArgumentCaptor.forClass(String.class);
+        verify(builder.attributesBuilder).id(id.capture());
+        // The shim's id ties the app to this widget instance: a page may carry more than one
+        assertTrue(id.getValue().matches("bulk-[0-9a-f-]+"), id.getValue());
+        assertEquals(id.getValue(), renderer.loadedShimId);
+        assertEquals(builder.fragmentBuilder, renderer.loaderBuilder);
+    }
+
+    @Test
+    void noScriptIsPutOnThePageByGeneric() {
+        // The loader of the widget app is JavaScript, which belongs to the extension and react-sbb-polarion
         RichPageWidgetCommonContext context = mock(RichPageWidgetCommonContext.class, RETURNS_DEEP_STUBS);
         CapturingBuilder builder = new CapturingBuilder();
 
         mockRenderer(context).render(builder.fragmentBuilder);
 
-        ArgumentCaptor<String> script = ArgumentCaptor.forClass(String.class);
-        verify(builder.scriptContent, atLeastOnce()).javaScript(script.capture());
-        String loader = script.getValue();
-        assertTrue(loader.contains(TestRenderer.MODULE_URL + "?v="), loader);
-        // The shim's id ties the app to this widget instance: a page may carry more than one
-        assertTrue(loader.matches("(?s).*module.default\\('#bulk-[0-9a-f-]+'\\).*"), loader);
+        verify(builder.tagSelector, never()).script();
+    }
+
+    @Test
+    void aWidgetThatRendersAWarningLoadsNoWidgetApp() {
+        RichPageWidgetCommonContext context = mock(RichPageWidgetCommonContext.class, RETURNS_DEEP_STUBS);
+        when(context.renderWarning(any())).thenReturn("<div>Invalid top value</div>");
+        TestRenderer renderer = mockRenderer(context, WidgetContextScope.Default, null, -1);
+
+        renderer.render(new CapturingBuilder().fragmentBuilder);
+
+        assertNull(renderer.loadedShimId);
     }
 
     @Test
@@ -202,7 +198,7 @@ class AbstractBulkExportWidgetRendererTest {
     @Test
     void noStylesheetIsPutOnThePageForTheWidget() {
         // Everything the widget renders lives in the shadow root the widget app attaches to the shim, styled by the
-        // stylesheets that app injects into it; the shim and the loader script are all that is emitted
+        // stylesheets that app injects into it; the shim is all that is emitted here
         RichPageWidgetCommonContext context = mock(RichPageWidgetCommonContext.class, RETURNS_DEEP_STUBS);
         CapturingBuilder builder = new CapturingBuilder();
 
@@ -281,24 +277,20 @@ class AbstractBulkExportWidgetRendererTest {
     }
 
     /**
-     * A renderer as an extension writes one: its widget app and one attribute of its own.
+     * A renderer as an extension writes one: its widget app loader and one attribute of its own.
      */
     private static class TestRenderer extends AbstractBulkExportWidgetRenderer {
-        static final String MODULE_URL = "/polarion/test-app/ui/app/assets/bulk-widget.js";
-        static final String MODULE_PATH = "webapp/test-app/app/assets/bulk-widget.js";
+        private HtmlFragmentBuilder loaderBuilder;
+        private String loadedShimId;
 
         TestRenderer(RichPageWidgetCommonContext context) {
             super(context);
         }
 
         @Override
-        protected @NotNull String getModuleUrl() {
-            return MODULE_URL;
-        }
-
-        @Override
-        protected @NotNull String getModulePath() {
-            return MODULE_PATH;
+        protected void renderWidgetAppLoader(@NotNull HtmlFragmentBuilder builder, @NotNull String shimId) {
+            this.loaderBuilder = builder;
+            this.loadedShimId = shimId;
         }
 
         @Override
@@ -314,19 +306,17 @@ class AbstractBulkExportWidgetRendererTest {
     }
 
     /**
-     * Collects what the renderer writes: the attributes of the shim and the script that loads the widget app.
+     * Collects what the renderer writes: the attributes of the shim.
      * Polarion's own builders need a rendering context of their own, so they are mocked instead of instantiated.
      */
     private static class CapturingBuilder {
         private final HtmlFragmentBuilder fragmentBuilder = mock(HtmlFragmentBuilder.class, RETURNS_DEEP_STUBS);
         private final HtmlAttributesBuilder attributesBuilder = mock(HtmlAttributesBuilder.class);
-        private final HtmlContentBuilder scriptContent = mock(HtmlContentBuilder.class);
         @SuppressWarnings("unchecked")
         private final HtmlTagSelector<HtmlTagBuilder> tagSelector = mock(HtmlTagSelector.class);
 
         private CapturingBuilder() {
             HtmlTagBuilder div = mock(HtmlTagBuilder.class, RETURNS_DEEP_STUBS);
-            HtmlTagBuilder script = mock(HtmlTagBuilder.class);
             HtmlTagBuilder style = mock(HtmlTagBuilder.class, RETURNS_DEEP_STUBS);
             when(fragmentBuilder.tag()).thenReturn(tagSelector);
             when(tagSelector.style()).thenReturn(style);
@@ -335,9 +325,6 @@ class AbstractBulkExportWidgetRendererTest {
             when(attributesBuilder.className(anyString())).thenReturn(attributesBuilder);
             when(attributesBuilder.id(anyString())).thenReturn(attributesBuilder);
             when(attributesBuilder.byName(anyString(), anyString())).thenReturn(attributesBuilder);
-            // The loader is a sibling of the shim, so that the shim can become a shadow host
-            when(tagSelector.script()).thenReturn(script);
-            when(script.append()).thenReturn(scriptContent);
         }
 
         private Map<String, String> attributes() {
