@@ -220,7 +220,8 @@ class AbstractBulkExportWidgetRendererTest {
         assertEquals("Pages", renderer.getItemsTitle(PrototypeEnum.RichPage));
         assertEquals("Test Runs", renderer.getItemsTitle(PrototypeEnum.TestRun));
         assertEquals("Collections", renderer.getItemsTitle(PrototypeEnum.BaselineCollection));
-        assertThrows(IllegalArgumentException.class, () -> renderer.getItemsTitle(PrototypeEnum.WorkItem));
+        // Any other prototype an extension allows renders under its own name instead of failing the widget
+        assertEquals("WorkItem", renderer.getItemsTitle(PrototypeEnum.WorkItem));
     }
 
     private static TestRenderer mockRenderer(RichPageWidgetCommonContext context) {

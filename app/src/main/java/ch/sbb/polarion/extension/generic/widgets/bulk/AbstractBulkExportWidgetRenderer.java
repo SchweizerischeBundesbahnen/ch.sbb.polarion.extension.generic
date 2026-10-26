@@ -108,7 +108,7 @@ public abstract class AbstractBulkExportWidgetRenderer extends AbstractWidgetRen
     }
 
     /**
-     * What the widget calls the items it lists.
+     * What the widget calls the items it lists. A prototype without a name of its own here is called by its own.
      */
     public @NotNull String getItemsTitle(@NotNull PrototypeEnum prototype) {
         return switch (prototype) {
@@ -116,7 +116,7 @@ public abstract class AbstractBulkExportWidgetRenderer extends AbstractWidgetRen
             case RichPage -> "Pages";
             case TestRun -> "Test Runs";
             case BaselineCollection -> "Collections";
-            default -> throw new IllegalArgumentException("Unexpected value: " + prototype);
+            default -> prototype.name();
         };
     }
 
