@@ -123,6 +123,7 @@ class BulkExportWidgetInternalControllerTest {
         });
         when(apiHelper.getItems(any(), any())).thenAnswer(invocation -> {
             assertTrue(asCaller.get(), "the rows must be read as the calling user");
+            assertEquals("id:x", invocation.<BulkExportWidgetDescriptor>getArgument(0).getQuery());
             return items;
         });
         String encoded = WidgetDescriptorSigner.getInstance().encode(BulkExportWidgetDescriptor.builder().query("id:x").build());
