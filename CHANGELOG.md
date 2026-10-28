@@ -1,5 +1,18 @@
 # Changelog
 
+## [16.5.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.4.0...v16.5.0) (2026-10-28)
+
+
+### Features
+
+* map PermissionDeniedException to HTTP 403 ([#748](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/748)) ([cf0b6e8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/cf0b6e8b5c17e37dd2ee724c6612ee8052fe91bf)), closes [#747](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/747)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.fasterxml.jackson.module:jackson-module-jaxb-annotations to v2.22.4 ([#742](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/742)) ([2a6e15d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2a6e15ddb1c39bf06404b27890e54ae8fd6861af))
+* **deps:** update dependency org.apache.maven.plugins:maven-surefire-plugin to v3.6.1 ([#743](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/743)) ([7a1ddd0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/7a1ddd0f339f0722d9e0c0a744d62f2289adb2e4))
+
 ## [16.4.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.3.0...v16.4.0) (2026-10-26)
 
 
