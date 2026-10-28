@@ -19,6 +19,7 @@ import ch.sbb.polarion.extension.generic.rest.exception.mapper.MismatchedInputEx
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotFoundExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.ObjectNotFoundExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.NotAuthorizedExceptionMapper;
+import ch.sbb.polarion.extension.generic.rest.exception.mapper.PermissionDeniedExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.exception.mapper.UncaughtExceptionMapper;
 import ch.sbb.polarion.extension.generic.rest.feature.LifecycleBindingFeature;
 import ch.sbb.polarion.extension.generic.rest.filter.AuthenticationFilter;
@@ -88,6 +89,7 @@ public class GenericRestApplication extends Application {
                 new NotAuthorizedExceptionMapper(),
                 new NotFoundExceptionMapper(),
                 new ObjectNotFoundExceptionMapper(),
+                new PermissionDeniedExceptionMapper(),
                 new UncaughtExceptionMapper()
         );
     }
