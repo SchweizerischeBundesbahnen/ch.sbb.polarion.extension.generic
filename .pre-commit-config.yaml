@@ -53,7 +53,7 @@ repos:
     hooks:
       - id: commitizen
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.31.1
+    rev: v1.32.0
     hooks:
       - id: zizmor
   # The fork, as in the extensions: upstream v1.7.12 does not know the `cache-mode` key that the
