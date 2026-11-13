@@ -59,6 +59,6 @@ repos:
   # The fork, as in the extensions: upstream v1.7.12 does not know the `cache-mode` key that the
   # actionlint of CI requires on a reusable-workflow call from a low-trust trigger.
   - repo: https://github.com/kjanat/actionlint
-    rev: v1.17.0
+    rev: v1.17.1
     hooks:
       - id: actionlint
