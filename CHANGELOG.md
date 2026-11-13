@@ -1,5 +1,21 @@
 # Changelog
 
+## [16.5.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.4.0...v16.5.0) (2026-11-13)
+
+
+### Features
+
+* map PermissionDeniedException to HTTP 403 ([#748](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/748)) ([cf0b6e8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/cf0b6e8b5c17e37dd2ee724c6612ee8052fe91bf)), closes [#747](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/747)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.fasterxml.jackson.module:jackson-module-jaxb-annotations to v2.22.4 ([#742](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/742)) ([2a6e15d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2a6e15ddb1c39bf06404b27890e54ae8fd6861af))
+* **deps:** update dependency com.fasterxml.jackson.module:jackson-module-jaxb-annotations to v2.23.0 ([#753](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/753)) ([b81dbc8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/b81dbc860a5c642d0ef9005fb86eb720ad010ec0))
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.200 ([#752](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/752)) ([b0488e6](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/b0488e6c5996af2285c88e086fa3f38e2f89bb84))
+* **deps:** update dependency org.apache.maven.plugins:maven-surefire-plugin to v3.6.1 ([#743](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/743)) ([7a1ddd0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/7a1ddd0f339f0722d9e0c0a744d62f2289adb2e4))
+* **deps:** update dependency org.jacoco:jacoco-maven-plugin to v0.8.16 ([#749](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/749)) ([7850730](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/785073065f2c15a2dadd70b9baabe77917d8f673))
+
 ## [16.4.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.3.0...v16.4.0) (2026-10-26)
 
 
