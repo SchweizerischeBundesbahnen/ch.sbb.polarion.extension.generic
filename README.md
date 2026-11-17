@@ -552,6 +552,48 @@ public class PdfExporterExtensionConfiguration extends ExtensionConfiguration {
 }
 ```
 
+### Reading a document in a baseline or a collection
+
+A document opened from a baseline or from a collection is not the document at HEAD, and the address of the
+page is all that says so (`.../baseline/<revision>/wiki/...`, `.../collection/<collection>/wiki/...`). A REST
+endpoint of an extension gets neither for free: pass what the address names along with the request, and wrap
+the code which reads and renders the document.
+
+`PolarionBaselineExecutor.executeInBaseline` runs a callable in the baseline of a revision, or as it is where
+the revision is `null`.
+
+`PolarionCollectionExecutor` does the two things Polarion does for a document of a collection:
+
+- `resolveDocument` returns the document at the revision the collection, or a collection upstream of it,
+  holds it at. Where the collection takes the document at HEAD, or no collection is named, the document is
+  returned as it was given.
+- `executeInCollection` runs a callable in the context of the collection. Polarion's renderers read that
+  context: a linked work item is shown at the revision the collection holds its document at, and one whose
+  document is not part of the collection is not shown. Opening the context does not select the revision of the
+  document itself, so both calls are needed.
+
+```java
+TransactionalExecutor.executeSafelyInReadOnlyTransaction(
+        transaction -> PolarionCollectionExecutor.executeInCollection(projectId, collection, transaction,
+                () -> PolarionBaselineExecutor.executeInBaseline(baselineRevision, transaction, () -> {
+                    DocumentReference document = DocumentReference.fromPath(projectId + "/" + locationPath);
+                    // A revision the request names wins over the one the collection holds the document at
+                    document = revision != null
+                            ? document.getWithRevision(revision)
+                            : PolarionCollectionExecutor.resolveDocument(projectId, collection, document, transaction);
+                    return render(document.getOriginal(transaction));
+                })));
+```
+
+The collection is named the way Polarion names one relative to a project: `3`, `otherProject/3` for a
+collection of another project, and `3~1234` for a collection opened at a revision. The address of the page
+carries the same name between `/collection/` and `/wiki/`, except that it doubles the slash
+(`otherProject//3`); undo that before naming the collection. A collection which does not exist is refused
+with an `IllegalArgumentException`: ignoring it would read the document at HEAD without any sign of it.
+
+A checked exception of the callable is thrown as `BaselineExecutionException` or `CollectionExecutionException`,
+an unchecked one as it is.
+
 ### Document (DLE) editor toolbar button
 
 Moved to **react-sbb-polarion**. The self-healing toolbar engine and its `.dleToolBar*` stylesheet are
