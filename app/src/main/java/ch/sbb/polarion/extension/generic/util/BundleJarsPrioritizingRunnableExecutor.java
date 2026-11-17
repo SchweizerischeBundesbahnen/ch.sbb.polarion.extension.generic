@@ -141,7 +141,7 @@ final class BundleJarsPrioritizingRunnableExecutor {
             }
         } catch (InvocationTargetException e) {
             // callers and REST exception mappers match the runnable's own exception type, which the reflective call hides.
-            // An Error stays wrapped, so the callers' catch (Exception) still returns it in ERROR_KEY.
+            // An Error stays wrapped: the callers handle only exceptions, and without rethrow they must still return it in ERROR_KEY.
             if (e.getCause() instanceof Exception cause) {
                 throw cause;
             }
