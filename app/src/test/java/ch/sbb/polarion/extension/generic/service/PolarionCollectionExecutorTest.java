@@ -85,6 +85,34 @@ class PolarionCollectionExecutorTest {
     }
 
     @Test
+    void returnsToTheCollectionItWasCalledIn() {
+        // A caller which is itself inside a collection, as a request of Polarion's own CollectionAwareRPC is
+        IObjectId outerObjectId = mock(IObjectId.class);
+
+        try (CollectionThreadContext ignored = new CollectionThreadContext(outerObjectId)) {
+            Optional<IObjectId> seen = PolarionCollectionExecutor.executeInCollection(PROJECT, COLLECTION, transaction, CollectionThreadContext::getContextCollectionId);
+
+            assertEquals(Optional.of(collectionObjectId), seen);
+            assertEquals(Optional.of(outerObjectId), CollectionThreadContext.getContextCollectionId());
+        }
+        assertTrue(CollectionThreadContext.getContextCollectionId().isEmpty());
+    }
+
+    @Test
+    void returnsToTheCollectionItWasCalledInWhenTheCallFails() {
+        IObjectId outerObjectId = mock(IObjectId.class);
+
+        try (CollectionThreadContext ignored = new CollectionThreadContext(outerObjectId)) {
+            assertThrows(CollectionExecutionException.class, () -> PolarionCollectionExecutor.executeInCollection(PROJECT, COLLECTION, transaction, this::failsWithCheckedException));
+            assertEquals(Optional.of(outerObjectId), CollectionThreadContext.getContextCollectionId());
+
+            assertThrows(IllegalStateException.class, () -> PolarionCollectionExecutor.executeInCollection(PROJECT, COLLECTION, transaction, this::failsWithRuntimeException));
+            assertEquals(Optional.of(outerObjectId), CollectionThreadContext.getContextCollectionId());
+        }
+        assertTrue(CollectionThreadContext.getContextCollectionId().isEmpty());
+    }
+
+    @Test
     void refusesACollectionWhichDoesNotExist() {
         // Ignoring it would read the document at HEAD, which is the wrong document and does not look wrong
         when(collection.isUnresolvable()).thenReturn(true);
