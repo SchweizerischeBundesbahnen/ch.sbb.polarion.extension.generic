@@ -13,6 +13,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 
 import java.io.NotSerializableException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Dictionary;
@@ -506,6 +507,88 @@ class BundleJarsPrioritizingRunnableTest {
             // Assert
             assertNotNull(result);
             assertEquals("no plugin xml", result.get("result"));
+        }
+    }
+
+    @Test
+    void execute_withRunnableExceptionAndRethrowTrue_shouldThrowOriginalException() {
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                    () -> BundleJarsPrioritizingRunnable.execute(ThrowingRunnable.class, params, true));
+
+            assertEquals(ThrowingRunnable.MESSAGE, thrown.getMessage());
+        }
+    }
+
+    @Test
+    void execute_withRunnableExceptionAndNonSerializableParams_shouldThrowOriginalException() {
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class);
+             MockedStatic<ObjectUtils> objectUtils = mockStatic(ObjectUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+            objectUtils.when(() -> ObjectUtils.serialize(any())).thenThrow(new NotSerializableException("Not serializable"));
+
+            IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                    () -> BundleJarsPrioritizingRunnable.execute(ThrowingRunnable.class, params, true));
+
+            assertEquals(ThrowingRunnable.MESSAGE, thrown.getMessage());
+        }
+    }
+
+    @Test
+    void execute_withRunnableException_shouldReturnOriginalExceptionInErrorMap() {
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(ThrowingRunnable.class, params);
+
+            IllegalArgumentException error = assertInstanceOf(IllegalArgumentException.class, result.get(BundleJarsPrioritizingRunnable.ERROR_KEY));
+            assertEquals(ThrowingRunnable.MESSAGE, error.getMessage());
+        }
+    }
+
+    @Test
+    void execute_withRunnableError_shouldReturnWrappedErrorInErrorMap() {
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(ErrorThrowingRunnable.class, params);
+
+            InvocationTargetException error = assertInstanceOf(InvocationTargetException.class, result.get(BundleJarsPrioritizingRunnable.ERROR_KEY));
+            assertInstanceOf(LinkageError.class, error.getCause());
+        }
+    }
+
+    @Test
+    void executeCached_withRunnableExceptionAndRethrowTrue_shouldThrowOriginalException() {
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                    () -> BundleJarsPrioritizingRunnable.executeCached(CachedThrowingRunnable.class, params, true));
+
+            assertEquals(ThrowingRunnable.MESSAGE, thrown.getMessage());
         }
     }
 
@@ -1022,6 +1105,29 @@ class BundleJarsPrioritizingRunnableTest {
             result.put("status", "received");
             result.put("receivedThread", params.get("thread"));
             return result;
+        }
+    }
+
+    public static class ThrowingRunnable implements BundleJarsPrioritizingRunnable {
+        static final String MESSAGE = "Invalid input from runnable";
+
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            throw new IllegalArgumentException(MESSAGE);
+        }
+    }
+
+    public static class ErrorThrowingRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            throw new LinkageError("Linkage failed in runnable");
+        }
+    }
+
+    public static class CachedThrowingRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            throw new IllegalArgumentException(ThrowingRunnable.MESSAGE);
         }
     }
 }

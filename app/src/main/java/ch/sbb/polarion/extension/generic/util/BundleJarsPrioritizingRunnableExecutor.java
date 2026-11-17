@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.Constants;
 
 import java.io.NotSerializableException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -132,10 +133,19 @@ final class BundleJarsPrioritizingRunnableExecutor {
             Logger.getLogger(BundleJarsPrioritizingRunnable.class).debug("Parameters are not serializable; passing them as-is...");
         }
 
-        if (paramsSerialized == null) {
-            return (Map<String, Object>) runnableClass.getMethod("run", Map.class).invoke(instance, params);
-        } else {
-            return (Map<String, Object>) runnableClass.getMethod("runInternal", byte[].class).invoke(instance, (Object) paramsSerialized);
+        try {
+            if (paramsSerialized == null) {
+                return (Map<String, Object>) runnableClass.getMethod("run", Map.class).invoke(instance, params);
+            } else {
+                return (Map<String, Object>) runnableClass.getMethod("runInternal", byte[].class).invoke(instance, (Object) paramsSerialized);
+            }
+        } catch (InvocationTargetException e) {
+            // callers and REST exception mappers match the runnable's own exception type, which the reflective call hides.
+            // An Error stays wrapped: the callers handle only exceptions, and without rethrow they must still return it in ERROR_KEY.
+            if (e.getCause() instanceof Exception cause) {
+                throw cause;
+            }
+            throw e;
         }
     }
 }
