@@ -43,12 +43,12 @@ public class PolarionCollectionExecutor {
 
     public <T> T executeInCollection(@Nullable String projectId, @Nullable String collection, @NotNull ReadOnlyTransaction transaction, @NotNull Callable<T> callable) {
         if (collection == null || collection.isEmpty()) {
-            return callCallable(callable);
+            return CallableInvoker.call(callable, CollectionExecutionException::new);
         }
         BaselineCollectionReference reference = reference(projectId, collection);
         ensureExists(reference, collection, transaction);
         try (CollectionThreadContext ignored = new CollectionThreadContext(objectId(reference))) {
-            return callCallable(callable);
+            return CallableInvoker.call(callable, CollectionExecutionException::new);
         }
     }
 
@@ -85,16 +85,6 @@ public class PolarionCollectionExecutor {
     private void ensureExists(@NotNull BaselineCollectionReference reference, @NotNull String collection, @NotNull ReadOnlyTransaction transaction) {
         if (reference.get(transaction).getOldApi().isUnresolvable()) {
             throw new IllegalArgumentException("Collection '%s' does not exist".formatted(collection));
-        }
-    }
-
-    private <T> T callCallable(@NotNull Callable<T> callable) {
-        try {
-            return callable.call();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new CollectionExecutionException("Error during callable execution", e);
         }
     }
 

@@ -13,19 +13,9 @@ public class PolarionBaselineExecutor {
 
     public <T> T executeInBaseline(@Nullable String baselineRevision, @NotNull ReadOnlyTransaction transaction, @NotNull Callable<T> callable) {
         if (baselineRevision == null) {
-            return callCallable(callable);
+            return CallableInvoker.call(callable, BaselineExecutionException::new);
         } else {
-            return transaction.utils().executeInBaseline(baselineRevision, () -> callCallable(callable));
-        }
-    }
-
-    private <T> T callCallable(@NotNull Callable<T> callable) {
-        try {
-            return callable.call();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new BaselineExecutionException("Error during callable execution", e);
+            return transaction.utils().executeInBaseline(baselineRevision, () -> CallableInvoker.call(callable, BaselineExecutionException::new));
         }
     }
 
