@@ -13,6 +13,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 
 import java.io.NotSerializableException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Dictionary;
@@ -560,6 +561,22 @@ class BundleJarsPrioritizingRunnableTest {
     }
 
     @Test
+    void execute_withRunnableError_shouldReturnWrappedErrorInErrorMap() {
+        Map<String, Object> params = Map.of("key", "value");
+
+        try (MockedStatic<ManifestUtils> manifestUtils = mockStatic(ManifestUtils.class)) {
+            Attributes mockAttributes = mock(Attributes.class);
+            manifestUtils.when(ManifestUtils::getManifestAttributes).thenReturn(mockAttributes);
+            when(mockAttributes.getValue(Constants.BUNDLE_CLASSPATH)).thenReturn(".");
+
+            Map<String, Object> result = BundleJarsPrioritizingRunnable.execute(ErrorThrowingRunnable.class, params);
+
+            InvocationTargetException error = assertInstanceOf(InvocationTargetException.class, result.get(BundleJarsPrioritizingRunnable.ERROR_KEY));
+            assertInstanceOf(LinkageError.class, error.getCause());
+        }
+    }
+
+    @Test
     void executeCached_withRunnableExceptionAndRethrowTrue_shouldThrowOriginalException() {
         Map<String, Object> params = Map.of("key", "value");
 
@@ -1097,6 +1114,13 @@ class BundleJarsPrioritizingRunnableTest {
         @Override
         public Map<String, Object> run(Map<String, Object> params) {
             throw new IllegalArgumentException(MESSAGE);
+        }
+    }
+
+    public static class ErrorThrowingRunnable implements BundleJarsPrioritizingRunnable {
+        @Override
+        public Map<String, Object> run(Map<String, Object> params) {
+            throw new LinkageError("Linkage failed in runnable");
         }
     }
 

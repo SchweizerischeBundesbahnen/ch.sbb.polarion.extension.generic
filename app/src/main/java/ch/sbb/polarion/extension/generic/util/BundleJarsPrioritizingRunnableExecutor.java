@@ -140,8 +140,12 @@ final class BundleJarsPrioritizingRunnableExecutor {
                 return (Map<String, Object>) runnableClass.getMethod("runInternal", byte[].class).invoke(instance, (Object) paramsSerialized);
             }
         } catch (InvocationTargetException e) {
-            // callers and REST exception mappers match the runnable's own exception type, which the reflective call hides
-            throw e.getCause() != null ? e.getCause() : e;
+            // callers and REST exception mappers match the runnable's own exception type, which the reflective call hides.
+            // An Error stays wrapped, so the callers' catch (Exception) still returns it in ERROR_KEY.
+            if (e.getCause() instanceof Exception cause) {
+                throw cause;
+            }
+            throw e;
         }
     }
 }
