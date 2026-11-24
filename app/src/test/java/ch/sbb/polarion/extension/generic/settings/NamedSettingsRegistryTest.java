@@ -11,7 +11,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -19,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
+@SuppressWarnings("rawtypes")
 @ExtendWith(CurrentContextExtension.class)
 @CurrentContextConfig("registry-test-extension")
 class NamedSettingsRegistryTest {
@@ -77,10 +85,74 @@ class NamedSettingsRegistryTest {
         assertTrue(NamedSettingsRegistry.INSTANCE.getAll().isEmpty());
     }
 
+    @Test
+    void getAllReturnsReadOnlySet() {
+        TestSettings registered = new TestSettings(settingsService);
+        OtherSettings other = new OtherSettings(settingsService);
+        Set<GenericNamedSettings> emptySet = NamedSettingsRegistry.INSTANCE.getAll();
+        Set<GenericNamedSettings> registeredSet = NamedSettingsRegistry.INSTANCE.register(List.of(registered)).getAll();
+        Set<GenericNamedSettings> replacedSet = NamedSettingsRegistry.INSTANCE.replaceAll(List.of(registered)).getAll();
+
+        assertThrows(UnsupportedOperationException.class, () -> emptySet.add(other));
+        assertThrows(UnsupportedOperationException.class, () -> registeredSet.add(other));
+        assertThrows(UnsupportedOperationException.class, () -> replacedSet.add(other));
+        assertThrows(UnsupportedOperationException.class, emptySet::clear);
+        assertThrows(UnsupportedOperationException.class, registeredSet::clear);
+        assertThrows(UnsupportedOperationException.class, replacedSet::clear);
+        assertEquals(Set.of(registered), NamedSettingsRegistry.INSTANCE.getAll());
+    }
+
+    @Test
+    void getAllReturnsSnapshot() {
+        TestSettings registered = new TestSettings(settingsService);
+        NamedSettingsRegistry.INSTANCE.register(List.of(registered));
+        Set<GenericNamedSettings> snapshot = NamedSettingsRegistry.INSTANCE.getAll();
+
+        NamedSettingsRegistry.INSTANCE.register(List.of(new OtherSettings(settingsService)));
+        assertEquals(Set.of(registered), snapshot);
+
+        NamedSettingsRegistry.INSTANCE.clear();
+        assertEquals(Set.of(registered), snapshot);
+    }
+
+    @Test
+    void concurrentRegistrationsAreNotLost() throws Exception {
+        int threads = 8;
+        int registrationsPerThread = 100;
+        CyclicBarrier start = new CyclicBarrier(threads);
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
+        try {
+            List<Future<?>> futures = new ArrayList<>();
+            for (int t = 0; t < threads; t++) {
+                // create the settings here, as the extension context is available in the test thread only
+                List<OtherSettings> threadSettings = new ArrayList<>();
+                for (int i = 0; i < registrationsPerThread; i++) {
+                    threadSettings.add(new OtherSettings("Other-%d-%d".formatted(t, i), settingsService));
+                }
+                futures.add(executor.submit(() -> {
+                    start.await(10, TimeUnit.SECONDS);
+                    threadSettings.forEach(settings -> NamedSettingsRegistry.INSTANCE.register(List.of(settings)));
+                    return null;
+                }));
+            }
+            for (Future<?> future : futures) {
+                future.get(30, TimeUnit.SECONDS);
+            }
+        } finally {
+            executor.shutdownNow();
+        }
+
+        assertEquals(threads * registrationsPerThread, NamedSettingsRegistry.INSTANCE.getAll().size());
+    }
+
     private static class OtherSettings extends GenericNamedSettings<TestModel> {
 
         OtherSettings(SettingsService settingsService) {
-            super("Other", settingsService);
+            this("Other", settingsService);
+        }
+
+        OtherSettings(String featureName, SettingsService settingsService) {
+            super(featureName, settingsService);
         }
 
         @Override
