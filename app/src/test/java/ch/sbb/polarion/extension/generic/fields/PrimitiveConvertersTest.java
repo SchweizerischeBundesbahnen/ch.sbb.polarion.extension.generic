@@ -1,5 +1,6 @@
 package ch.sbb.polarion.extension.generic.fields;
 
+import ch.sbb.polarion.extension.generic.fields.converters.DoubleToStringConverter;
 import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
 import com.polarion.core.util.types.Currency;
 import com.polarion.core.util.types.DateOnly;
@@ -19,6 +20,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -121,6 +123,66 @@ class PrimitiveConvertersTest {
         fieldMetadata.setType(FieldType.CURRENCY.getType());
 
         assertNull(ConverterTestUtils.process(value, fieldMetadata));
+    }
+
+    @Test
+    void testStringToFloatConversion() {
+        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
+        fieldMetadata.setType(FieldType.FLOAT.getType());
+
+        assertEquals(1.5f, ConverterTestUtils.process("1.5", fieldMetadata));
+    }
+
+    @Test
+    void testStringToIntegerConversion() {
+        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
+        fieldMetadata.setType(FieldType.INTEGER.getType());
+
+        assertEquals(42, ConverterTestUtils.process("42.7", fieldMetadata)); //uses chain converter
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "abc", "1,5", "1.2.3"})
+    void testStringToFloatConversionOfInvalidValue(String value) {
+        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
+        fieldMetadata.setType(FieldType.FLOAT.getType());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ConverterTestUtils.process(value, fieldMetadata));
+        assertInvalidNumberReported(value, exception);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "abc", "1,5", "1.2.3"})
+    void testStringToIntegerConversionOfInvalidValue(String value) {
+        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
+        fieldMetadata.setType(FieldType.INTEGER.getType());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> ConverterTestUtils.process(value, fieldMetadata));
+        assertInvalidNumberReported(value, exception);
+    }
+
+    @Test
+    void testStringToDoubleBackConversion() {
+        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
+        ConverterContext context = ConverterTestUtils.createContext(null, null);
+
+        assertEquals(1.11, new DoubleToStringConverter().convertBack("1.11", context, fieldMetadata));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "abc", "1,5", "1.2.3"})
+    void testStringToDoubleBackConversionOfInvalidValue(String value) {
+        FieldMetadata fieldMetadata = ConverterTestUtils.getWorkItemCustomField();
+        ConverterContext context = ConverterTestUtils.createContext(null, null);
+        DoubleToStringConverter converter = new DoubleToStringConverter();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> converter.convertBack(value, context, fieldMetadata));
+        assertInvalidNumberReported(value, exception);
+    }
+
+    private void assertInvalidNumberReported(String value, IllegalArgumentException exception) {
+        assertEquals("Cannot convert value '%s' of field 'someCustomField' to a number".formatted(value), exception.getMessage());
+        assertInstanceOf(NumberFormatException.class, exception.getCause());
     }
 
     @Test

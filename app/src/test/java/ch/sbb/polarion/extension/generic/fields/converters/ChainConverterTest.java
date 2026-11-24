@@ -3,7 +3,6 @@ package ch.sbb.polarion.extension.generic.fields.converters;
 import ch.sbb.polarion.extension.generic.fields.ConverterContext;
 import ch.sbb.polarion.extension.generic.fields.IConverter;
 import ch.sbb.polarion.extension.generic.fields.model.FieldMetadata;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -185,51 +184,6 @@ class ChainConverterTest {
                 assertEquals(initialValue, result);
             }
 
-            /**
-             * Helper converter for testing
-             */
-            private static class StringToDoubleConverter implements IConverter<String, Double> {
-                @Override
-                public Double convert(@NotNull String initialValue, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-                    return Double.parseDouble(initialValue);
-                }
-
-                @Override
-                public String convertBack(@NotNull Double value, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-                    return value.toString();
-                }
-            }
-
-            /**
-             * Helper converter for testing
-             */
-            private static class DoubleToIntegerConverter implements IConverter<Double, Integer> {
-                @Override
-                public Integer convert(@NotNull Double initialValue, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-                    return initialValue.intValue();
-                }
-
-                @Override
-                public Double convertBack(@NotNull Integer value, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-                    return value.doubleValue();
-                }
-            }
-
-            /**
-             * Helper converter for testing three-converter chains
-             */
-            private static class IntegerToStringConverter implements IConverter<Integer, String> {
-                @Override
-                public String convert(@NotNull Integer initialValue, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-                    return initialValue.toString();
-                }
-
-                @Override
-                public Integer convertBack(@NotNull String value, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-                    return Integer.parseInt(value);
-                }
-            }
-
             @Nested
             @DisplayName("Integration Tests")
             class IntegrationTests {
@@ -259,15 +213,18 @@ class ChainConverterTest {
                 @Test
                 @DisplayName("Should handle chaining three converters")
                 void shouldHandleThreeConverters() {
-                    // Create three converters
+                    // Two actual converters and a mock, as there is no Integer to String implementation
                     StringToDoubleConverter stringToDoubleConverter = new StringToDoubleConverter();
                     DoubleToIntegerConverter doubleToIntegerConverter = new DoubleToIntegerConverter();
-                    IntegerToStringConverter integerToStringConverter = new IntegerToStringConverter();
+                    IConverter<Integer, String> integerToStringConverter = mock();
 
                     chainConverter = new ChainConverter(stringToDoubleConverter, doubleToIntegerConverter, integerToStringConverter);
 
                     ConverterContext realContext = mock(ConverterContext.class);
                     FieldMetadata realFieldMetadata = mock(FieldMetadata.class);
+
+                    when(integerToStringConverter.convert(42, realContext, realFieldMetadata)).thenReturn("42");
+                    when(integerToStringConverter.convertBack("42", realContext, realFieldMetadata)).thenReturn(42);
 
                     // Test convert: String -> Double -> Integer -> String
                     Object result = chainConverter.convert("42.7", realContext, realFieldMetadata);

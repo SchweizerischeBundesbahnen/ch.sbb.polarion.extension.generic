@@ -8,7 +8,11 @@ import org.jetbrains.annotations.NotNull;
 public class StringToFloatConverter implements IConverter<String, Float> {
     @Override
     public Float convert(@NotNull String initialValue, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-        return Float.valueOf(initialValue);
+        try {
+            return Float.valueOf(initialValue);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Cannot convert value '%s' of field '%s' to a number".formatted(initialValue, fieldMetadata.getId()), e);
+        }
     }
 
     @Override
