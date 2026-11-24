@@ -52,7 +52,9 @@ final class BundleJarsPrioritizingRunnableExecutor {
         }
     }
 
+    // Not closed on failure either, for the reason given at execute().
     @SneakyThrows
+    @SuppressWarnings("java:S2095")
     private static CachedRunner createRunner(@NotNull Class<? extends BundleJarsPrioritizingRunnable> runnableImplClass, ClassLoader originalThreadClassLoader) {
         List<URL> bundleJarURLs = collectBundleURLs(runnableImplClass);
 
@@ -61,15 +63,10 @@ final class BundleJarsPrioritizingRunnableExecutor {
                 runnableImplClass.getClassLoader(),
                 originalThreadClassLoader);
 
-        try {
-            Class<?> runnableClass = classLoader.loadClass(runnableImplClass.getName());
-            Object instance = runnableClass.getDeclaredConstructor().newInstance();
+        Class<?> runnableClass = classLoader.loadClass(runnableImplClass.getName());
+        Object instance = runnableClass.getDeclaredConstructor().newInstance();
 
-            return new CachedRunner(classLoader, instance, runnableClass);
-        } catch (Exception e) {
-            classLoader.close();
-            throw e;
-        }
+        return new CachedRunner(classLoader, instance, runnableClass);
     }
 
     // The class loader is deliberately not closed. Its nested jars come from the JVM-wide JarFileFactory cache, so every
