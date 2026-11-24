@@ -50,7 +50,7 @@ public class FieldMetadata implements Comparable<FieldMetadata>{
     }
 
     @NotNull
-    public static  FieldMetadata fromCustomField(@NotNull ICustomField customField) {
+    public static FieldMetadata fromCustomField(@NotNull ICustomField customField) {
         return FieldMetadata.builder()
                 .id(customField.getId())
                 .label(customField.getName())
