@@ -73,7 +73,7 @@ final class BundleJarsPrioritizingRunnableExecutor {
     // class loader over the same bundle shares one JarFile, and closing it fails the class loading of the others,
     // the cached ones included, with "zip file closed". An open class loader leaks no resource: the next call reuses the cached JarFile.
     @SneakyThrows
-    @SuppressWarnings("java:S2095")
+    @SuppressWarnings({"java:S2095", "java:S2093"})
     static @NotNull Map<String, Object> execute(@NotNull Class<? extends BundleJarsPrioritizingRunnable> runnableImplClass, @NotNull Map<String, Object> params, boolean rethrowException) {
         ClassLoader originalThreadClassLoader = Thread.currentThread().getContextClassLoader();
         try {
