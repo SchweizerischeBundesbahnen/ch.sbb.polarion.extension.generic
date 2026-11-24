@@ -30,7 +30,7 @@ class NamedSettingsInternalControllerTest {
     @BeforeEach
     void setup() {
         controller = new NamedSettingsInternalController(mock(PolarionService.class));
-        NamedSettingsRegistry.INSTANCE.getAll().clear();
+        NamedSettingsRegistry.INSTANCE.clear();
     }
 
     @Test

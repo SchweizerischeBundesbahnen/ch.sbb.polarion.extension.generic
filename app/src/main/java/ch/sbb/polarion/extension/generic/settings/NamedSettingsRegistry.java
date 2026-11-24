@@ -21,6 +21,27 @@ public enum NamedSettingsRegistry {
         return this;
     }
 
+    /**
+     * Replaces all registered settings with the given ones. Unlike {@link #register(List)}, it also replaces
+     * a registered instance which is equal to a new one (same class and feature name).
+     */
+    public NamedSettingsRegistry replaceAll(List<? extends GenericNamedSettings<?>> settingsList) {
+        settingsSet.clear();
+        settingsSet.addAll(settingsList);
+        return this;
+    }
+
+    /**
+     * Removes all registered settings.
+     */
+    public void clear() {
+        settingsSet.clear();
+    }
+
+    /**
+     * Returns all registered settings. Do not modify the returned set, it becomes read-only in version 17.0.0.
+     * Use {@link #register(List)}, {@link #replaceAll(List)} or {@link #clear()} to change the registry.
+     */
     public Set<GenericNamedSettings> getAll() {
         return settingsSet;
     }

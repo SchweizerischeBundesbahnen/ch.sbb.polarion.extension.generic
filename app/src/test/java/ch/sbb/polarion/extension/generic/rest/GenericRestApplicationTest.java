@@ -27,7 +27,7 @@ class GenericRestApplicationTest {
     @BeforeEach
     @AfterEach
     void clearRegistry() {
-        NamedSettingsRegistry.INSTANCE.getAll().clear();
+        NamedSettingsRegistry.INSTANCE.clear();
     }
 
     @Test
