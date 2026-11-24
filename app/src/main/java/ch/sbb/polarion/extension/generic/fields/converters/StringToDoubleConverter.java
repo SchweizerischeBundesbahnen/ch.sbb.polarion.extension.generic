@@ -8,7 +8,11 @@ import org.jetbrains.annotations.NotNull;
 public class StringToDoubleConverter implements IConverter<String, Double> {
     @Override
     public Double convert(@NotNull String initialValue, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-        return Double.valueOf(initialValue);
+        try {
+            return Double.valueOf(initialValue);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Cannot convert value '%s' of field '%s' to a number".formatted(initialValue, fieldMetadata.getId()), e);
+        }
     }
 
     @Override

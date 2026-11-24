@@ -14,6 +14,10 @@ public class DoubleToStringConverter implements IConverter<Double, String> {
 
     @Override
     public Double convertBack(@NotNull String value, @NotNull ConverterContext context, @NotNull FieldMetadata fieldMetadata) {
-        return Double.parseDouble(value);
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Cannot convert value '%s' of field '%s' to a number".formatted(value, fieldMetadata.getId()), e);
+        }
     }
 }

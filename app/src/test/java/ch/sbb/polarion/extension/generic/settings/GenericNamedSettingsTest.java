@@ -179,7 +179,6 @@ class GenericNamedSettingsTest {
             ILocation mockProjectSettingsFolderLocation = mock(ILocation.class);
             when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test")).thenReturn(mockProjectSettingsFolderLocation);
             ILocation mockProjectTest1Location = mock(ILocation.class);
-            ILocation mockProjectTest2Location = mock(ILocation.class);
             when(mockProjectLocation.append(".polarion/extensions/" + POLARION_TEXT_EXTENSION + "/Test/project_delete1.settings")).thenReturn(mockProjectTest1Location);
 
             mockScopeUtils.when(() -> ScopeUtils.getContextLocation("project/delete_project/")).thenReturn(mockProjectLocation);
