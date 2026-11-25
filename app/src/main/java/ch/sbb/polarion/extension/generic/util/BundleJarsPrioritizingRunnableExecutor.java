@@ -52,7 +52,9 @@ final class BundleJarsPrioritizingRunnableExecutor {
         }
     }
 
+    // Not closed on failure either, for the reason given at execute().
     @SneakyThrows
+    @SuppressWarnings("java:S2095")
     private static CachedRunner createRunner(@NotNull Class<? extends BundleJarsPrioritizingRunnable> runnableImplClass, ClassLoader originalThreadClassLoader) {
         List<URL> bundleJarURLs = collectBundleURLs(runnableImplClass);
 
@@ -61,32 +63,30 @@ final class BundleJarsPrioritizingRunnableExecutor {
                 runnableImplClass.getClassLoader(),
                 originalThreadClassLoader);
 
-        try {
-            Class<?> runnableClass = classLoader.loadClass(runnableImplClass.getName());
-            Object instance = runnableClass.getDeclaredConstructor().newInstance();
+        Class<?> runnableClass = classLoader.loadClass(runnableImplClass.getName());
+        Object instance = runnableClass.getDeclaredConstructor().newInstance();
 
-            return new CachedRunner(classLoader, instance, runnableClass);
-        } catch (Exception e) {
-            classLoader.close();
-            throw e;
-        }
+        return new CachedRunner(classLoader, instance, runnableClass);
     }
 
+    // The class loader is deliberately not closed. Its nested jars come from the JVM-wide JarFileFactory cache, so every
+    // class loader over the same bundle shares one JarFile, and closing it fails the class loading of the others,
+    // the cached ones included, with "zip file closed". An open class loader leaks no resource: the next call reuses the cached JarFile.
     @SneakyThrows
+    @SuppressWarnings({"java:S2095", "java:S2093"})
     static @NotNull Map<String, Object> execute(@NotNull Class<? extends BundleJarsPrioritizingRunnable> runnableImplClass, @NotNull Map<String, Object> params, boolean rethrowException) {
         ClassLoader originalThreadClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             List<URL> bundleJarURLs = collectBundleURLs(runnableImplClass);
 
-            try (BundleJarsPrioritizingRunnable.BundleJarsPrioritizingClassLoader classLoader = new BundleJarsPrioritizingRunnable.BundleJarsPrioritizingClassLoader(bundleJarURLs.toArray(new URL[0]), runnableImplClass.getClassLoader(), originalThreadClassLoader)) {
+            BundleJarsPrioritizingRunnable.BundleJarsPrioritizingClassLoader classLoader = new BundleJarsPrioritizingRunnable.BundleJarsPrioritizingClassLoader(bundleJarURLs.toArray(new URL[0]), runnableImplClass.getClassLoader(), originalThreadClassLoader);
 
-                Thread.currentThread().setContextClassLoader(classLoader);
+            Thread.currentThread().setContextClassLoader(classLoader);
 
-                Class<?> runnableClass = classLoader.loadClass(runnableImplClass.getName());
-                Object runnable = runnableClass.getDeclaredConstructor().newInstance();
+            Class<?> runnableClass = classLoader.loadClass(runnableImplClass.getName());
+            Object runnable = runnableClass.getDeclaredConstructor().newInstance();
 
-                return invokeRunnable(runnableClass, runnable, params);
-            }
+            return invokeRunnable(runnableClass, runnable, params);
         } catch (Exception e) {
             if (rethrowException) {
                 throw e;

@@ -750,7 +750,7 @@ class BundleJarsPrioritizingRunnableTest {
     // createRunner exception handling test
 
     @Test
-    void createRunner_shouldCloseClassLoaderOnException() {
+    void createRunner_shouldReturnErrorOnException() {
         // Arrange
         Map<String, Object> params = Map.of("key", "value");
 
@@ -762,7 +762,7 @@ class BundleJarsPrioritizingRunnableTest {
             // Act - using abstract class should fail during instantiation
             Map<String, Object> result = BundleJarsPrioritizingRunnable.executeCached(AbstractRunnableImpl.class, params);
 
-            // Assert - should return error and classloader should be closed (no resource leak)
+            // Assert
             assertNotNull(result);
             assertTrue(result.containsKey(BundleJarsPrioritizingRunnable.ERROR_KEY));
         }
