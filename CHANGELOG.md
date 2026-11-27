@@ -1,5 +1,28 @@
 # Changelog
 
+## [16.5.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.4.0...v16.5.0) (2026-11-27)
+
+
+### Features
+
+* add PolarionCollectionExecutor to read a document the way a colection shows it ([#756](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/756)) ([de36eb0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/de36eb039a5388c722a41759b688361fa633729a)), closes [#755](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/755)
+* map PermissionDeniedException to HTTP 403 ([#748](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/748)) ([cf0b6e8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/cf0b6e8b5c17e37dd2ee724c6612ee8052fe91bf)), closes [#747](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/747)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.fasterxml.jackson.module:jackson-module-jaxb-annotations to v2.22.4 ([#742](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/742)) ([2a6e15d](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/2a6e15ddb1c39bf06404b27890e54ae8fd6861af))
+* **deps:** update dependency com.fasterxml.jackson.module:jackson-module-jaxb-annotations to v2.23.0 ([#753](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/753)) ([b81dbc8](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/b81dbc860a5c642d0ef9005fb86eb720ad010ec0))
+* **deps:** update dependency io.github.classgraph:classgraph to v4.8.200 ([#752](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/752)) ([b0488e6](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/b0488e6c5996af2285c88e086fa3f38e2f89bb84))
+* **deps:** update dependency io.swagger.core.v3:swagger-maven-plugin-jakarta to v2.2.56 ([#761](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/761)) ([906beaf](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/906beaf2667d5f08e946ce74e4aafafcd84b6a78))
+* **deps:** update dependency org.apache.maven.plugins:maven-surefire-plugin to v3.6.1 ([#743](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/743)) ([7a1ddd0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/7a1ddd0f339f0722d9e0c0a744d62f2289adb2e4))
+* **deps:** update dependency org.jacoco:jacoco-maven-plugin to v0.8.16 ([#749](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/749)) ([7850730](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/785073065f2c15a2dadd70b9baabe77917d8f673))
+* **deps:** update dependency org.sonarsource.scanner.maven:sonar-maven-plugin to v5.9.0.7382 ([#760](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/760)) ([26114f6](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/26114f6635874873948a54fd49b9ba0401d988a4))
+* **deps:** update swagger.version to v2.2.56 ([#762](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/762)) ([6fdbcce](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/6fdbcce339bf05e4ef2131ec878689a3b777ee7b))
+* fix CodeQL findings ([#764](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/764)) ([bae3f1c](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/bae3f1cce2313f400dcc3ea12ed136cdefe0d02b))
+* keep the class loader of execute() open ([#766](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/766)) ([8bee0e1](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/8bee0e19ca39c0331c5a188a768dbb6ba73fa9b4)), closes [#765](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/765)
+* rethrow the runnable's own exception from BundleJarsPrioritizingRunnable ([#758](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/758)) ([e5ee6be](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/commit/e5ee6be57c746d93cc78abc6321f2eeba63284e7)), closes [#757](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/issues/757)
+
 ## [16.4.0](https://github.com/SchweizerischeBundesbahnen/ch.sbb.polarion.extension.generic/compare/v16.3.0...v16.4.0) (2026-10-26)
 
 
