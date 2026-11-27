@@ -64,6 +64,6 @@ The `release-v*` pattern in the workflow automatically recognizes new LTS branch
 
 - Releases go to the public JFrog Artifactory repository `https://sbb.jfrog.io/artifactory/polarion-opensource-mvn`, GPG-signed and readable without authentication. They are no longer published to Maven Central; versions published there earlier remain available.
 - SNAPSHOTs are not published anywhere, and this repo does NOT publish to GitHub Packages. (Diverges from `open-source-polarion-java-repo-template`, which also publishes SNAPSHOTs; documented in CLAUDE.md.)
-- Only release versions from LTS branches are deployed
+- Only release versions (from `main` and `release-v*` branches) are deployed; a version that is already published is not deployed again
 - Every extension that uses generic as its parent must have the public repository configured (in `.mvn/settings.xml` from `open-source-polarion-java-repo-template`) before it updates to a generic version released there; otherwise Maven cannot resolve the parent POM.
 - Each LTS branch operates independently with its own release PR

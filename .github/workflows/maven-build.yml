@@ -103,10 +103,12 @@ jobs:
   # Deploys every module (parent POM, app JAR and its test-jar), GPG-signed.
   # The central-publishing profile and the Sonatype distributionManagement stay in
   # the POM: extensions still on the old template inherit them for their own deploy.
+  # A release already published is skipped (public releases are immutable), and a
+  # private copy of this repository never deploys to the public repository.
   # See RELEASE.md for LTS branch documentation
   deploy-jfrog-io:
     needs: build
-    if: ${{ needs.build.outputs.is_release == 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release-v')) }}
+    if: ${{ github.event.repository.visibility == 'public' && needs.build.outputs.is_release == 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release-v')) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -115,6 +117,8 @@ jobs:
       IO_JFROG_SBB_POLARION_TOKEN: ${{ secrets.IO_JFROG_SBB_POLARION_TOKEN }}
       COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}
       GITHUB_TOKEN: ${{ github.token }}  # Providing this prevents reaching the GitHub request limits
+      PROJECT_VERSION: ${{ needs.build.outputs.project_version }}
+      DEPLOY_URL: https://sbb.jfrog.io/artifactory/polarion-opensource-mvn
     steps:
       - name: 📄 Checkout the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
@@ -130,12 +134,19 @@ jobs:
           gpg-private-key: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}
       - name: 📦 Deploy to JFrog Artifactory
         # -DskipTests still packages the test-jar that extensions depend on;
-        # -Dmaven.test.skip=true would not
+        # -Dmaven.test.skip=true would not. -DdeployAtEnd uploads nothing until every
+        # module has built and been signed, so a failure leaves no partial release.
         run: |
+          parent_pom="${DEPLOY_URL}/ch/sbb/polarion/extensions/ch.sbb.polarion.extension.generic/${PROJECT_VERSION}/ch.sbb.polarion.extension.generic-${PROJECT_VERSION}.pom"
+          if curl -sfI -o /dev/null "${parent_pom}"; then
+            echo "::notice::generic ${PROJECT_VERSION} is already published; skipping the deploy"
+            exit 0
+          fi
           mvn --batch-mode -s "${SETTINGS_XML}" clean deploy \
             -DskipTests=true \
+            -DdeployAtEnd=true \
             -P gpg-sign \
-            -DaltDeploymentRepository=jfrog_io::https://sbb.jfrog.io/artifactory/polarion-opensource-mvn
+            -DaltDeploymentRepository="jfrog_io::${DEPLOY_URL}"
   # Upload release assets to the corresponding GitHub Release.
   # Generic intentionally does NOT publish to GitHub Packages (releases go to
   # JFrog Artifactory; SNAPSHOTs are not published anywhere) — see CLAUDE.md.
