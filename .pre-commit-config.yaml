@@ -49,11 +49,11 @@ repos:
       - id: check-git-config-user-email
         args: [--templates, ^\S+\.\S+@sbb\.ch$]
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.19.4
+    rev: v4.20.0
     hooks:
       - id: commitizen
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.33.0
+    rev: v1.33.1
     hooks:
       - id: zizmor
   # The fork, as in the extensions: upstream v1.7.12 does not know the `cache-mode` key that the
