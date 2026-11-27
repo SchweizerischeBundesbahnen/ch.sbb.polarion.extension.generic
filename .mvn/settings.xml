@@ -44,11 +44,6 @@
             <password>${env.GITHUB_TOKEN}</password>
         </server>
         <server>
-            <id>sonatype-central</id>
-            <username>${env.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME}</username>
-            <password>${env.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN}</password>
-        </server>
-        <server>
             <id>gpg.passphrase</id>
             <passphrase>${env.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE}</passphrase>
         </server>

@@ -98,9 +98,13 @@ jobs:
             app/target/*.pom
           retention-days: 1
           if-no-files-found: error
-  # Deploy releases to Maven Central from main and LTS branches (release-v*)
+  # Deploy releases from main and LTS branches (release-v*) to the public JFrog
+  # repository sbb.jfrog.io/artifactory/polarion-opensource-mvn (anonymous read).
+  # Deploys every module (parent POM, app JAR and its test-jar), GPG-signed.
+  # The central-publishing profile and the Sonatype distributionManagement stay in
+  # the POM: extensions still on the old template inherit them for their own deploy.
   # See RELEASE.md for LTS branch documentation
-  deploy-maven-central:
+  deploy-jfrog-io:
     needs: build
     if: ${{ needs.build.outputs.is_release == 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release-v')) }}
     runs-on: ubuntu-latest
@@ -108,8 +112,7 @@ jobs:
       contents: read
       packages: read
     env:
-      COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_USERNAME }}
-      COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_TOKEN }}
+      IO_JFROG_SBB_POLARION_TOKEN: ${{ secrets.IO_JFROG_SBB_POLARION_TOKEN }}
       COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PASSPHRASE }}
       GITHUB_TOKEN: ${{ github.token }}  # Providing this prevents reaching the GitHub request limits
     steps:
@@ -125,22 +128,17 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: maven
           gpg-private-key: ${{ secrets.COM_SONATYPE_CENTRAL_POLARION_OPENSOURCE_GPG_PRIVATE_KEY }}
-      - name: 📦 Deploy to Maven Central
-        # This cannot be implemented using deploy:deploy-file
-        # The central-publishing-maven-plugin must be used instead due to specific deployment requirements
-        # Additionally, timeouts are set to 1 hour to avoid issues with the connection to Sonatype Central during deployment
+      - name: 📦 Deploy to JFrog Artifactory
+        # -DskipTests still packages the test-jar that extensions depend on;
+        # -Dmaven.test.skip=true would not
         run: |
           mvn --batch-mode -s "${SETTINGS_XML}" clean deploy \
             -DskipTests=true \
             -P gpg-sign \
-            -P central-publishing \
-            -Dcentral.timeout=3600 \
-            -Dmaven.wagon.http.connectionTimeout=3600000 \
-            -Dmaven.wagon.http.readTimeout=3600000 \
-            -Dcentral-publishing-maven-plugin.autoPublish=${{ github.event.repository.visibility == 'public' }}
+            -DaltDeploymentRepository=jfrog_io::https://sbb.jfrog.io/artifactory/polarion-opensource-mvn
   # Upload release assets to the corresponding GitHub Release.
   # Generic intentionally does NOT publish to GitHub Packages (releases go to
-  # Maven Central; SNAPSHOTs are not published anywhere) — see CLAUDE.md.
+  # JFrog Artifactory; SNAPSHOTs are not published anywhere) — see CLAUDE.md.
   # Runs only on actual release builds; non-release pushes skip this job entirely.
   upload-release-assets:
     needs: build
